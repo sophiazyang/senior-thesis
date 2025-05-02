@@ -1,0 +1,257 @@
+---
+title: "Literature Review Draft"
+format: pdf
+editor: visual
+author: Sophia Yang
+---
+
+## Hot Topics in Education
+
+-   Role of AI and technology
+
+-   Teaching soft skills
+
+-   Equitable education
+
+-   Affordability
+
+-   Mental health and student welbeing
+
+-   Closing pandemic learning gaps
+
+-   Online/hybrid learning
+
+-   Teacher retention/shortages
+
+-   Alternatives to traditional schooling (homeschool, CTE, certificates)
+
+## Grade Inflation
+
+<https://www.gradeinflation.com/> (data from over 170 US colleges, updated in 2016)
+
+Prior to the Vietnam War, C was the most common grade in colleges. In the 1960s, a shift in attitudes about the nature of teaching began where some professors doubted grades as a tool for motivation and began seeing grades as harmful for learning. Simultaneously, the exception of full-time college students from miltary draft into the highly unpopular Vietnam War encouraged students to maintain their full-time status. As a result of these factors and others, by 1973 As were twice as common as they were before the 1960s with GPAs rising on average by 0.4 points. During this time, college administrator Arvo Juola collected annual average GPAs, documenting the period and warning against further inflation.
+
+In the early 1980s, college grades began to slowly rise. Per decade, GPAs rose by 0.1 points and the percentage of As increase by roughly 5-6%. By the late 1990s, A became the most popular grade nationwide. By 2013, 45% of all college letter grades were As. This increase can be explained by the shift from viewing students as seeking to learn towards seeing them as customers to attract. The use of advertising of "success rates", the desire to charge higher tuition, and the rise of student course evaluations encouraged professors to hand out higher grades to appeal to students ("the customer is always right") and the administration.
+
+Other interesting points
+
+-   In 2013, GPAs at private colleges were on average 0.2 points higher than those at public colleges
+
+-   Inflation rates vary (initially higher GPAs, top-down clamping of grades)
+
+-   All instructors are inflating grades, not just adjunct faculty looking to become tenured
+
+-   Grade variation between disciplines
+
+-   Local increases in student quality may account for grade rises at some institutions but does not explain the national trend
+
+-   Overall decline in student engagement and ability
+
+-   Loss of ability to distinguish students who are exceptional vs good vs adequate
+
+-   Community college grades are inflated but have stopped rising, perhaps due to declining student quality
+
+<https://www.act.org/content/dam/act/secured/documents/Evidence-of-Grade-Inflation-in-English-Math-Social-Studies-and-Science.pdf> (high school ACT scores 2010-2022)
+
+-   Grade inflation highest in math, average math GPA up from 3.03 to 3.32
+
+-   Percentage of students reported receiving an A GPA increase by 9.6% in English, 11.4% in math, 10.7% in social studies, and 12.2% in science from 2010 to 2022
+
+-   Rate of grade inflation was similar across family income groups
+
+-   Female students experienced more grade inflation than male students in all subjects
+
+-   Black students experienced the greatest grade inflation while Hispanic and other racial/ethnic groups had lower grade inflation than white students
+
+-   Schools with fewer students of color had higher rates of grade inflation than schools with more students of color
+
+-   Schools with a high proportion of students eligible for free or reduced-price lunch experienced higher rates of grade inflation
+
+<https://www.econstor.eu/bitstream/10419/265777/1/dp15556.pdf> (student level data from North Carolina Education Research Data Center 2006-2016, course grades and EOC tests in math grades 3 to 8)
+
+-   Measuring grading standards by comparing course grades (more subjective) with EOC test scores (more objective)
+
+    -   Technique from: Figlio, D. N. and M. E. Lucas (2004). Do high grading standards affect student performance? Journal of Public Economics 88(9-10), 1815–1834.
+
+-   Higher grading standards improve achievement in Algebra I and **subsequent math courses** across all demographics, school types, and achievement levels
+
+    -   NC teachers' educational expectations improve test scores: Hill, A. J. and D. B. Jones (2021). Self-fulfilling prophecies in the classroom. Journal of Human Capital 15(3), 400–431.
+
+    -   Nationally representative sample, teacher expectations affect college completing: Papageorge, N. W., S. Gershenson, and K. M. Kang (2020). Teacher expectations matter. Review of Economics and Statistics 102(2), 234–251.
+
+-   Effort from **both high and low ability students** can be induced by high standards and increased risk of receiving a lower grade (though perhaps at different strengths)
+
+    -   Betts, J. R. and J. Grogger (2003). The impact of grading standards on student achievement, educational attainment, and entry-level earnings. Economics of Education Review 22(4), 343–352.
+
+    -   Figlio, D. N. and M. E. Lucas (2004). Do high grading standards affect student performance? Journal of Public Economics 88(9-10), 1815–1834.
+
+    -   Bonesrønning, H. (2004). Do the teachers’ grading practices affect student achievement? Education Economics 12(2), 151–167.
+
+-   Marginally significant reductions in absenteeism were observed
+
+-   Disproportionate exposure to relaxed standards contributes to socio-economic disparities in economic outcomes
+
+    -   Grade inflation is more prevalent in schools serving economically disadvantaged communities: Tyner, A. and S. Gershenson (2020). Conceptualizing grade inflation. Economics of Educa16tion Review 78,102037
+
+<https://www.ebsco.com/research-starters/education/grade-inflation> (summary of the topic, causes and effects + recommended reading)
+
+-   86% of teachers consider student effort as a factor when determining grades: Grade Inflation. (2000). *Gifted Child Today, 23*, 6. Retrieved August 22, 2010 from EBSCO online database, Education Research Complete: http://search.ebscohost.com/login.aspx?direct=true&db=ehh&AN=3334927&site=ehost-live
+
+-   Student averages are not correlating with standardized test scores
+
+-   In 1984, 28% of students taking the SAT reported A averages; in 1999, 39% reported A averages. However, performance on the SAT did not vary significantly over that time period. From: *Gifted Child Today, 23*, 6. Retrieved August 22, 2010 from EBSCO online database, Education Research Complete: http://search.ebscohost.com/login.aspx?direct=true&db=ehh&AN=3334927&site=ehost-live
+
+    -   Also supported by: Bracey, G. W. (1994). *Grade inflation? Phi Delta Kappan, 76*, 328. Retrieved August 22, 2010 from EBSCO online database, Academic Search Complete: http://search.ebscohost.com/login.aspx?direct=true&db=a9h&AN=9412140670&site=ehost-live
+
+-   Parent's may selectively send students to schools in which they receive higher grades: Walsh, P. (2010). Does competition among schools encourage grade inflation? *Journal of School Choice, 4*, 149-173.
+
+-   No Child Left Behind places monetary value on student pass rates, encouraging grade inflation in economically struggling school districts
+
+    -   Students had higher grades when compared to standardized tests in districts with lower educational backgrounds: Lekholm, A. K. & Cliffordson, C. (2008). Discrepancies between school grades and test scores at individual and school level: Effects of gender and family background. *Educational Research & Evaluation, 14*, 181-199. Retrieved August 22, 2010 from EBSCO online database, Academic Search Complete: http://search.ebscohost.com/login.aspx?direct=true&db=a9h&AN=31583781&site=ehost-live
+
+-   Some students/parents purchase higher grades: Farran, S. (2009). Can high school grades be trusted? *Maclean's, 122*, 92-96. Retrieved August 22, 2010 from EBSCO online database, Academic Search Complete: http://search.ebscohost.com/login.aspx?direct=true&db=a9h&AN=45433818&site=ehost-live
+
+-   The number of As from a survey of 4,900 college graduates from 1969 to 1993 quadrapled while the number of Cs dropped by 66%. Simultaneously, SAT and ACT scores decreased. From: Edwards, C. H. (2000). Grade inflation: The effects on educational quality and personal well being. *Education, 120*, 538. Retrieved August 22, 2010 from EBSCO online database Academic Search Complete: http://search.ebscohost.com/login.aspx?direct=true&db=a9h&AN=2990143&site=ehost-live
+
+-   Giving poor grades -\> low evaluations by students -\> reduced enrollment in their courses -\> eventual loss of employment
+
+-   Students who received inflated grades in high school may falsely believe they are prepared for college-level academics
+
+-   Most students admit they are capable of better quality work than they achieve (Glasser, 1998): Edwards, C. H. (2000). Grade inflation: The effects on educational quality and personal well being. *Education, 120*, 538. Retrieved August 22, 2010 from EBSCO online database Academic Search Complete: http://search.ebscohost.com/login.aspx?direct=true&db=a9h&AN=2990143&site=ehost-live
+
+-   Higher education has become less respected by employers and graduate school admissions officials: Abbott, W. M. (2008). The politics of grade inflation: A case study. *Change, 40*, 32-37. Retrieved August 21, 2010 from EBSCO online database, Education Research Complete: http://search.ebscohost.com/login.aspx?direct=true&db=ehh&AN=28070433&site=ehost-live
+
+Problems with grade inflation: <https://www.applerouth.com/blog/the-ongoing-high-cost-of-grade-inflation>
+
+-   Loss of distinction and differentiation between students, harder to stand out to employers and admissions officers
+
+-   Loss of predictive power of further success
+
+    -   Little relationship between high school grade point average and success in college vs strong relationship between test scores and later success: <https://opportunityinsights.org/paper/collegeadmissions/>
+
+    -   Faculty committee at the University of California system found that test scores were better than high school grades at predicting student success in its system of 9 colleges: <https://senate.universityofcalifornia.edu/_files/underreview/sttf-report.pdf>
+
+        -   Tests are known to have racial and economic gaps, but that may be a symptom of inequality in the US not that they themselves are biased
+
+-   More pressure on academic rigor (taking advanced classes) to stand out
+
+-   Disconnect between grades and skills, as high school grades rise test scores have fallen: <https://www.nationsreportcard.gov/hstsreport/#home> <https://www.nationsreportcard.gov/highlights/ltt/2023/>
+
+-   Teachers can no longer hold students accountable, being told (by parents and administrators) to give passing grades rather than failing students: <https://www.nytimes.com/2023/10/04/opinion/teachers-grades-students-parents.html>
+
+## Flexible Grading and COVID-19
+
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC4041495/> (literature review, history of grading, purposes, impacts, and recommendations)
+
+-   To read...
+
+<https://www.nber.org/papers/w30798> (2014 Wellesley College pre and post mandating pass/fail in the first semester)
+
+-   To read...
+
+Growing number of students using academic forgiveness policies: <https://www.chronicle.com/article/academic-forgiveness-the-price-of-pardon/> (need a sign-in to view)
+
+-   In 2013, a study of eight public universities in one southern state found that growing numbers of both high- and low-achieving students used “academic forgiveness policies” -- withdrawing from classes without take a grade, repeating courses for a better one or selecting pass-fail -- to keep between a fifth and half of their coursework out of their GPAs.
+
+-   To read...
+
+Many colleges switched to pass/fail during Spring 2020: <https://oudigitools.blogspot.com/2020/03/feedback-alternate-grading-in-crisis.html> (Twitter collection of US college announcements)
+
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/> (Historically Black College and University in the UNC system, Spring 2020-Spring 2021)
+
+-   Pass/Fail system was tested and studied in the 1960s. It remains prevalent in medical school programs
+
+-   Pass/Fail grading can help reduce student anxiety, stress, and burnout (e.g.,Bloodgood et al., [2009](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR7); Rohe et al., [2006](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR30); Spring et al., [2011](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR37)), allow students to explore courses outside their major (e.g., Bain et al. 1973; Weller, 1984), encourage collaboration and self-regulated learning (e.g., White & Fantone, [2010](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR45)), and increase first-year retention (Stiller & Paguyo, [2012](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR38))
+
+-   Pass/Fail grading is associated with lower achievement (e.g., Sgan, [1970](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR32); Gold et al., [1971](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR12); Wittich, [1972](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR47); Bloodgood et al., [2009](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR7)) and difficulty distinguishing students needing extra support (e.g., Gonnella et al., [2004](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR13))
+
+-   Pass/Fail grading was limited by universities and tended to be rejected by graduate schools or even program changes within a university
+
+-   Mentions two peer-reviewed studies on the implications of the COVID-19 induced flexible grading policy (this paper was published in 2023)
+
+    -   Gelles et al. ([2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR11)): qualitative interviews with 11 second-year Engineering students from a private university in California to explore how they adapted to the transition to remote learning during the Spring 2020 semester
+
+    -   Rodríguez-Planas ([2022b](https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/#CR29)): administrative records from Spring 2017 to Spring 2020 and transcript data for Spring 2020 at Queens College, NY. Focus on differential effects of the pandemic on Spring 2020 GPA by pre-pandemic income status. Difference in performance by income status was fully explained by selection of flexible grading policy, effective in counteracting negative shocks of the pandemic.
+
+-   In Spring 2020, allowed students to opt for Pass/Fail or retroactively withdraw after the semester ended. No limit on number of courses to opt for Pass/Fail. In Fall 2020 students could opt to Pass/Fail a maximum of 3 courses (even retroactively). In Spring 2021 students could opt to Pass/Fail one course (even retroactively).
+
+-   All undergraduates enrolled were included using course-level data (subject, general education credit, online status, course grade/grading option) and administrative academic records (sex, rurality, in-state residency, financial aid status, graduation year, full-time status, STEM status, ACT/SAT scores).
+
+-   83% of students were Black and 4% Hispanic. Annual cost of \$10,563 and 50% graduation rate. 61% of students were ever Pell recipients.
+
+-   Methods and results... to finish reading
+
+## Value of Higher Education
+
+Declining public perception of the value of college: <https://www.pewresearch.org/social-trends/2024/05/23/is-college-worth-it-2/>
+
+Despite inflation, a college degree does pay off the average tuition:
+
+-   To read...
+
+-   <https://journals.sagepub.com/doi/10.3102/00028312241231512>
+
+-   <https://www.nber.org/system/files/working_papers/w31373/w31373.pdf>
+
+### Does which college/school matter?
+
+To read...
+
+-   <https://www.nber.org/system/files/working_papers/w7322/w7322.pdf>
+
+-   <https://www.nber.org/system/files/working_papers/w17159/w17159.pdf>
+
+-   <https://onlinelibrary.wiley.com/doi/10.1111/coep.12115>
+
+-   Not for men but yes for women: <https://www.nber.org/system/files/working_papers/w25315/w25315.pdf>
+
+-   Hiring and performance: https://www.inderscienceonline.com/doi/abs/10.1504/EJIM.2021.118582 (no access... cited in <https://hbr.org/2020/09/graduates-of-elite-universities-get-paid-more-do-they-perform-better>)
+
+### Does college GPA matter?
+
+To read...
+
+-   Post-college income
+
+    -   Mixed opinions https://pmc.ncbi.nlm.nih.gov/articles/PMC9004755/
+
+        -   https://scholar.google.com/scholar_lookup?journal=Journal%20of%20College%20Student%20Development&title=Estimating%20academic%20success%20in%20the%20first%20year%20of%20college%20for%20specially%20admitted%20white%20students:%20A%20model%20of%20combining%20cognitive%20and%20psychosocial%20predictors&author=SR%20Ting&volume=38&issue=4&publication_year=1997&pages=401-409&
+
+        -   https://scholar.google.com/scholar_lookup?journal=Journal%20of%20Education%20and%20Work&title=The%20impact%20of%20student%20academic%20achievement%20on%20graduate%20salaries:%20The%20case%20of%20a%20leading%20Russian%20university&author=V%20Rudakov&author=S%20Roshchin&volume=32&issue=2&publication_year=2019&pages=156-180&
+
+        -   https://scholar.google.com/scholar_lookup?journal=Economics%20of%20Education%20Review&title=The%20economic%20returns%20to%20college%20major,%20quality%20and%20performance:%20A%20multilevel%20analysis%20of%20recent%20graduates&author=RW%20Rumberger&author=SL%20Thomas&volume=12&issue=1&publication_year=1993&pages=1-19&
+
+        -   https://scholar.google.com/scholar_lookup?title=Grade%20inflation:%20A%20crisis%20in%20college%20education&author=VE%20Johnson&publication_year=2003&
+
+        -   https://scholar.google.com/scholar_lookup?journal=The%20Scandinavian%20Journal%20of%20Economics&title=Rates%20of%20return%20to%20four-year%20university%20education:%20An%20application%20of%20regression%20discontinuity%20design&author=E%20Fan&author=X%20Meng&author=Z%20Wei&author=G%20Zhao&volume=120&issue=4&publication_year=2018&pages=1011-1042&Graduate school admissions
+
+    ```{=html}
+    <!-- -->
+    ```
+    -   As a cut-off to be considered but not otherwise, other factors are more important: https://www.molbiolcell.org/doi/full/10.1091/mbc.e13-11-0646
+
+-   Medical school admissions
+
+    -   Specifically Science GPA
+
+    -   Acceptance rates by medical school (GPA and MCAT scores) <https://www.aamc.org/media/6091/download>
+
+    -   GPA distributions for accepted students by medical school <https://medicalaid.org/average-gpa-and-mcat-score-for-every-medical-school-in-the-us/>
+
+    -   Minimum GPA to be considered <https://www.inspiraadvantage.com/blog/medical-school-gpa-requirements>
+
+## Duke
+
+-   How have the GPAs of Duke applicants/acceptances changed? How does this vary across socio-economic status/gender/majors/race? How does this compare to other universities?
+
+-   How has the GPAs of Duke undergraduates changed? How does this vary across socio-economic status/gender/majors/race? How does this compare to other universities?
+
+-   History/timeline of Duke University policies. How did GPAs change during pandemic era policies?
+
+-   How many students have opted for satisfactory/unsatisfactory grading? How does this vary across socio-economic status/gender/STEM/race?
+
+-   Impact/rationale behind mandatory satisfactory/unsatisfactory courses (ex: ECON101)
+
+-   Course evaluations: Is there a relationship between student engagement and course difficulty/hours? Is there a relationship between reported effectiveness of instructor and average grade in a course? Is there a relationship between poorly rated professors and hiring decisions? How have student response rates changed? What proportion of students leave open-ended questions blank?
+
+-   SACES: How have the questions given to undergraduates changed? Were the changes effective in aiding professors and administration? (Why have results pre-summer 2023 been archived?)
