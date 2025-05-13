@@ -1,0 +1,50 @@
+---
+title: "Thesis Proposal"
+format: pdf
+editor: visual
+author: Sophia Yang
+---
+
+# An Analysis of the COVID-19-Induced Flexible Grading Policy at Duke University
+
+## Background and Motivation
+
+In the wake of the COVID-19 pandemic, the Trinity College of Arts and Sciences at Duke University introduced academic policy changes. During the Spring 2020 semester, all courses were switched to Satisfactory/Unsatisfactory (S/U) grading as opposed to the traditional graded (A-F) scale. While this was the only semester where all courses were allowed to be S/U and count for all requirements, other policy changes during the pandemic regarding S/U still remain.
+
+With the rollback of most pandemic-era policies such as masking and social distancing long gone, it is natural to wonder if and/or when S/U policy will be reverted. This thesis seeks to determine if the current S/U policy has long-term academic benefits for Duke undergraduates and should persist, or if the change in S/U policy has long-term academic harms.
+
+## Research Question
+
+What is the likelihood that a student who completed a prerequisite course with Satisfactory/Unsatisfactory grading will succeed in the subsequent course(s)? How has this changed over time?
+
+## Methodology
+
+In line with the analysis from Mostafa et al. (2023), I plan to use course-level data obtained from transcripts and student-level data obtained from administrative records.
+
+For my study, I plan course-level variables such as course code to identify sequences, course subject to determine departmental trends, and course grade (whether graded or S/U) to determine academic success. Academic profile variables or their proxies such as graduation term and intended major may also be used to note trends among student groups. Additionally, ACT/SAT scores if available will be used to control for covariates since it is reasonable to assume that students with higher standardized test scores are typically more academically successful.
+
+I will use logistic regression Hosmer et al. (2013) for modeling whether or not a student succeeded in a subsequent course (1 for success, 0 for failure). More specifically, grades D, F, U, W (withdrawal), and I (incomplete) will be designated as failing to succeed.
+
+## Data Access and Technology Needs
+
+My data will be provided by Duke’s Assessment Office. In order to access the data, I will follow all necessary precautions including but not limited to: being on campus, using Duke’s VPN, using a virtual machine/container, and completing any necessary training.
+
+In terms of technology, I will be using R for most tasks such as data cleaning and statistical modeling.
+
+## Ethical Implications
+
+While I am accessing sensitive student data, it will be de-identified using id numbers instead of names. I also do not intend to use socio-demographic data such as sex, race/ethnicity, and income. Additionally, due to restrictions on this data, my results will be kept private and internal to Duke unless special permission is given to further reduce any privacy concerns.
+
+## Timeline
+
+Since I plan to graduate in December 2025, my proposed timeline is as follows. By the end of May, I will submit my thesis proposal. Due to limitations for accessing my data, I will spend the summer continuing to refine my methodology and attempt to find practice data. In August, I will have access to my data such that I can get to know the dataset and perform preliminary data analysis. Additionally, I hope to submit a progress report in late August/early September. By September, I will begin implementing and evaluating my models. The focus of October will be on writing my paper, and I will present my thesis in November.
+
+## Target Conference or Publication
+
+Due to the private nature of my data, it is unlikely that I will be able to present or publish my work outside of Duke's offices/faculty. I will work with the Assessment Office to determine possibilities for presentation.
+
+## Bibliography
+
+Hosmer Jr, D. W., Lemeshow, S., & Sturdivant, R. X. (2013). *Applied logistic regression*. John Wiley & Sons.
+
+Mostafa, S. A., Ferguson, R., Tang, G., & Ashqer, M. (2023). An Analysis of the COVID-19-Induced Flexible Grading Policy at a Public University. *Higher education policy*, 1–34. Advance online publication. https://doi.org/10.1057/s41307-023-00315-2
