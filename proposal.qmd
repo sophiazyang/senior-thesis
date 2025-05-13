@@ -23,7 +23,9 @@ In line with the analysis from Mostafa et al. (2023), I plan to use course-level
 
 For my study, I plan course-level variables such as course code to identify sequences, course subject to determine departmental trends, and course grade (whether graded or S/U) to determine academic success. Academic profile variables or their proxies such as graduation term and intended major may also be used to note trends among student groups. Additionally, ACT/SAT scores if available will be used to control for covariates since it is reasonable to assume that students with higher standardized test scores are typically more academically successful.
 
-I will use logistic regression Hosmer et al. (2013) for modeling whether or not a student succeeded in a subsequent course (1 for success, 0 for failure). More specifically, grades D, F, U, W (withdrawal), and I (incomplete) will be designated as failing to succeed.
+I will use logistic regression (Hosmer et al., 2013) for modeling whether or not a student succeeded in a subsequent course (1 for success, 0 for failure). More specifically, grades D, F, U, W (withdrawal), and I (incomplete) will be designated as failing to succeed.
+
+To capture differences between pre-COVID and post-COVID policies, I plan to build separate logistic models for each time period.
 
 ## Data Access and Technology Needs
 
