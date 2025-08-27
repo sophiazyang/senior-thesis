@@ -5,27 +5,35 @@ editor: visual
 author: Sophia Yang
 ---
 
-# An Analysis of the COVID-19-Induced Flexible Grading Policy at Duke University
+# Flexible Grading and Student Behavior at Duke University
 
 ## Background and Motivation
 
 In the wake of the COVID-19 pandemic, the Trinity College of Arts and Sciences at Duke University introduced academic policy changes. During the Spring 2020 semester, all courses were switched to Satisfactory/Unsatisfactory (S/U) grading as opposed to the traditional graded (A-F) scale. While this was the only semester where all courses were allowed to be S/U and count for all requirements, other policy changes during the pandemic regarding S/U still remain.
 
-With the rollback of most pandemic-era policies such as masking and social distancing long gone, it is natural to wonder if and/or when S/U policy will be reverted. This thesis seeks to determine if the current S/U policy has long-term academic benefits for Duke undergraduates and should persist, or if the change in S/U policy has long-term academic harms.
+Referencing Duke University Undergraduate Bulletins, prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements (commonly known as “T-reqs”).
+
+Several faculty members have expressed an increase in student usage of S/U and departments are assigning courses to be graded (A-F) only. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form. Rather than examining the difficult to determine effect on student learning, this thesis seeks to determine how the change in S/U policy has impacted student's choices in grading type with the goal of informing specific departments and administrative staff.
 
 ## Research Question
 
-What is the likelihood that a student who completed a prerequisite course with Satisfactory/Unsatisfactory grading will succeed in the subsequent course(s)? How has this changed over time?
+How has the change in S/U policy influenced student behavior? What is the likelihood that a student will choose to take a course S/U, and how does that vary by department, course level, and major?
 
 ## Methodology
 
-In line with the analysis from Mostafa et al. (2023), I plan to use course-level data obtained from transcripts and student-level data obtained from administrative records.
+### Data
 
-For my study, I plan course-level variables such as course code to identify sequences, course subject to determine departmental trends, and course grade (whether graded or S/U) to determine academic success. Academic profile variables or their proxies such as graduation term and intended major may also be used to note trends among student groups. Additionally, ACT/SAT scores if available will be used to control for covariates since it is reasonable to assume that students with higher standardized test scores are typically more academically successful.
+All data used in this thesis is sourced from Duke University's Assessment Office. In line with the analysis from Mostafa et al. (2023), I plan to use course-level data obtained from transcripts and student-level data obtained from administrative records.
 
-I will use logistic regression (Hosmer et al., 2013) for modeling whether or not a student succeeded in a subsequent course (1 for success, 0 for failure). More specifically, grades D, F, U, W (withdrawal), and I (incomplete) will be designated as failing to succeed.
+### Accessing Policy Change
 
-To capture differences between pre-COVID and post-COVID policies, I plan to build separate logistic models for each time period.
+In order to measure the impact the S/U policy shift had on students, I will label my observations based on the era they represent. Data from semesters Fall 2015 to Spring 2018 represent the pre-pandemic era in which S/U did not count towards general education requirements (besides credit towards graduation). Data from semesters Fall 2022 to Spring 2025 represent the post-pandemic era in which S/U is permitted to count towards general education requirements.
+
+Learning during the pandemic is not the focus of this thesis. Data from Spring 2020 through Spring 2022 is omitted due to the confounding impact of other COVID-19 policies. Through reports from Duke’s Coronavirus Response, no periods of mandatory remote learning due to COVID-19 occurred in Fall 2022 or beyond. Similarly, remote learning and study abroad will be omitted by only analyzing courses taught in-person on Duke’s campus in Durham.
+
+### **Modeling**
+
+I intend to use logistic regression (Hosmer et al., 2013) to model the likelihood of a student choosing S/U grading. In addition to policy era, I plan to use course-level variables such as course number (e.g. 199) to identify course level (e.g. 100s), course subject (e.g. MATH) to determine departmental trends, allowed grading types (graded only, S/U only, choice given), final grade (A-F, S/U, incomplete, withdrawal, audit), and semester (term and year). Student-specific variables such as intended major will be used to note trends among student groups. Standardized test scores (if available) will be used to control for general academic preparation, which may correlate with grading preferences. Interaction terms and additional covariates will be accessed and may be added to the model.
 
 ## Data Access and Technology Needs
 
@@ -35,18 +43,24 @@ In terms of technology, I will be using R for most tasks such as data cleaning a
 
 ## Ethical Implications
 
-While I am accessing sensitive student data, it will be de-identified using id numbers instead of names. I also do not intend to use socio-demographic data such as sex, race/ethnicity, and income. Additionally, due to restrictions on this data, my results will be kept private and internal to Duke unless special permission is given to further reduce any privacy concerns.
+While I am accessing sensitive student data, it will be de-identified using id numbers instead of names. I also do not intend to use socio-demographic data such as sex, race/ethnicity, and income. I have completed modules in the CITI Undergraduate RCR Training and will complete additional training if requested by the Assessment Office. Additionally, due to restrictions on this data, my results will be kept private and internal to Duke unless special permission is given to further reduce any privacy concerns.
 
 ## Timeline
 
-Since I plan to graduate in December 2025, my proposed timeline is as follows. By the end of May, I will submit my thesis proposal. Due to limitations for accessing my data, I will spend the summer continuing to refine my methodology and attempt to find practice data. In August, I will have access to my data such that I can get to know the dataset and perform preliminary data analysis. Additionally, I hope to submit a progress report in late August/early September. By September, I will begin implementing and evaluating my models. The focus of October will be on writing my paper, and I will present my thesis in November.
+Since I plan to graduate in December 2025, my proposed timeline is as follows. By the end of May, I will submit my thesis proposal. Due to limitations for accessing my data, I will spend the summer continuing to refine my methodology and attempt to find practice data. In August, I will have access to my data such that I can get to know the dataset and perform preliminary data analysis. Additionally, I hope to submit a progress report in late August/early September. By September, I will begin implementing and evaluating my models. The focus of October will be on writing my paper, and I will present my thesis in late November or early December.
 
 ## Target Conference or Publication
 
-Due to the private nature of my data, it is unlikely that I will be able to present or publish my work outside of Duke's offices/faculty. I will work with the Assessment Office to determine possibilities for presentation.
+Due to the private nature of my data, it is difficult to determine if I will be able to present or publish my work outside of Duke University. One preliminary idea is to present at the December Arts & Sciences Council meeting. I will work with the Assessment Office and the Statistical Science department to determine possibilities for presentation.
 
 ## Bibliography
 
+Duke University. (n.d.). *Bulletin archives* \[Duke Undergraduate Instruction Bulletins\]. Duke University Office of the University Registrar. <https://registrar.duke.edu/bulletins/bulletin-archives/>
+
+Duke University. (2024, March 5). *COVID-19 updates*. <https://coronavirus.duke.edu/updates/>
+
 Hosmer Jr, D. W., Lemeshow, S., & Sturdivant, R. X. (2013). *Applied logistic regression*. John Wiley & Sons.
 
-Mostafa, S. A., Ferguson, R., Tang, G., & Ashqer, M. (2023). An Analysis of the COVID-19-Induced Flexible Grading Policy at a Public University. *Higher education policy*, 1–34. Advance online publication. https://doi.org/10.1057/s41307-023-00315-2
+Mostafa, S. A., Ferguson, R., Tang, G., & Ashqer, M. (2023). An Analysis of the COVID-19-Induced Flexible Grading Policy at a Public University. *Higher education policy*, 1–34. Advance online publication. <https://doi.org/10.1057/s41307-023-00315-2>
+
+Trinity College of Arts and Sciences. (n.d.). *Curriculum: Foreign language (FL) requirement*. Duke University. <https://trinity.duke.edu/undergraduate/academic-policies/foreign-language>
