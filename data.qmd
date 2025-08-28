@@ -1,0 +1,223 @@
+---
+title: "Data Playground"
+format: pdf
+editor: visual
+author: Sophia Yang
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(tidyverse)
+```
+
+## Load Data
+
+```{r}
+#| label: load-data
+file1 <- read_excel("")
+file2 <- read_excel("")
+combined_df <- rbind(file1, file2)
+```
+
+```{r}
+#| label: clean-data
+# Fix academic program
+
+# Drop career once check is all UGRD
+clean_df <- combined_df |>
+  select(-career)
+
+# Check how many of each course component type
+clean_df |>
+  count(class_component) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(n)
+
+# Drop rows that say course component LD, LL, INR
+clean_df <- clean_df |>
+  filter(!class_component %in% c("LD", "LL", "INR"))
+nrow(combined_df)
+nrow(clean_df)
+
+# Check how many of each final grade type
+clean_df |>
+  count(final_grade) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(n)
+
+# if there are NA then just convert to be NA???
+#clean_df <- clean_df |>
+#  mutate(final_grade = case_when(
+#    class_component %in% c("LD", "LL", "INR") ~ NA_character_,
+#    TRUE ~ final_grade
+#  ))
+
+# Drop rows that say final grade N, TNC, Z
+clean_df <- clean_df |>
+  filter(!final_grade %in% c("N", "TNC", "Z"))
+nrow(combined_df)
+nrow(clean_df)
+```
+
+```{r}
+#| label: missing-data
+clean_df |>
+  summarise(across(everything(), ~sum(is.na(.)), .names = "n_missing_{.col}")) %>%
+  tidyr::pivot_longer(everything(),
+                      names_to = "variable",
+                      values_to = "n_missing") |>
+  mutate(prop_missing = n_missing / nrow(df))
+```
+
+```{r}
+#| label: create-variables
+# Time period (pre, during, post)
+
+# S/U usage (binary)
+new_df <- clean_df |>
+  mutate(is_SU = if_else(final_grade %in% c("S", "U"), 1, 0))
+
+# compute part time status/gap sem???
+
+# compute prev sem GPA
+
+# BS vs BA major
+new_df <- new_df |>
+  mutate(major_AB_BS = if_else(str_ends(first_major, c("AB", "BS")), 1, 0))
+
+# acad year? lump in summer term?
+
+# term type
+term_order <- new_df |>
+  distinct(term_enrolled) |>
+  arrange(term_enrolled) |>
+  mutate(term_index = row_number()) |> # uhhhh i did this elsewhere tho?
+  mutate(term_type = case_when(
+    term_index %% 4 == 1 ~ "Summer2",
+    term_index %% 4 == 2 ~ "Fall",
+    term_index %% 4 == 3 ~ "Spring",
+    term_index %% 4 == 0 ~ "Summer1"
+  ))
+
+
+# total # of students in the course? computed using nbr_rev and term_enrolled
+new_df <- new_df |>
+  group_by(term_enrolled, class_nbr_rev) |>    # group by term + course
+  mutate(total_students_in_course = n_distinct(masked_student_ID)) |>  # count unique students
+  ungroup()
+```
+
+```{r}
+#| label: GPA
+gpa_scale <- tibble(
+  final_grade = c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F"),
+  gpa_points  = c(4.0, 4.0, 3.7, 3.3, 3.0, 2.7, 2.3, 2.0, 1.7, 1.3, 1.0, 1.0, 0.0)
+)
+
+sem_gpa <- clean_df |>
+  left_join(gpa_scale, by = "final_grade") |>
+  filter(!is.na(gpa_points)) |>
+  group_by(masked_student_ID, term_index) |>
+  summarise(semGPA = mean(gpa_points), .groups = "drop")
+
+clean_df <- clean_df |>
+  distinct(term_enrolled) |>
+  arrange(term_enrolled) |>
+  mutate(term_index = row_number())   # sequential index
+
+clean_df <- clean_df |>
+  left_join(
+    sem_gpa |>
+      mutate(term_index = term_index + 1) %>%  # shift to next term
+      select(masked_student_ID, term_index, semGPA_prev = semGPA),
+    by = c("masked_student_ID", "term_index")
+  )
+```
+
+Data dictionary
+
+| Variable name      | Type                | Description                                                                 |
+|--------------------|---------------------|-----------------------------------------------------------------------------|
+| masked_student_ID  | numerical           |                                                                             |
+| student_acad_prog  |                     |                                                                             |
+| first_major        |                     | final values at graduation, may not reflect values at time of taking course |
+| ...                |                     |                                                                             |
+|                    |                     |                                                                             |
+| admit_term         |                     |                                                                             |
+| term_enrolled      |                     |                                                                             |
+| term_type          | Summer vs acad year |                                                                             |
+| division_of_course |                     |                                                                             |
+| catalog_level      |                     |                                                                             |
+| class_nbr_rev      |                     |                                                                             |
+|                    |                     |                                                                             |
+
+```{r}
+#| label: without-summer
+# do similar analysis but drop summer terms?
+```
+
+```{r}
+#| label: eda-plots
+
+# double check this is 2020 spring
+prop_df <- model_df |>
+  group_by(term_enrolled) |>
+  summarise(prop_passfail = mean(is_SU), .groups = "drop") |>
+  mutate(highlight = if_else(term_enrolled == "1710", "highlight", "other"))
+
+count_df <- model_df |>
+  group_by(term_enrolled) |>
+  summarise(
+  passfail_count = sum(is_SU),
+  total = n(),
+    .groups = "drop"
+  ) |>
+  mutate(highlight = if_else(term_enrolled == "1710", "highlight", "other"))
+
+ggplot(prop_df, aes(x = term_enrolled, y = prop_passfail)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
+  labs(
+    title = "Proportion of S/U Grades by Term",
+    x = "Term Enrolled",
+    y = "Proportion (S/U)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+
+ggplot(count_df, aes(x = term_enrolled, y = passfail_count)) +
+  geom_col() +
+  scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
+  labs(
+    title = "Count of S/U Grades by Term",
+    x = "Term Enrolled",
+    y = "Count (S/U)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+grade_prop <- model_df |>
+  group_by(term_enrolled, final_grade) |>
+  summarise(count = n(), .groups = "drop_last") |>
+  mutate(prop = count / sum(count))
+  ggplot(grade_prop, aes(x = term_enrolled, y = prop, fill = final_grade)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Distribution of Grades by Term",
+    x = "Term Enrolled",
+    y = "Proportion of Grades",
+    fill = "Grade"
+  ) +
+  theme_minimal() +
+  scale_color_viridis()
+
+```
