@@ -13,6 +13,7 @@ editor_options:
 
 library(readxl)
 library(tidyverse)
+library(viridis)
 ```
 
 ## Load Data
@@ -234,13 +235,14 @@ term_lookup <- tribble(
   1910,          2025,        "Spring"
 )
 
-term_encoding <- c(
-  "Winter" = 1,
-  "Spring" = 2,
-  "Summer Full" = 3,
-  "Summer 1" = 4,
-  "Summer 2" = 5,
-  "Fall" = 6
+term_levels <- c(
+  "Prior Terms",
+  "Winter",
+  "Spring",
+  "Summer Full",
+  "Summer 1",
+  "Summer 2",
+  "Fall"
 )
 
 clean_term_df <- clean_df |>
@@ -257,51 +259,82 @@ clean_term_df <- clean_df |>
       term_type_admit = term_type
     ),
     by = c("admit_term" = "term_number")
-  )
+  ) |>
+  mutate(
+    term_type_enrolled = factor(term_type_enrolled,
+                                levels = term_levels,
+                                ordered = TRUE),
+    term_type_admit = factor(term_type_admit,
+                             levels = term_levels,
+                             ordered = TRUE)
+  ) |>
+  select(-c(admit_term, term_enrolled))
 
-final_term_df <- clean_term_df |>
-  mutate(
-    term_type_index = term_encoding[term_type_enrolled],
-    term_enrolled_index = term_year_enrolled + term_type_index/10
-  ) |>
-  mutate(
-    term_type_index = term_encoding[term_type_admit],
-    term_admit_index = term_year_admit + term_type_index/10
-  ) |>
-  select(-c(term_type_index, term_year_enrolled, term_type_enrolled,
-            term_year_admit, term_type_admit, admit_term, term_enrolled))
 ```
 
 ```{r}
 #| label: create-variables
 
-new_vars_df <- final_term_df |>
+new_vars_df <- clean_term_df |>
   mutate(
     is_SU = if_else(final_grade %in% c("S", "U"), 1, 0),
-    has_BS = if_else(
-      str_ends(first_major, "BS") | 
-        str_ends(second_major, "BS"), 
-      1, 0
+    timeperiod = case_when(
+      term_year_enrolled < 2020 ~ "pre_covid",
+      term_year_enrolled == 2020 & term_type_enrolled < "Spring" ~ "pre_covid",
+      term_year_enrolled > 2022 ~ "post_covid",
+      term_year_enrolled == 2022 & term_year_enrolled < "Fall" ~ "dur_covid",
+      TRUE ~ "dur_covid"
     ),
-    pre_covid = if_else(
-      term_enrolled_index < 2020.2,
-      1, 0
-    ),
-    post_covid = if_else(
-      term_enrolled_index > 2022.5,
-      1, 0
-    ),
-    covid = if_else(pre_covid == 0 & post_covid == 0, 1, 0)
-  )
-  
-new_vars_df <- new_vars_df |>
-  group_by(term_enrolled_index, class_nbr_rev) |>
+    num_plans = rowSums(
+      !is.na(pick(first_major, second_major,
+                  first_minor, second_minor,
+                  first_certificate, second_certificate))
+    )
+  ) |>
+  group_by(term_year_enrolled, class_nbr_rev) |>
   mutate(total_students_in_course = if_else(
     is.na(class_nbr_rev), 
     as.numeric(NA),
     n_distinct(masked_student_ID))
   ) |>
   ungroup()
+
+student_BS <- new_vars_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    has_BS = as.integer(
+      any(str_ends(first_major, "BS") |
+            str_ends(second_major, "BS2"))
+    ),
+    .groups = "drop"
+  )
+
+new_vars_df <- new_vars_df |>
+  left_join(student_BS, by = "masked_student_ID")
+```
+
+```{r}
+# variable for, are the academic programs in diff divisions?
+
+unique_plans <- combined_df |>
+    select(first_major_descr, second_major_descr,
+           first_minor_desc, second_minor_desc,
+           first_certificate_desc, second_certificate_desc) |>
+    pivot_longer(everything(), values_to = "plan") |>
+    distinct(plan) |>
+    filter(!is.na(plan)) |>
+    arrange(plan)
+
+
+#step 1, classify everything into the divisions
+#step 2, variable creation...
+#before dropping, can we plot the change in number of/prop of students choosing to have a certif etc
+# can we plot proportion of majors in ___ departments
+
+```
+
+```{r}
+#could chose to drop second certificate etc now
 ```
 
 ```{r}
@@ -318,18 +351,17 @@ grade_points <- c(
 # One row per student per semester
 semGPA_df <- new_vars_df |>
   mutate(
-    grade_points = grade_points[final_grade],
-    term_decimal = term_enrolled_index %% 1
+    grade_points = grade_points[final_grade]
   ) |>
-  filter(term_decimal %in% c(0.2, 0.6)) |> # only spring and fall
-  group_by(masked_student_ID, term_enrolled_index) |>
+  filter(term_type_enrolled %in% c("Spring", "Fall")) |> 
+  group_by(masked_student_ID, term_year_enrolled, term_type_enrolled) |>
   summarize(
     semGPA = mean(grade_points, na.rm = TRUE),
     .groups = "drop"
   )
 
 prevGPA_df <- semGPA_df |>
-  arrange(masked_student_ID, term_enrolled_index) |>
+  arrange(masked_student_ID, term_year_enrolled, term_type_enrolled) |>
   group_by(masked_student_ID) |>
   mutate(prev_semGPA = lag(semGPA)) |>
   ungroup()
@@ -337,17 +369,21 @@ prevGPA_df <- semGPA_df |>
 final_df <- new_vars_df |>
   left_join(
     prevGPA_df |> 
-      select(masked_student_ID, term_enrolled_index, prev_semGPA),
-    by = c("masked_student_ID", "term_enrolled_index")
+      select(masked_student_ID, term_year_enrolled, term_type_enrolled, prev_semGPA),
+    by = c("masked_student_ID", "term_year_enrolled", "term_type_enrolled")
   )
 ```
 
-Transfer students? Drop outs? Early grad? Variable for \# of overloads or \# of credits?
+```{r}
+glimpse(final_df)
+```
+
+Transfer students? Drop outs? Early grad? Variable for \# of overloads or \# of credits? switching pratt/trinity?
 
 Data dictionary
 
 | Variable name | Type | Description |
-|------------------|------------------|------------------------------------|
+|------------------|------------------|-----------------------------------|
 | masked_student_ID | numerical |  |
 | student_acad_prog |  |  |
 | first_major |  | final values at graduation, may not reflect values at time of taking course |
@@ -370,59 +406,64 @@ Data dictionary
 #| label: eda-enrollment
 
 plot_df <- final_df |>
-  group_by(term_enrolled_index) |>
+  group_by(term_year_enrolled) |>
   summarise(
     n_students = n_distinct(masked_student_ID),
     .groups = "drop"
   ) |>
-  arrange(term_enrolled_index)
+  arrange(term_year_enrolled)
 
-ggplot(plot_df, aes(x = factor(term_enrolled_index), y = n_students)) +
+ggplot(plot_df, 
+       aes(x = term_year_enrolled, y = n_students)
+      ) +
   geom_col() +
   labs(
-    title = "Number of Students per Term",
-    x = "Term Enrolled",
-    y = "Number of Students"
+    title = "Number of Students per Year",
+    x = "Year Enrolled",
+    y = "Number of Students",
   ) +
   theme_minimal()
-
 ```
 
 ```{r}
 #| label: eda-su
 
 prop_df <- final_df |>
-  group_by(term_enrolled_index) |>
+  group_by(term_year_enrolled) |>
   summarise(prop_passfail = mean(is_SU), .groups = "drop") |>
-  mutate(highlight = if_else(term_enrolled_index == 2020.2, "highlight", "other"))
+  mutate(highlight = if_else(term_year_enrolled == 2020, "highlight", "other"))
 
 count_df <- final_df |>
-  group_by(term_enrolled_index) |>
+  group_by(term_year_enrolled) |>
   summarise(
   passfail_count = sum(is_SU),
   total = n(),
     .groups = "drop"
   ) |>
-  mutate(highlight = if_else(term_enrolled_index == 2020.2, "highlight", "other"))
+  mutate(highlight = if_else(term_year_enrolled == 2020, "highlight", "other"))
 
-ggplot(prop_df, aes(x = term_enrolled_index, y = prop_passfail)) +
+ggplot(prop_df, 
+       aes(x = term_year_enrolled, y = prop_passfail, fill = highlight)
+      ) +
   geom_col() +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
   labs(
-    title = "Proportion of S/U Grades by Term",
-    x = "Term Enrolled",
+    title = "Proportion of S/U Grades by Year",
+    x = "Year Enrolled",
     y = "Proportion (S/U)"
   ) +
   theme_minimal() +
   theme(legend.position = "none")
 
-ggplot(count_df, aes(x = term_enrolled_index, y = passfail_count)) +
+ggplot(count_df, 
+       aes(x = term_year_enrolled, y = passfail_count, fill = highlight)
+      ) +
   geom_col() +
   scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
   labs(
-    title = "Count of S/U Grades by Term",
-    x = "Term Enrolled",
+    title = "Count of S/U Grades by Year",
+    x = "Year Enrolled",
     y = "Count (S/U)"
   ) +
   theme_minimal() +
@@ -432,19 +473,101 @@ ggplot(count_df, aes(x = term_enrolled_index, y = passfail_count)) +
 ```{r}
 #| label: eda-grade-dist
 
+grade_order <- c("A", "B", "C", "S", "D", "AD", "No Credit")
 grade_prop <- final_df |>
-  group_by(term_enrolled_index, final_grade) |>
+  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "P", "I", "CR")) |>
+  mutate(
+    final_grade = case_when(
+      final_grade %in% c("A+", "A", "A-") ~ "A",
+      final_grade %in% c("B+", "B", "B-") ~ "B",
+      final_grade %in% c("C+", "C", "C-") ~ "C",
+      final_grade %in% c("D+", "D", "D-") ~ "D",
+      final_grade %in% c("F", "I", "U", "W") ~ "No Credit",
+      TRUE ~ final_grade
+    ),
+    final_grade = factor(
+      final_grade,
+      levels = grade_order,
+      ordered = TRUE,
+    )
+  ) |>
+  group_by(term_year_enrolled, final_grade) |>
   summarise(count = n(), .groups = "drop_last") |>
   mutate(prop = count / sum(count))
 
-ggplot(grade_prop, aes(x = term_enrolled_index, y = prop, fill = final_grade)) +
+ggplot(grade_prop, aes(x = term_year_enrolled, y = prop, fill = final_grade)) +
   geom_col(position = "fill") +
   scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis(discrete = TRUE) +
   labs(
-    title = "Distribution of Grades by Term",
-    x = "Term Enrolled",
+    title = "Distribution of Grades by Year",
+    x = "Year Enrolled",
     y = "Proportion of Grades",
-    fill = "Grade"
+    fill = "Grade Group",
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: eda-division
+
+division_order <- c("Natural Sciences", "Arts & Humanities", 
+                    "Social Sciences", "WRITING", "Other")
+
+final_df |>
+  group_by(term_year_enrolled, division_of_course) |>
+  summarise(
+    n_students = n_distinct(masked_student_ID),
+    .groups = "drop"
+  ) |>
+  group_by(term_year_enrolled) |>
+  mutate(
+    prop_students = n_students / sum(n_students)
+  ) |>
+  ungroup() |>
+  mutate(
+    division_of_course = factor(division_of_course, levels = division_order)
+  ) |>
+  ggplot(aes(x = term_year_enrolled,
+                            y = prop_students,
+                            fill = division_of_course)) +
+  geom_col() +  # stacked columns
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis_d() +
+  labs(
+    title = "Proportion of Students by Division Over Years",
+    x = "Year Enrolled",
+    y = "Proportion of Students",
+    fill = "Division"
+  ) +
+  theme_minimal()
+
+final_df |>
+  group_by(term_year_enrolled, division_of_course) |>
+  summarise(
+    n_SU = sum(final_grade %in% c("S", "U")),
+    n_courses = n(),
+    .groups = "drop"
+  ) |>
+  group_by(term_year_enrolled) |>
+  mutate(
+    prop_SU_division = n_SU / sum(n_SU)  # proportion of S/U courses per division for that year
+  ) |>
+  ungroup() |>
+  mutate(
+    division_of_course = factor(division_of_course, levels = division_order)
+  ) |>
+  ggplot(aes(x = term_year_enrolled,
+                          y = prop_SU_division,
+                          fill = division_of_course)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis_d() +
+  labs(
+    title = "Proportion of S/U Courses by Division Over Years",
+    x = "Year Enrolled",
+    y = "Proportion of S/U Courses",
+    fill = "Division"
   ) +
   theme_minimal()
 ```
@@ -453,12 +576,12 @@ ggplot(grade_prop, aes(x = term_enrolled_index, y = prop, fill = final_grade)) +
 #| label: eda-gpa
 
 prevGPA_df |>
-  group_by(term_enrolled_index) |>
+  group_by(term_year_enrolled) |>
   summarise(
     avg_semGPA = mean(semGPA, na.rm = TRUE),
     .groups = "drop"
   ) |>
-  ggplot(aes(x = term_enrolled_index, y = avg_semGPA)) +
+  ggplot(aes(x = term_year_enrolled, y = avg_semGPA)) +
   geom_line() +
   labs(
     title = "Average Semester GPA Over Time",
@@ -469,7 +592,13 @@ prevGPA_df |>
 ```
 
 ```{r}
-model <- glm(is_SU ~ term_enrolled_index + catalog_level + division_of_course + class_component + student_acad_prog, 
+model <- glm(is_SU ~ term_year_enrolled + term_type_enrolled + catalog_level + division_of_course + class_component + student_acad_prog + has_BS + timeperiod, 
              data = final_df, family = binomial)
 summary(model)
 ```
+
+Need to check to see if GPA, timeperiod, etc were created accurately
+
+has_BS is NA when firstmajor is NA...
+
+(GPA has NaN and 0s sometimes...)
