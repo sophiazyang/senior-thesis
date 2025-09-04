@@ -128,147 +128,244 @@ clean_df <- combined_df |>
 #| label: term-codes
 
 term_lookup <- tribble(
-  ~term_number,  ~term_year,  ~term_type,
-  0010,          1965,        "Prior Terms",
-  0120,          1984,        "Summer 1",
-  0280,          1992,        "Spring",
-  0320,          1992,        "Fall",
-  0500,          1995,        "Fall",
-  0620,          1997,        "Fall",
-  0680,          1998,        "Fall",
-  0740,          1999,        "Fall",
-  0800,          2000,        "Fall",
-  0905,          2002,        "Summer 2",
-  0920,          2002,        "Fall",
-  0980,          2003,        "Fall",
-  1040,          2004,        "Fall",
-  1115,          2005,        "Fall",
-  1165,          2006,        "Summer 2",
-  1180,          2006,        "Fall",
-  1220,          2007,        "Fall",
-  1230,          2008,        "Spring",
-  1245,          2008,        "Summer 1",
-  1250,          2008,        "Summer 2",
-  1260,          2008,        "Fall",
-  1270,          2009,        "Spring",
-  1280,          2009,        "Summer Full",
-  1285,          2009,        "Summer 1",
-  1290,          2009,        "Summer 2",
-  1300,          2009,        "Fall",
-  1310,          2010,        "Spring",
-  1325,          2010,        "Summer 1",
-  1330,          2010,        "Summer 2",
-  1340,          2010,        "Fall",
-  1350,          2011,        "Spring",
-  1365,          2011,        "Summer 1",
-  1370,          2011,        "Summer 2",
-  1380,          2011,        "Fall",
-  1390,          2012,        "Spring",
-  1400,          2012,        "Summer Full",
-  1405,          2012,        "Summer 1",
-  1410,          2012,        "Summer 2",
-  1420,          2012,        "Fall",
-  1425,          2013,        "Winter",
-  1430,          2013,        "Spring",
-  1440,          2013,        "Summer Full",
-  1445,          2013,        "Summer 1",
-  1450,          2013,        "Summer 2",
-  1460,          2013,        "Fall",
-  1465,          2014,        "Winter",
-  1470,          2014,        "Spring",
-  1480,          2014,        "Summer Full",
-  1485,          2014,        "Summer 1",
-  1490,          2014,        "Summer 2",
-  1500,          2014,        "Fall",
-  1505,          2015,        "Winter",
-  1510,          2015,        "Spring",
-  1520,          2015,        "Summer Full",
-  1525,          2015,        "Summer 1",
-  1530,          2015,        "Summer 2",
-  1540,          2015,        "Fall",
-  1545,          2016,        "Winter",
-  1550,          2016,        "Spring",
-  1565,          2016,        "Summer 1",
-  1570,          2016,        "Summer 2",
-  1580,          2016,        "Fall",
-  1585,          2017,        "Winter",
-  1590,          2017,        "Spring",
-  1605,          2017,        "Summer 1",
-  1610,          2017,        "Summer 2",
-  1620,          2017,        "Fall",
-  1625,          2018,        "Winter",
-  1630,          2018,        "Spring",
-  1645,          2018,        "Summer 1",
-  1650,          2018,        "Summer 2",
-  1660,          2018,        "Fall",
-  1665,          2019,        "Winter",
-  1670,          2019,        "Spring",
-  1685,          2019,        "Summer 1",
-  1690,          2019,        "Summer 2",
-  1700,          2019,        "Fall",
-  1705,          2020,        "Winter",
-  1710,          2020,        "Spring",
-  1725,          2020,        "Summer 1",
-  1730,          2020,        "Summer 2",
-  1740,          2020,        "Fall",
-  1745,          2021,        "Winter",
-  1750,          2021,        "Spring",
-  1765,          2021,        "Summer 1",
-  1770,          2021,        "Summer 2",
-  1780,          2021,        "Fall",
-  1785,          2022,        "Winter",
-  1790,          2022,        "Spring",
-  1805,          2022,        "Summer 1",
-  1810,          2022,        "Summer 2",
-  1820,          2022,        "Fall",
-  1825,          2023,        "Winter",
-  1830,          2023,        "Spring",
-  1845,          2023,        "Summer 1",
-  1850,          2023,        "Summer 2",
-  1860,          2023,        "Fall",
-  1865,          2024,        "Winter",
-  1870,          2024,        "Spring",
-  1885,          2024,        "Summer 1",
-  1890,          2024,        "Summer 2",
-  1900,          2024,        "Fall",
-  1905,          2025,        "Winter",
-  1910,          2025,        "Spring"
+  ~term_number, ~academic_term,     ~academic_year,
+  0010,         "Prior Terms",      NA,
+  0120,         "Summer 1 1984",    "1983-1984",
+  0280,         "Spring 1992",      "1991-1992",
+  0320,         "Fall 1992",        "1992-1993",
+  0500,         "Fall 1995",        "1995-1996",
+  0620,         "Fall 1997",        "1997-1998",
+  0680,         "Fall 1998",        "1998-1999",
+  0740,         "Fall 1999",        "1999-2000",
+  0800,         "Fall 2000",        "2000-2001",
+  0905,         "Summer 2 2002",    "2002-2003",
+  0920,         "Fall 2002",        "2002-2003",
+  0980,         "Fall 2003",        "2003-2004",
+  1040,         "Fall 2004",        "2004-2005",
+  1115,         "Fall 2005",        "2005-2006",
+  1165,         "Summer 2 2006",    "2006-2007",
+  1180,         "Fall 2006",        "2006-2007",
+  1220,         "Fall 2007",        "2007-2008",
+  1230,         "Spring 2008",      "2007-2008",
+  1245,         "Summer 1 2008",    "2007-2008",
+  1250,         "Summer 2 2008",    "2008-2009",
+  1260,         "Fall 2008",        "2008-2009",
+  1270,         "Spring 2009",      "2008-2009",
+  1280,         "Summer Full 2009", "2008-2009",
+  1285,         "Summer 1 2009",    "2008-2009",
+  1290,         "Summer 2 2009",    "2009-2010",
+  1300,         "Fall 2009",        "2000-2010",
+  1310,         "Spring 2010",      "2009-2010",
+  1325,         "Summer 1 2010",    "2009-2010",
+  1330,         "Summer 2 2010",    "2010-2011",
+  1340,         "Fall 2010",        "2010-2011",
+  1350,         "Spring 2011",      "2010-2011",
+  1360,         "Summer Full 2011", "2010-2011",
+  1365,         "Summer 1 2011",    "2010-2011",
+  1370,         "Summer 2 2011",    "2011-2012",
+  1380,         "Fall 2011",        "2011-2012",
+  1390,         "Spring 2012",      "2011-2012",
+  1400,         "Summer Full 2012", "2011-2012",
+  1405,         "Summer 1 2012",    "2011-2012",
+  1410,         "Summer 2 2012",    "2012-2013",
+  1420,         "Fall 2012",        "2012-2013",
+  1425,         "Winter 2013",      "2012-2013",
+  1430,         "Spring 2013",      "2012-2013",
+  1440,         "Summer Full 2013", "2012-2013",
+  1445,         "Summer 1 2013",    "2012-2013",
+  1450,         "Summer 2 2013",    "2013-2014",
+  1460,         "Fall 2013",        "2013-2014",
+  1465,         "Winter 2014",      "2013-2014",
+  1470,         "Spring 2014",      "2013-2014",
+  1480,         "Summer Full 2014", "2013-2014",
+  1485,         "Summer 1 2014",    "2013-2014",
+  1490,         "Summer 2 2014",    "2014-2015",
+  1500,         "Fall 2014",        "2014-2015",
+  1510,         "Spring 2015",      "2014-2015",
+  1520,         "Summer Full 2015", "2014-2015",
+  1525,         "Summer 1 2015",    "2014-2015",
+  1530,         "Summer 2 2015",    "2015-2016",
+  1540,         "Fall 2015",        "2015-2016",
+  1545,         "Winter 2016",      "2015-2016",
+  1550,         "Spring 2016",      "2015-2016",
+  1565,         "Summer 1 2016",    "2015-2016",
+  1570,         "Summer 2 2016",    "2016-2017",
+  1580,         "Fall 2016",        "2016-2017",
+  1585,         "Winter 2017",      "2016-2017",
+  1590,         "Spring 2017",      "2016-2017",
+  1605,         "Summer 1 2017",    "2016-2017",
+  1610,         "Summer 2 2017",    "2017-2018",
+  1620,         "Fall 2017",        "2017-2018",
+  1625,         "Winter 2018",      "2017-2018",
+  1630,         "Spring 2018",      "2017-2018",
+  1645,         "Summer 1 2018",    "2017-2018",
+  1650,         "Summer 2 2018",    "2018-2019",
+  1660,         "Fall 2018",        "2018-2019",
+  1665,         "Winter 2019",      "2018-2019",
+  1670,         "Spring 2019",      "2018-2019",
+  1685,         "Summer 1 2019",    "2018-2019",
+  1690,         "Summer 2 2019",    "2019-2020",
+  1700,         "Fall 2019",        "2019-2020",
+  1705,         "Winter 2020",      "2019-2020",
+  1710,         "Spring 2020",      "2019-2020",
+  1725,         "Summer 1 2020",    "2019-2020",
+  1730,         "Summer 2 2020",    "2020-2021",
+  1740,         "Fall 2020",        "2020-2021",
+  1745,         "Winter 2021",      "2020-2021",
+  1750,         "Spring 2021",      "2020-2021",
+  1765,         "Summer 1 2021",    "2020-2021",
+  1770,         "Summer 2 2021",    "2021-2022",
+  1780,         "Fall 2021",        "2021-2022",
+  1785,         "Winter 2022",      "2021-2022",
+  1790,         "Spring 2022",      "2021-2022",
+  1805,         "Summer 1 2022",    "2021-2022",
+  1810,         "Summer 2 2022",    "2022-2023",
+  1820,         "Fall 2022",        "2022-2023",
+  1825,         "Winter 2023",      "2022-2023",
+  1830,         "Spring 2023",      "2022-2023",
+  1845,         "Summer 1 2023",    "2022-2023",
+  1850,         "Summer 2 2023",    "2023-2024",
+  1860,         "Fall 2023",        "2023-2024",
+  1865,         "Winter 2024",      "2023-2024",
+  1870,         "Spring 2024",      "2023-2024",
+  1885,         "Summer 1 2024",    "2023-2024",
+  1890,         "Summer 2 2024",    "2024-2025",
+  1900,         "Fall 2024",        "2024-2025",
+  1905,         "Winter 2025",      "2024-2025",
+  1910,         "Spring 2025",      "2024-2025"
 )
 
 term_levels <- c(
-  "Prior Terms",
-  "Winter",
-  "Spring",
-  "Summer Full",
-  "Summer 1",
-  "Summer 2",
-  "Fall"
+  "Prior Terms", 
+  "Summer 1 1984",
+  "Spring 1992",
+  "Fall 1992",
+  "Fall 1995",
+  "Fall 1997",
+  "Fall 1998",
+  "Fall 1999",
+  "Fall 2000",
+  "Summer 2 2002",
+  "Fall 2002",
+  "Fall 2003",
+  "Fall 2004",
+  "Fall 2005",
+  "Summer 2 2006",
+  "Fall 2006",
+  "Fall 2007",
+  "Spring 2008",
+  "Summer 1 2008",
+  "Summer 2 2008",
+  "Fall 2008",
+  "Spring 2009",
+  "Summer Full 2009",
+  "Summer 1 2009",
+  "Summer 2 2009",
+  "Fall 2009",
+  "Spring 2010",
+  "Summer 1 2010",
+  "Summer 2 2010",
+  "Fall 2010",
+  "Spring 2011",
+  "Summer Full 2011",
+  "Summer 1 2011",
+  "Summer 2 2011",
+  "Fall 2011",
+  "Spring 2012",
+  "Summer Full 2012",
+  "Summer 1 2012",
+  "Summer 2 2012",
+  "Fall 2012",
+  "Winter 2013",
+  "Spring 2013",
+  "Summer Full 2013",
+  "Summer 1 2013",
+  "Summer 2 2013",
+  "Fall 2013",
+  "Winter 2014",
+  "Spring 2014",
+  "Summer Full 2014",
+  "Summer 1 2014",
+  "Summer 2 2014",
+  "Fall 2014",
+  "Spring 2015",
+  "Summer Full 2015",
+  "Summer 1 2015",
+  "Summer 2 2015",
+  "Fall 2015",
+  "Winter 2016",
+  "Spring 2016",
+  "Summer 1 2016",
+  "Summer 2 2016",
+  "Fall 2016",
+  "Winter 2017",
+  "Spring 2017",
+  "Summer 1 2017",
+  "Summer 2 2017",
+  "Fall 2017",
+  "Winter 2018",
+  "Spring 2018",
+  "Summer 1 2018",
+  "Summer 2 2018",
+  "Fall 2018",
+  "Winter 2019",
+  "Spring 2019",
+  "Summer 1 2019",
+  "Summer 2 2019",
+  "Fall 2019",
+  "Winter 2020",
+  "Spring 2020",
+  "Summer 1 2020",
+  "Summer 2 2020",
+  "Fall 2020",
+  "Winter 2021",
+  "Spring 2021",
+  "Summer 1 2021",
+  "Summer 2 2021",
+  "Fall 2021",
+  "Winter 2022",
+  "Spring 2022",
+  "Summer 1 2022",
+  "Summer 2 2022",
+  "Fall 2022",
+  "Winter 2023",
+  "Spring 2023",
+  "Summer 1 2023",
+  "Summer 2 2023",
+  "Fall 2023",
+  "Winter 2024",
+  "Spring 2024",
+  "Summer 1 2024",
+  "Summer 2 2024",
+  "Fall 2024",
+  "Winter 2025",
+  "Spring 2025"
 )
 
 clean_term_df <- clean_df |>
   left_join(
     term_lookup |> rename(
-      term_year_enrolled = term_year,
-      term_type_enrolled = term_type
+      term_year_enrolled = academic_year,
+      term_enrolled_new = academic_term
     ),
     by = c("term_enrolled" = "term_number")
   ) |>
   left_join(
     term_lookup |> rename(
-      term_year_admit = term_year,
-      term_type_admit = term_type
+      term_year_admit = academic_year,
+      term_admit = academic_term
     ),
     by = c("admit_term" = "term_number")
   ) |>
   mutate(
-    term_type_enrolled = factor(term_type_enrolled,
+    term_enrolled = factor(term_enrolled_new,
                                 levels = term_levels,
                                 ordered = TRUE),
-    term_type_admit = factor(term_type_admit,
+    term_admit = factor(term_admit,
                              levels = term_levels,
                              ordered = TRUE)
   ) |>
-  select(-c(admit_term, term_enrolled))
+  select(-c(admit_term, term_enrolled_new))
 
 ```
 
@@ -279,10 +376,8 @@ new_vars_df <- clean_term_df |>
   mutate(
     is_SU = if_else(final_grade %in% c("S", "U"), 1, 0),
     timeperiod = case_when(
-      term_year_enrolled < 2020 ~ "pre_covid",
-      term_year_enrolled == 2020 & term_type_enrolled < "Spring" ~ "pre_covid",
-      term_year_enrolled > 2022 ~ "post_covid",
-      term_year_enrolled == 2022 & term_year_enrolled < "Fall" ~ "dur_covid",
+      term_enrolled < "Spring 2020" ~ "pre_covid",
+      term_enrolled > "Summer 2 2022" ~ "post_covid",
       TRUE ~ "dur_covid"
     ),
     num_plans = rowSums(
@@ -291,7 +386,7 @@ new_vars_df <- clean_term_df |>
                   first_certificate, second_certificate))
     )
   ) |>
-  group_by(term_year_enrolled, class_nbr_rev) |>
+  group_by(term_enrolled, class_nbr_rev) |>
   mutate(total_students_in_course = if_else(
     is.na(class_nbr_rev), 
     as.numeric(NA),
@@ -353,15 +448,16 @@ semGPA_df <- new_vars_df |>
   mutate(
     grade_points = grade_points[final_grade]
   ) |>
-  filter(term_type_enrolled %in% c("Spring", "Fall")) |> 
-  group_by(masked_student_ID, term_year_enrolled, term_type_enrolled) |>
+  filter(str_starts(term_enrolled, "Spring") | 
+         str_starts(term_enrolled, "Fall")) |> 
+  group_by(masked_student_ID, term_enrolled) |>
   summarize(
     semGPA = mean(grade_points, na.rm = TRUE),
     .groups = "drop"
   )
 
 prevGPA_df <- semGPA_df |>
-  arrange(masked_student_ID, term_year_enrolled, term_type_enrolled) |>
+  arrange(masked_student_ID, term_enrolled) |>
   group_by(masked_student_ID) |>
   mutate(prev_semGPA = lag(semGPA)) |>
   ungroup()
@@ -369,8 +465,8 @@ prevGPA_df <- semGPA_df |>
 final_df <- new_vars_df |>
   left_join(
     prevGPA_df |> 
-      select(masked_student_ID, term_year_enrolled, term_type_enrolled, prev_semGPA),
-    by = c("masked_student_ID", "term_year_enrolled", "term_type_enrolled")
+      select(masked_student_ID, term_enrolled, prev_semGPA),
+    by = c("masked_student_ID", "term_enrolled")
   )
 ```
 
@@ -383,7 +479,7 @@ Transfer students? Drop outs? Early grad? Variable for \# of overloads or \# of 
 Data dictionary
 
 | Variable name | Type | Description |
-|------------------|------------------|-----------------------------------|
+|-------------------|-------------------|-----------------------------------|
 | masked_student_ID | numerical |  |
 | student_acad_prog |  |  |
 | first_major |  | final values at graduation, may not reflect values at time of taking course |
@@ -406,20 +502,20 @@ Data dictionary
 #| label: eda-enrollment
 
 plot_df <- final_df |>
-  group_by(term_year_enrolled) |>
+  group_by(term_enrolled) |>
   summarise(
     n_students = n_distinct(masked_student_ID),
     .groups = "drop"
   ) |>
-  arrange(term_year_enrolled)
+  arrange(term_enrolled)
 
 ggplot(plot_df, 
-       aes(x = term_year_enrolled, y = n_students)
+       aes(x = term_enrolled, y = n_students)
       ) +
   geom_col() +
   labs(
-    title = "Number of Students per Year",
-    x = "Year Enrolled",
+    title = "Number of Students per Term",
+    x = "Term Enrolled",
     y = "Number of Students",
   ) +
   theme_minimal()
@@ -429,41 +525,41 @@ ggplot(plot_df,
 #| label: eda-su
 
 prop_df <- final_df |>
-  group_by(term_year_enrolled) |>
+  group_by(term_enrolled) |>
   summarise(prop_passfail = mean(is_SU), .groups = "drop") |>
-  mutate(highlight = if_else(term_year_enrolled == 2020, "highlight", "other"))
+  mutate(highlight = if_else(term_enrolled == "Spring 2020", "highlight", "other"))
 
 count_df <- final_df |>
-  group_by(term_year_enrolled) |>
+  group_by(term_enrolled) |>
   summarise(
   passfail_count = sum(is_SU),
   total = n(),
     .groups = "drop"
   ) |>
-  mutate(highlight = if_else(term_year_enrolled == 2020, "highlight", "other"))
+  mutate(highlight = if_else(term_enrolled == "Spring 2020", "highlight", "other"))
 
 ggplot(prop_df, 
-       aes(x = term_year_enrolled, y = prop_passfail, fill = highlight)
+       aes(x = term_enrolled, y = prop_passfail, fill = highlight)
       ) +
   geom_col() +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
   labs(
-    title = "Proportion of S/U Grades by Year",
-    x = "Year Enrolled",
+    title = "Proportion of S/U Grades by Term",
+    x = "Term Enrolled",
     y = "Proportion (S/U)"
   ) +
   theme_minimal() +
   theme(legend.position = "none")
 
 ggplot(count_df, 
-       aes(x = term_year_enrolled, y = passfail_count, fill = highlight)
+       aes(x = term_enrolled, y = passfail_count, fill = highlight)
       ) +
   geom_col() +
   scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
   labs(
-    title = "Count of S/U Grades by Year",
-    x = "Year Enrolled",
+    title = "Count of S/U Grades by Term",
+    x = "Term Enrolled",
     y = "Count (S/U)"
   ) +
   theme_minimal() +
@@ -491,17 +587,17 @@ grade_prop <- final_df |>
       ordered = TRUE,
     )
   ) |>
-  group_by(term_year_enrolled, final_grade) |>
+  group_by(term_enrolled, final_grade) |>
   summarise(count = n(), .groups = "drop_last") |>
   mutate(prop = count / sum(count))
 
-ggplot(grade_prop, aes(x = term_year_enrolled, y = prop, fill = final_grade)) +
+ggplot(grade_prop, aes(x = term_enrolled, y = prop, fill = final_grade)) +
   geom_col(position = "fill") +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_fill_viridis(discrete = TRUE) +
   labs(
-    title = "Distribution of Grades by Year",
-    x = "Year Enrolled",
+    title = "Distribution of Grades by Term",
+    x = "Term Enrolled",
     y = "Proportion of Grades",
     fill = "Grade Group",
   ) +
@@ -515,12 +611,12 @@ division_order <- c("Natural Sciences", "Arts & Humanities",
                     "Social Sciences", "WRITING", "Other")
 
 final_df |>
-  group_by(term_year_enrolled, division_of_course) |>
+  group_by(term_enrolled, division_of_course) |>
   summarise(
     n_students = n_distinct(masked_student_ID),
     .groups = "drop"
   ) |>
-  group_by(term_year_enrolled) |>
+  group_by(term_enrolled) |>
   mutate(
     prop_students = n_students / sum(n_students)
   ) |>
@@ -528,28 +624,30 @@ final_df |>
   mutate(
     division_of_course = factor(division_of_course, levels = division_order)
   ) |>
-  ggplot(aes(x = term_year_enrolled,
-                            y = prop_students,
-                            fill = division_of_course)) +
-  geom_col() +  # stacked columns
+  ggplot(aes(
+    x = term_enrolled, 
+    y = prop_students,
+    fill = division_of_course
+  )) +
+  geom_col() +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_fill_viridis_d() +
   labs(
-    title = "Proportion of Students by Division Over Years",
-    x = "Year Enrolled",
+    title = "Proportion of Students by Division Over Terms",
+    x = "Term Enrolled",
     y = "Proportion of Students",
     fill = "Division"
   ) +
   theme_minimal()
 
 final_df |>
-  group_by(term_year_enrolled, division_of_course) |>
+  group_by(term_enrolled, division_of_course) |>
   summarise(
     n_SU = sum(final_grade %in% c("S", "U")),
     n_courses = n(),
     .groups = "drop"
   ) |>
-  group_by(term_year_enrolled) |>
+  group_by(term_enrolled) |>
   mutate(
     prop_SU_division = n_SU / sum(n_SU)  # proportion of S/U courses per division for that year
   ) |>
@@ -557,15 +655,15 @@ final_df |>
   mutate(
     division_of_course = factor(division_of_course, levels = division_order)
   ) |>
-  ggplot(aes(x = term_year_enrolled,
+  ggplot(aes(x = term_enrolled,
                           y = prop_SU_division,
                           fill = division_of_course)) +
   geom_col() +
   scale_y_continuous(labels = scales::percent_format()) +
   scale_fill_viridis_d() +
   labs(
-    title = "Proportion of S/U Courses by Division Over Years",
-    x = "Year Enrolled",
+    title = "Proportion of S/U Courses by Division Over Terms",
+    x = "Term Enrolled",
     y = "Proportion of S/U Courses",
     fill = "Division"
   ) +
@@ -576,12 +674,12 @@ final_df |>
 #| label: eda-gpa
 
 prevGPA_df |>
-  group_by(term_year_enrolled) |>
+  group_by(term_enrolled) |>
   summarise(
     avg_semGPA = mean(semGPA, na.rm = TRUE),
     .groups = "drop"
   ) |>
-  ggplot(aes(x = term_year_enrolled, y = avg_semGPA)) +
+  ggplot(aes(x = term_enrolled, y = avg_semGPA)) +
   geom_line() +
   labs(
     title = "Average Semester GPA Over Time",
@@ -592,7 +690,7 @@ prevGPA_df |>
 ```
 
 ```{r}
-model <- glm(is_SU ~ term_year_enrolled + term_type_enrolled + catalog_level + division_of_course + class_component + student_acad_prog + has_BS + timeperiod, 
+model <- glm(is_SU ~ term_enrolled + catalog_level + division_of_course + class_component + student_acad_prog + has_BS + timeperiod, 
              data = final_df, family = binomial)
 summary(model)
 ```
