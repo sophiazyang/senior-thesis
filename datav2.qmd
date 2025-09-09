@@ -1,0 +1,903 @@
+---
+title: "Data Playground"
+format: pdf
+editor: visual
+author: Sophia Yang
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(readxl)
+library(tidyverse)
+library(viridis)
+```
+
+## Load Data
+
+```{r}
+#| label: load-data
+
+file1 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sophia/exported data for project, terms 1080 to 1570 V2.xlsx", 
+                    guess_max = 1000000)
+
+file2 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sophia/exported data for project, terms 1580 and forward V2.xlsx", 
+                    guess_max = 10000)
+
+combined_df <- rbind(file1, file2)
+
+
+glimpse(combined_df)
+```
+
+## Data Notes
+
+-   There are `{r} n_distinct(combined_df$masked_student_ID)` distinct students.
+
+-   The dataset contains data from Fall 2006 (Term `{r} min(combined_df$term_enrolled)`) to Spring 2025 (Term `{r} max(combined_df$term_enrolled)`).
+
+-   The suffix "U" for `student_acad_prog` represents "undeclared". This can already be obtained from looking at `first_major`.
+
+    ```{r}
+    #| label: undeclared-check
+
+    all(combined_df$student_acad_prog != "A&SU" |
+          is.na(combined_df$first_major))
+    all(combined_df$student_acad_prog != "E-UGU" |
+          is.na(combined_df$first_major))
+    ```
+
+-   All students in this dataset are undergraduates.
+
+    ```{r}
+    #| label: career-check
+
+    combined_df |> distinct(career)
+    ```
+
+-   I know what all values for `final_grade` mean.
+
+    ```{r}
+    #| label: final-grades
+
+    final_grades <- combined_df |>
+      count(final_grade) |>
+      mutate(prop = n / sum(n)) |>
+      arrange(n)
+    print(final_grades, n = Inf)
+    ```
+
+-   I know what all values for `class_component` mean.
+
+    ```{r}
+    #| label: class_component
+
+    class_components <- combined_df |>
+      count(class_component) |>
+      mutate(prop = n / sum(n)) |>
+      arrange(n)
+    print(class_components, n = Inf)
+    ```
+
+-   Course locations
+
+    ```{r}
+    #| label: class_location
+
+    class_location <- combined_df |>
+      count(location) |>
+      mutate(prop = n / sum(n)) |>
+      arrange(desc(n))
+    print(class_location, n = Inf)
+    ```
+
+-   Missingness prior to data cleaning:
+
+    ```{r}
+    #| label: missing-data-before
+
+    missing_summary <- combined_df |>
+      summarise(across(
+        everything(),
+        list(
+          n_missing = ~sum(is.na(.)),
+          prop_missing = ~mean(is.na(.))
+        ),
+        .names = "{.col}-{.fn}"
+      )) |>
+      pivot_longer(
+        everything(),
+        names_to = c("variable", ".value"),
+        names_sep = "-"
+      ) |>
+      arrange(desc(n_missing))
+              
+    print(missing_summary, n = Inf)
+    ```
+
+## Data Cleaning/Variable Creation
+
+```{r}
+#| label: clean-data
+
+clean_df <- combined_df |> 
+  mutate(
+    student_acad_prog = ifelse(str_starts(student_acad_prog, "A&S"), 
+                               "Trinity", "Pratt"),
+    term_enrolled = as.numeric(term_enrolled),
+    total_enrolled = Tot_Enrl,
+  ) |>
+  select(-c(career, course_crosslisted, class_nbr_rev, Tot_Enrl))
+```
+
+```{r}
+#| label: term-codes
+
+term_lookup <- tribble(
+  ~term_number, ~term_enrolled_new,  ~year_enrolled,
+  1180,         "Fall 2006",        "2006-2007",
+  1190,         "Spring 2007",      "2006-2007",
+  1200,         "Summer Full 2007", "2006-2007",
+  1205,         "Summer 1 2007",    "2006-2007",
+  1210,         "Summer 2 2007",    "2007-2008",
+  1220,         "Fall 2007",        "2007-2008",
+  1230,         "Spring 2008",      "2007-2008",
+  1240,         "Summer Full 2008", "2007-2008",
+  1245,         "Summer 1 2008",    "2007-2008",
+  1250,         "Summer 2 2008",    "2008-2009",
+  1260,         "Fall 2008",        "2008-2009",
+  1270,         "Spring 2009",      "2008-2009",
+  1280,         "Summer Full 2009", "2008-2009",
+  1285,         "Summer 1 2009",    "2008-2009",
+  1290,         "Summer 2 2009",    "2009-2010",
+  1300,         "Fall 2009",        "2009-2010",
+  1310,         "Spring 2010",      "2009-2010",
+  1320,         "Summer Full 2010", "2009-2010",
+  1325,         "Summer 1 2010",    "2009-2010",
+  1330,         "Summer 2 2010",    "2010-2011",
+  1340,         "Fall 2010",        "2010-2011",
+  1350,         "Spring 2011",      "2010-2011",
+  1360,         "Summer Full 2011", "2010-2011",
+  1365,         "Summer 1 2011",    "2010-2011",
+  1370,         "Summer 2 2011",    "2011-2012",
+  1380,         "Fall 2011",        "2011-2012",
+  1390,         "Spring 2012",      "2011-2012",
+  1400,         "Summer Full 2012", "2011-2012",
+  1405,         "Summer 1 2012",    "2011-2012",
+  1410,         "Summer 2 2012",    "2012-2013",
+  1420,         "Fall 2012",        "2012-2013",
+  1430,         "Spring 2013",      "2012-2013",
+  1440,         "Summer Full 2013", "2012-2013",
+  1445,         "Summer 1 2013",    "2012-2013",
+  1450,         "Summer 2 2013",    "2013-2014",
+  1460,         "Fall 2013",        "2013-2014",
+  1470,         "Spring 2014",      "2013-2014",
+  1480,         "Summer Full 2014", "2013-2014",
+  1485,         "Summer 1 2014",    "2013-2014",
+  1490,         "Summer 2 2014",    "2014-2015",
+  1500,         "Fall 2014",        "2014-2015",
+  1510,         "Spring 2015",      "2014-2015",
+  1520,         "Summer Full 2015", "2014-2015",
+  1525,         "Summer 1 2015",    "2014-2015",
+  1530,         "Summer 2 2015",    "2015-2016",
+  1540,         "Fall 2015",        "2015-2016",
+  1550,         "Spring 2016",      "2015-2016",
+  1565,         "Summer 1 2016",    "2015-2016",
+  1570,         "Summer 2 2016",    "2016-2017",
+  1580,         "Fall 2016",        "2016-2017",
+  1590,         "Spring 2017",      "2016-2017",
+  1605,         "Summer 1 2017",    "2016-2017",
+  1610,         "Summer 2 2017",    "2017-2018",
+  1620,         "Fall 2017",        "2017-2018",
+  1630,         "Spring 2018",      "2017-2018",
+  1645,         "Summer 1 2018",    "2017-2018",
+  1650,         "Summer 2 2018",    "2018-2019",
+  1660,         "Fall 2018",        "2018-2019",
+  1670,         "Spring 2019",      "2018-2019",
+  1685,         "Summer 1 2019",    "2018-2019",
+  1690,         "Summer 2 2019",    "2019-2020",
+  1700,         "Fall 2019",        "2019-2020",
+  1710,         "Spring 2020",      "2019-2020",
+  1725,         "Summer 1 2020",    "2019-2020",
+  1730,         "Summer 2 2020",    "2020-2021",
+  1740,         "Fall 2020",        "2020-2021",
+  1750,         "Spring 2021",      "2020-2021",
+  1765,         "Summer 1 2021",    "2020-2021",
+  1770,         "Summer 2 2021",    "2021-2022",
+  1780,         "Fall 2021",        "2021-2022",
+  1790,         "Spring 2022",      "2021-2022",
+  1805,         "Summer 1 2022",    "2021-2022",
+  1810,         "Summer 2 2022",    "2022-2023",
+  1820,         "Fall 2022",        "2022-2023",
+  1830,         "Spring 2023",      "2022-2023",
+  1845,         "Summer 1 2023",    "2022-2023",
+  1850,         "Summer 2 2023",    "2023-2024",
+  1860,         "Fall 2023",        "2023-2024",
+  1870,         "Spring 2024",      "2023-2024",
+  1885,         "Summer 1 2024",    "2023-2024",
+  1890,         "Summer 2 2024",    "2024-2025",
+  1900,         "Fall 2024",        "2024-2025",
+  1910,         "Spring 2025",      "2024-2025"
+)
+
+term_levels <- c(
+  "Fall 2006",
+  "Spring 2007",
+  "Summer Full 2007",
+  "Summer 1 2007",
+  "Summer 2 2007",
+  "Fall 2007",
+  "Spring 2008",
+  "Summer Full 2008",
+  "Summer 1 2008",
+  "Summer 2 2008",
+  "Fall 2008",
+  "Spring 2009",
+  "Summer Full 2009",
+  "Summer 1 2009",
+  "Summer 2 2009",
+  "Fall 2009",
+  "Spring 2010",
+  "Summer Full 2010",
+  "Summer 1 2010",
+  "Summer 2 2010",
+  "Fall 2010",
+  "Spring 2011",
+  "Summer Full 2011",
+  "Summer 1 2011",
+  "Summer 2 2011",
+  "Fall 2011",
+  "Spring 2012",
+  "Summer Full 2012",
+  "Summer 1 2012",
+  "Summer 2 2012",
+  "Fall 2012",
+  "Spring 2013",
+  "Summer Full 2013",
+  "Summer 1 2013",
+  "Summer 2 2013",
+  "Fall 2013",
+  "Spring 2014",
+  "Summer Full 2014",
+  "Summer 1 2014",
+  "Summer 2 2014",
+  "Fall 2014",
+  "Spring 2015",
+  "Summer Full 2015",
+  "Summer 1 2015",
+  "Summer 2 2015",
+  "Fall 2015",
+  "Spring 2016",
+  "Summer 1 2016",
+  "Summer 2 2016",
+  "Fall 2016",
+  "Spring 2017",
+  "Summer 1 2017",
+  "Summer 2 2017",
+  "Fall 2017",
+  "Spring 2018",
+  "Summer 1 2018",
+  "Summer 2 2018",
+  "Fall 2018",
+  "Spring 2019",
+  "Summer 1 2019",
+  "Summer 2 2019",
+  "Fall 2019",
+  "Spring 2020",
+  "Summer 1 2020",
+  "Summer 2 2020",
+  "Fall 2020",
+  "Spring 2021",
+  "Summer 1 2021",
+  "Summer 2 2021",
+  "Fall 2021",
+  "Spring 2022",
+  "Summer 1 2022",
+  "Summer 2 2022",
+  "Fall 2022",
+  "Spring 2023",
+  "Summer 1 2023",
+  "Summer 2 2023",
+  "Fall 2023",
+  "Spring 2024",
+  "Summer 1 2024",
+  "Summer 2 2024",
+  "Fall 2024",
+  "Spring 2025"
+)
+
+clean_term_df <- clean_df |>
+  left_join(
+    term_lookup,
+    by = c("term_enrolled" = "term_number")
+  ) |>
+  mutate(
+    term_enrolled = factor(term_enrolled_new,
+                           levels = term_levels, ordered = TRUE),
+  ) |>
+  select(-c(term_enrolled_new))
+```
+
+```{r}
+#| label: create-variables
+
+new_vars_df <- clean_term_df |>
+  mutate(
+    is_SU = if_else(final_grade %in% c("S", "U", "P"), 1, 0),
+    timeperiod = case_when(
+      term_enrolled < "Spring 2020" ~ "pre_covid",
+      term_enrolled > "Summer 2 2022" ~ "post_covid",
+      TRUE ~ "dur_covid"
+    ),
+    num_plans = rowSums(
+      !is.na(pick(first_major, second_major,
+                  first_minor, second_minor,
+                  first_certificate, second_certificate))
+    ),
+    location = case_when(
+      location %in% c("DURHAM", "ONLINE") ~ location,
+      is.na(location) ~ NA, 
+      TRUE ~ "ABROAD"
+    )
+  )
+
+# Warning here is okay, it's flagging TRAN and TR-E as it should for year 
+# (no new NAs for is_transfer)
+new_vars_df <- new_vars_df |>
+  mutate(
+    is_transfer = if_else(
+      is.na(student_group), 
+      NA, 
+      if_else(str_sub(student_group, 1, 2) == "TR", 1L, 0L)
+    ),
+    year_admitted = if_else(
+      is.na(student_group),
+      NA,
+      as.integer(paste0("20", str_sub(student_group, 3, 4)))
+    ),
+  ) |>
+  select(-student_group)
+
+# Summer courses could be indicators of financial aid, 
+# pre-med, lack of internship, retaking a course, etc
+summer_student <- new_vars_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    took_summer_courses = as.integer(any(str_starts(term_enrolled, "Summer"))),
+    .groups = "drop"
+  )
+new_vars_df <- new_vars_df |>
+  left_join(summer_student, by = "masked_student_ID")
+
+# study abroad could be indicator of willingness to explore, 
+# taking advantage of alternative grading systems, etc
+studied_abroad <- combined_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    studied_abroad = case_when(
+      any(location == "ABROAD", na.rm = TRUE) ~ 1L,
+      any(is.na(location)) ~ NA,
+      TRUE ~ 0L
+    ),
+    .groups = "drop"
+  )
+new_vars_df <- new_vars_df |>
+  left_join(studied_abroad, by = "masked_student_ID")
+```
+
+```{r}
+#| label: summer-eda
+# Divisions
+new_vars_df |> 
+  filter(str_starts(term_enrolled, "Summer")) |> 
+  count(division) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n) 
+new_vars_df |> 
+  filter(!str_starts(term_enrolled, "Summer")) |> 
+  count(division) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n)
+
+# S/U
+new_vars_df |> 
+  filter(str_starts(term_enrolled, "Summer")) |> 
+  count(is_SU) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n) 
+new_vars_df |> 
+  filter(!str_starts(term_enrolled, "Summer")) |> 
+  count(is_SU) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n)
+
+# Final Grades
+grade_order <- c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", 
+                 "S", "D+", "D", "D-", "AD", "F", "No Credit")
+grade_prop <- new_vars_df |>
+  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "P", "CR", "WE")) |>
+  mutate(
+    final_grade = case_when(
+      final_grade %in% c("A+", "A") ~ "A",
+      final_grade %in% c("F", "I", "U", "W", "W*", "WP", "WF") ~ "No Credit",
+      TRUE ~ final_grade
+    ),
+    final_grade = factor(final_grade, levels = grade_order, ordered = TRUE),
+    is_summer = str_starts(term_enrolled, "Summer")
+  ) |>
+  group_by(is_summer, final_grade) |>
+  summarise(count = n(), .groups = "drop") |>
+  group_by(is_summer) |>
+  mutate(prop = count / sum(count))
+
+ggplot(grade_prop, aes(y = final_grade, x = prop, fill = is_summer)) +
+  geom_col(position = "dodge") +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_fill_manual(values = c("FALSE" = "steelblue", "TRUE" = "orange"),
+                    labels = c("Non-Summer", "Summer")) +
+  labs(
+    title = "Distribution of Final Grades: Summer vs Non-Summer Classes",
+    y = "Final Grade",
+    x = "Proportion of Classes",
+    fill = ""
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+#| label: GPA
+
+# Remove summer courses
+no_summer_df <- new_vars_df |>
+  filter(!str_starts(term_enrolled, "Summer"))
+
+grade_points <- c(
+  "A+" = 4.0, "A" = 4.0, "A-" = 3.7,
+  "B+" = 3.3, "B" = 3.0, "B-" = 2.7,
+  "C+" = 2.3, "C" = 2.0, "C-" = 1.7,
+  "D+" = 1.3, "D" = 1.0, "D-" = 1.0,
+  "F" = 0.0
+)
+
+# One row per student per semester
+semGPA_df <- no_summer_df |>
+  mutate(
+    grade_points = grade_points[final_grade]
+  ) |>
+  filter(
+    final_grade %in% names(grade_points)
+  ) |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarize(
+    semGPA = mean(grade_points, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+prevGPA_df <- semGPA_df |>
+  arrange(masked_student_ID, term_enrolled) |>
+  group_by(masked_student_ID) |>
+  mutate(prev_semGPA = lag(semGPA)) |>
+  ungroup()
+
+with_gpa_df <- new_vars_df |>
+  left_join(
+    prevGPA_df |> 
+      select(masked_student_ID, term_enrolled, prev_semGPA),
+    by = c("masked_student_ID", "term_enrolled")
+  )
+```
+
+```{r}
+#| label: course-load
+
+# WORK IN PROGRESS INACCURATE
+# are graduate classes messing this up?
+# did we do credits differently in the past
+
+course_load_df <- with_gpa_df |>
+  arrange(masked_student_ID, term_enrolled) |>  # ensure semesters are in order
+  group_by(masked_student_ID, term_enrolled) |>  # aggregate per student per term
+  summarise(
+    term_units = sum(max_units, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  group_by(masked_student_ID) |>
+  arrange(term_enrolled) |>
+  mutate(
+    # Increment semester counter
+    num_semesters = row_number(),
+    # Increment overload if term_units > 4
+    num_overloads = cumsum(term_units > 4)
+  ) |>
+  # Compute total overloads for each student
+  mutate(total_overloads = max(num_overloads, na.rm = TRUE)) |>
+  ungroup()
+
+final_df <- with_gpa_df |>
+  left_join(
+    course_load_df, by = c("masked_student_ID", "term_enrolled")
+  )
+```
+
+```{r}
+#| label: post-cleaning
+
+# Number of observations before cleaning
+num_rows <- nrow(final_df)
+num_rows
+
+# Number of students before cleaning
+num_students <- final_df |>
+  distinct(masked_student_ID) |>
+  nrow()
+num_students
+
+# Cleaning, do this after GPA
+final_clean_df <- final_df |>
+  filter(!str_detect(division, "Other")) |>
+  filter(!str_detect(location, "ABROAD"))
+
+# Number of observations after cleaning
+nrow(final_clean_df)
+
+# Cleaning, can do this after creating took_summer_classes and summer EDA
+final_clean_df <- final_clean_df |>
+  filter(!str_starts(term_enrolled, "Summer"))
+
+# Number of observations after cleaning
+nrow(final_clean_df)
+
+```
+
+## Data Loss
+
+```{r}
+#| label: data-loss
+
+# Number of observations remaining
+nrow(final_clean_df)
+# Total number of observations removed
+num_rows - nrow(final_clean_df)
+
+# Number of students remaining
+final_students <- final_clean_df |>
+  distinct(masked_student_ID) |>
+  nrow()
+final_students
+# Total number of students removed
+num_students - final_students
+```
+
+Dropping "Other" since hard to interpret
+
+```{r}
+glimpse(final_clean_df)
+
+```
+
+Transfer students? Drop outs? Early grad? Variable for \# of overloads or \# of credits?
+
+```{r}
+#| label: missing-data-after
+
+missing_summary <- final_clean_df |>
+  summarise(across(
+    everything(),
+    list(
+      n_missing = ~sum(is.na(.)),
+      prop_missing = ~mean(is.na(.))
+    ),
+    .names = "{.col}-{.fn}"
+  )) |>
+  pivot_longer(
+    everything(),
+    names_to = c("variable", ".value"),
+    names_sep = "-"
+  ) |>
+  arrange(desc(n_missing))
+          
+print(missing_summary, n = Inf)
+```
+
+## Data Dictionary
+
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| Variable name                             | Type                  | Description                                                                                                             |
++===========================================+=======================+=========================================================================================================================+
+| masked_student_ID                         | numerical             | unique ID for students                                                                                                  |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| student_acad_prog                         | categorical           | whether or ot the student is in Trinity or Pratt                                                                        |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| academic_level_bot                        | categorical           | approximation of academic year of student                                                                               |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| first_major                               | categorical           | final values at graduation, may not reflect values at time of taking course                                             |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| major_division                            |                       | IDM + other divisions                                                                                                   |
+|                                           |                       |                                                                                                                         |
+|                                           |                       | (captures second major info as well)                                                                                    |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| num_plans                                 | numerical             | number of academic plans (majors, minors, and certificates) max=3                                                       |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| has_minor, has_certificate, double_major? |                       |                                                                                                                         |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| term_admit                                | categorical (ordered) | term and year combination                                                                                               |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| term_year_admit                           | categorical (ordered) | academic year (summer 2 - summer 1)                                                                                     |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| term_enrolled                             | categorical (ordered) | term and year combination                                                                                               |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| term_year_enrolled                        | categorical (ordered) | academic year (summer 2 - summer 1)                                                                                     |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| division                                  | categorical           | Arts and Humanities, Social Sciences, Natural Sciences (see Trinity) + Engineering, Writing, and Other                  |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| catalog_level                             | categorical           |                                                                                                                         |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| course_id                                 | numerical             | unique ID for courses, same across crosslists (might change across semesters?) \*use this over class_nbr_rev for counts |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| final_grade                               | categorical           |                                                                                                                         |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| is_SU                                     | binary                | response variable in model, S or U or P (before 2010)                                                                   |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| timeperiod                                | categorical           | pre_covid = before spring 2020, dur_covid = spring 2020 to summer 2 2022, post_covid fall 2022                          |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| took_summer_courses                       | binary                | if the student has taken courses during summer 1, summer 2, or summer full                                              |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| prev_sumGPA                               | numerical             | Approx GPA from previous spring/fall semester                                                                           |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+| total_students_in_course                  | numerical             | total number of students in a course in given semester (includes all sections of a crosslist)                           |
++-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
+
+## EDA
+
+```{r}
+#| label: eda-enrollment
+
+plot_df <- final_clean_df |>
+  group_by(term_enrolled) |>
+  summarise(
+    n_students = n_distinct(masked_student_ID),
+    .groups = "drop"
+  ) |>
+  arrange(term_enrolled)
+
+ggplot(plot_df, 
+       aes(x = term_enrolled, y = n_students)
+      ) +
+  geom_col() +
+  labs(
+    title = "Number of Students per Term",
+    x = "Term Enrolled",
+    y = "Number of Students",
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+```{r}
+#| label: eda-su
+
+prop_df <- final_clean_df |>
+  group_by(term_enrolled) |>
+  summarise(prop_passfail = mean(is_SU), .groups = "drop") |>
+  mutate(highlight = if_else(term_enrolled == "Spring 2020", "highlight", "other"))
+
+count_df <- final_clean_df |>
+  group_by(term_enrolled) |>
+  summarise(
+  passfail_count = sum(is_SU),
+  total = n(),
+    .groups = "drop"
+  ) |>
+  mutate(highlight = if_else(term_enrolled == "Spring 2020", "highlight", "other"))
+
+ggplot(prop_df, 
+       aes(x = term_enrolled, y = prop_passfail, fill = highlight)
+      ) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
+  labs(
+    title = "Proportion of S/U Grades by Term",
+    x = "Term Enrolled",
+    y = "Proportion (S/U)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+ggplot(count_df, 
+       aes(x = term_enrolled, y = passfail_count, fill = highlight)
+      ) +
+  geom_col() +
+  scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
+  labs(
+    title = "Count of S/U Grades by Term",
+    x = "Term Enrolled",
+    y = "Count (S/U)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+#| label: eda-grade-dist
+
+grade_order <- c("A", "B", "C", "S", "D", "AD", "No Credit")
+grade_prop <- final_clean_df |>
+  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "I", "CR", "WE")) |>
+  mutate(
+    final_grade = case_when(
+      final_grade %in% c("A+", "A", "A-") ~ "A",
+      final_grade %in% c("B+", "B", "B-") ~ "B",
+      final_grade %in% c("C+", "C", "C-") ~ "C",
+      final_grade %in% c("D+", "D", "D-") ~ "D",
+      final_grade %in% c("S", "P") ~ "S",
+      final_grade %in% c("F", "I", "U", "W", "W*", "WF", "WP") ~ "No Credit",
+      TRUE ~ final_grade
+    ),
+    final_grade = factor(
+      final_grade,
+      levels = grade_order,
+      ordered = TRUE,
+    )
+  ) |>
+  group_by(term_enrolled, final_grade) |>
+  summarise(count = n(), .groups = "drop_last") |>
+  mutate(prop = count / sum(count))
+
+ggplot(grade_prop, aes(x = term_enrolled, y = prop, fill = final_grade)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(
+    title = "Distribution of Grades by Term",
+    x = "Term Enrolled",
+    y = "Proportion of Grades",
+    fill = "Grade Group",
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+#| label: eda-division
+
+final_clean_df |>
+  group_by(term_enrolled, division, course_ID) |>
+  summarise(.groups = "drop") |>
+  group_by(term_enrolled, division) |>
+  summarise(
+    n_courses = n(),
+    .groups = "drop"
+  ) |>
+  group_by(term_enrolled) |>
+  mutate(
+    prop_courses = n_courses / sum(n_courses)
+  ) |>
+  ungroup() |>
+  ggplot(aes(
+    x = term_enrolled,
+    y = prop_courses,
+    color = division,
+    group = division
+  )) +
+  geom_line() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(
+    title = "Proportion of Courses by Division Over Terms",
+    x = "Term Enrolled",
+    y = "Proportion of Courses",
+    color = "Division"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+final_clean_df |>
+  group_by(term_enrolled, division, course_ID) |>
+  summarise(
+    course_SU = as.integer(any(final_grade %in% c("S", "U", "P"))),
+    .groups = "drop"
+  ) |>
+  group_by(term_enrolled, division) |>
+  summarise(
+    n_SU_courses = sum(course_SU),
+    n_courses = n(),
+    prop_SU_division = n_SU_courses / n_courses,
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = term_enrolled, y = prop_SU_division)) +
+  geom_col() +
+  facet_wrap(~division) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Courses with > 1 S/U Student",
+    x = "Term Enrolled",
+    y = "Proportion of Courses Taken S/U"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+#| label: eda-gpa
+
+prevGPA_df |>
+  group_by(term_enrolled) |>
+  summarise(
+    avg_semGPA = mean(semGPA, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = term_enrolled, y = avg_semGPA, group = 1)) +
+  geom_line() +
+  labs(
+    title = "Average Semester GPA Over Time",
+    x = "Term Index",
+    y = "Average GPA"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+#| label: eda-num-su-by-student
+
+selected_years <- c("2009-2010", "2014-2015", "2019-2020", "2024-2025")
+
+# Step 1: per student, count number of S/U courses in the selected term_enrolled
+student_SU_counts <- final_clean_df |>
+  filter(year_enrolled %in% selected_years) |>
+  group_by(masked_student_ID, year_enrolled) |>
+  summarise(
+    n_SU_courses = sum(is_SU == 1L, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Step 2: compute number of students per SU course count
+plot_df <- student_SU_counts |>
+  group_by(year_enrolled, n_SU_courses) |>
+  summarise(
+    n_students = n(),
+    .groups = "drop"
+  )
+
+# Step 3: dot plot
+ggplot(plot_df, aes(x = n_SU_courses, y = n_students)) +
+  geom_point() +
+  facet_wrap(~year_enrolled, scales = "free_y") +
+  scale_x_continuous(breaks = 0:max(plot_df$n_SU_courses)) +
+  labs(
+    title = "Number of Students by Number of S/U Courses Taken",
+    x = "Number of S/U Courses",
+    y = "Number of Students"
+  ) +
+  theme_minimal()
+```
+
+## Model
+
+```{r}
+model_timeperiod <- glm(is_SU ~ catalog_level + division +
+                          student_acad_prog + 
+                          timeperiod + took_summer_courses, 
+             data = final_clean_df, family = binomial)
+summary(model_timeperiod)
+```
+
+```{r}
+model_term <- glm(is_SU ~ term_enrolled + catalog_level + division +
+                    student_acad_prog +
+                    took_summer_courses, 
+             data = final_clean_df, family = binomial)
+summary(model_term)
+```
+
+Need to check to see if GPA and stuff correct
+
+total_enrolled has some 0s???
