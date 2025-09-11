@@ -29,7 +29,7 @@ file2 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sop
 
 combined_df <- rbind(file1, file2)
 
-
+saveRDS(combined_df, file = "data/1-combined.rds")
 glimpse(combined_df)
 ```
 
@@ -318,13 +318,45 @@ clean_term_df <- clean_df |>
     term_enrolled = factor(term_enrolled_new,
                            levels = term_levels, ordered = TRUE),
   ) |>
-  select(-c(term_enrolled_new))
+  select(-c(term_enrolled_new)) |>
+  filter(term_enrolled > "Summer 2 2010")
+
+saveRDS(clean_term_df, file = "data/2-fall2010.rds")
+```
+
+```{r}
+#| label: data-types
+
+typed_df <- clean_term_df |>
+  mutate(
+    catalog_level = factor(
+      catalog_level,
+      levels = c("1-99", "100-199", "200-299", 
+                 "300-399", "400-499", "500 and above"),
+      ordered = TRUE
+    ),
+    year_enrolled = factor(
+      year_enrolled, levels = sort(unique(year_enrolled)), ordered = TRUE
+    ),
+    masked_student_ID = as.character(masked_student_ID),
+    academic_level_bot = recode(academic_level_bot,
+                                "1st Year Undergraduate" = "Freshman",
+                                "5th Year Undergraduate" = "5th Year"
+                                ),
+    academic_level_bot = factor(
+      academic_level_bot,
+      levels = c("Freshman", "Sophomore", "Junior", "Senior", "5th Year"),
+      ordered = TRUE
+    )
+  )
+
+saveRDS(typed_df, file = "data/3-types.rds")
 ```
 
 ```{r}
 #| label: create-variables
 
-new_vars_df <- clean_term_df |>
+new_vars_df <- typed_df |>
   mutate(
     is_SU = if_else(final_grade %in% c("S", "U", "P"), 1, 0),
     timeperiod = case_when(
@@ -374,7 +406,7 @@ new_vars_df <- new_vars_df |>
 
 # study abroad could be indicator of willingness to explore, 
 # taking advantage of alternative grading systems, etc
-studied_abroad <- combined_df |>
+studied_abroad <- new_vars_df |>
   group_by(masked_student_ID) |>
   summarise(
     studied_abroad = case_when(
@@ -848,7 +880,7 @@ prevGPA_df |>
 ```{r}
 #| label: eda-num-su-by-student
 
-selected_years <- c("2009-2010", "2014-2015", "2019-2020", "2024-2025")
+selected_years <- c("2014-2015", "2019-2020", "2024-2025")
 
 # Step 1: per student, count number of S/U courses in the selected term_enrolled
 student_SU_counts <- final_clean_df |>
@@ -879,25 +911,5 @@ ggplot(plot_df, aes(x = n_SU_courses, y = n_students)) +
   ) +
   theme_minimal()
 ```
-
-## Model
-
-```{r}
-model_timeperiod <- glm(is_SU ~ catalog_level + division +
-                          student_acad_prog + 
-                          timeperiod + took_summer_courses, 
-             data = final_clean_df, family = binomial)
-summary(model_timeperiod)
-```
-
-```{r}
-model_term <- glm(is_SU ~ term_enrolled + catalog_level + division +
-                    student_acad_prog +
-                    took_summer_courses, 
-             data = final_clean_df, family = binomial)
-summary(model_term)
-```
-
-Need to check to see if GPA and stuff correct
 
 total_enrolled has some 0s???
