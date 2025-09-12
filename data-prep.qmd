@@ -370,7 +370,7 @@ saveRDS(timeperiod_df, file = "data/4-timeperiod.rds")
 ```
 
 ```{r}
-#| label: num_plans
+#| label: num-plans
 
 plans_df <- timeperiod_df |>
   mutate(
@@ -379,15 +379,49 @@ plans_df <- timeperiod_df |>
                   first_minor, second_minor,
                   first_certificate, second_certificate))
     )
-  )
+  ) |>
+  select(-c(first_minor, first_minor_desc, 
+            second_minor, second_minor_desc, 
+            first_certificate, first_certificate_desc, 
+            second_certificate, second_certificate_desc))
 
 saveRDS(plans_df, file = "data/5-num_plans.rds")
 ```
 
 ```{r}
+#| label: major-divisons
+
+major_mapping <- read_excel("major_divisions.xlsx")
+
+student_divisions <- plans_df |>
+  select(masked_student_ID, first_major_descr, second_major_descr) |>
+  pivot_longer(cols = c(first_major_descr, second_major_descr), 
+               names_to = "major_type", values_to = "major") |>
+  filter(!is.na(major)) |>
+  mutate(
+    major_clean = str_remove(major, "\\s*\\([^)]*\\)$")
+  ) |>
+  left_join(major_mapping, by = "major_clean") |>
+  group_by(masked_student_ID) |>
+  summarise(
+    is_art_humanity = as.integer(any(is_art_humanity == 1, na.rm = TRUE)),
+    is_social_sci   = as.integer(any(is_social_sci == 1, na.rm = TRUE)),
+    is_natural_sci  = as.integer(any(is_natural_sci == 1, na.rm = TRUE)),
+    is_engr         = as.integer(any(is_engr == 1, na.rm = TRUE)),
+    tbd             = as.integer(any(tbd == 1, na.rm = TRUE)),
+    .groups = "drop"
+  )
+
+
+divisions_df <- plans_df |>
+  left_join(student_divisions, by = "masked_student_ID")
+  
+```
+
+```{r}
 #| label: create-variables
 
-new_vars_df <- plans_df |>
+new_vars_df <- divisions_df |>
   mutate(
     location = case_when(
       location %in% c("DURHAM", "ONLINE") ~ location,
