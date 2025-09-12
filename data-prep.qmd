@@ -370,9 +370,30 @@ saveRDS(timeperiod_df, file = "data/4-timeperiod.rds")
 ```
 
 ```{r}
+#| label: admission
+
+# Warning here is okay, it's flagging TRAN and TR-E as it should for year 
+# (no new NAs for is_transfer)
+admit_df <- timeperiod_df |>
+  mutate(
+    is_transfer = if_else(
+      is.na(student_group), 
+      NA, 
+      if_else(str_sub(student_group, 1, 2) == "TR", 1L, 0L)
+    ),
+    year_admitted = if_else(
+      is.na(student_group),
+      NA,
+      as.integer(paste0("20", str_sub(student_group, 3, 4)))
+    ),
+  ) |>
+  select(-student_group)
+```
+
+```{r}
 #| label: num-plans
 
-plans_df <- timeperiod_df |>
+plans_df <- admit_df |>
   mutate(
     num_plans = rowSums(
       !is.na(pick(first_major, second_major,
@@ -389,11 +410,56 @@ saveRDS(plans_df, file = "data/5-num_plans.rds")
 ```
 
 ```{r}
+#| label: study-abroad
+#| 
+abroad_df <- plans_df |>
+  mutate(
+    location = case_when(
+      location %in% c("DURHAM", "ONLINE") ~ location,
+      is.na(location) ~ NA, 
+      TRUE ~ "AWAY"
+    )
+  )
+
+# study away could be indicator of willingness to explore, 
+# taking advantage of alternative grading systems
+# (duke approved is TRC vs duke administered is graded), 
+# limited course offering, etc
+studied_abroad <- abroad_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    studied_abroad = case_when(
+      any(location == "ABROAD", na.rm = TRUE) ~ 1L,
+      any(is.na(location)) ~ NA,
+      TRUE ~ 0L
+    ),
+    .groups = "drop"
+  )
+abroad_df <- abroad_df |>
+  left_join(studied_abroad, by = "masked_student_ID")
+```
+
+```{r}
+#| label: summer
+
+# Summer courses could be indicators of financial aid, 
+# pre-med, lack of internship, retaking a course, etc
+summer_student <- abroad_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    took_summer_courses = as.integer(any(str_starts(term_enrolled, "Summer"))),
+    .groups = "drop"
+  )
+summer_df <- abroad_df |>
+  left_join(summer_student, by = "masked_student_ID")
+```
+
+```{r}
 #| label: major-divisons
 
 major_mapping <- read_excel("major_divisions.xlsx")
 
-student_divisions <- plans_df |>
+student_divisions <- summer_df |>
   select(masked_student_ID, first_major_descr, second_major_descr) |>
   pivot_longer(cols = c(first_major_descr, second_major_descr), 
                names_to = "major_type", values_to = "major") |>
@@ -412,179 +478,19 @@ student_divisions <- plans_df |>
     .groups = "drop"
   )
 
-
-divisions_df <- plans_df |>
-  left_join(student_divisions, by = "masked_student_ID")
-  
-```
-
-```{r}
-#| label: create-variables
-
-new_vars_df <- divisions_df |>
-  mutate(
-    location = case_when(
-      location %in% c("DURHAM", "ONLINE") ~ location,
-      is.na(location) ~ NA, 
-      TRUE ~ "ABROAD"
-    )
-  )
-
-# Warning here is okay, it's flagging TRAN and TR-E as it should for year 
-# (no new NAs for is_transfer)
-new_vars_df <- new_vars_df |>
-  mutate(
-    is_transfer = if_else(
-      is.na(student_group), 
-      NA, 
-      if_else(str_sub(student_group, 1, 2) == "TR", 1L, 0L)
-    ),
-    year_admitted = if_else(
-      is.na(student_group),
-      NA,
-      as.integer(paste0("20", str_sub(student_group, 3, 4)))
-    ),
-  ) |>
-  select(-student_group)
-
-# Summer courses could be indicators of financial aid, 
-# pre-med, lack of internship, retaking a course, etc
-summer_student <- new_vars_df |>
-  group_by(masked_student_ID) |>
-  summarise(
-    took_summer_courses = as.integer(any(str_starts(term_enrolled, "Summer"))),
-    .groups = "drop"
-  )
-new_vars_df <- new_vars_df |>
-  left_join(summer_student, by = "masked_student_ID")
-
-# study abroad could be indicator of willingness to explore, 
-# taking advantage of alternative grading systems, etc
-studied_abroad <- new_vars_df |>
-  group_by(masked_student_ID) |>
-  summarise(
-    studied_abroad = case_when(
-      any(location == "ABROAD", na.rm = TRUE) ~ 1L,
-      any(is.na(location)) ~ NA,
-      TRUE ~ 0L
-    ),
-    .groups = "drop"
-  )
-new_vars_df <- new_vars_df |>
-  left_join(studied_abroad, by = "masked_student_ID")
-```
-
-```{r}
-#| label: summer-eda
-# Divisions
-new_vars_df |> 
-  filter(str_starts(term_enrolled, "Summer")) |> 
-  count(division) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n) 
-new_vars_df |> 
-  filter(!str_starts(term_enrolled, "Summer")) |> 
-  count(division) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n)
-
-# S/U
-new_vars_df |> 
-  filter(str_starts(term_enrolled, "Summer")) |> 
-  count(is_SU) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n) 
-new_vars_df |> 
-  filter(!str_starts(term_enrolled, "Summer")) |> 
-  count(is_SU) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n)
-
-# Final Grades
-grade_order <- c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", 
-                 "S", "D+", "D", "D-", "AD", "F", "No Credit")
-grade_prop <- new_vars_df |>
-  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "P", "CR", "WE")) |>
-  mutate(
-    final_grade = case_when(
-      final_grade %in% c("A+", "A") ~ "A",
-      final_grade %in% c("F", "I", "U", "W", "W*", "WP", "WF") ~ "No Credit",
-      TRUE ~ final_grade
-    ),
-    final_grade = factor(final_grade, levels = grade_order, ordered = TRUE),
-    is_summer = str_starts(term_enrolled, "Summer")
-  ) |>
-  group_by(is_summer, final_grade) |>
-  summarise(count = n(), .groups = "drop") |>
-  group_by(is_summer) |>
-  mutate(prop = count / sum(count))
-
-ggplot(grade_prop, aes(y = final_grade, x = prop, fill = is_summer)) +
-  geom_col(position = "dodge") +
-  scale_x_continuous(labels = scales::percent_format()) +
-  scale_fill_manual(values = c("FALSE" = "steelblue", "TRUE" = "orange"),
-                    labels = c("Non-Summer", "Summer")) +
-  labs(
-    title = "Distribution of Final Grades: Summer vs Non-Summer Classes",
-    y = "Final Grade",
-    x = "Proportion of Classes",
-    fill = ""
-  ) +
-  theme_minimal()
-
-```
-
-```{r}
-#| label: GPA
-
-# Remove summer courses
-no_summer_df <- new_vars_df |>
-  filter(!str_starts(term_enrolled, "Summer"))
-
-grade_points <- c(
-  "A+" = 4.0, "A" = 4.0, "A-" = 3.7,
-  "B+" = 3.3, "B" = 3.0, "B-" = 2.7,
-  "C+" = 2.3, "C" = 2.0, "C-" = 1.7,
-  "D+" = 1.3, "D" = 1.0, "D-" = 1.0,
-  "F" = 0.0
-)
-
-# One row per student per semester
-semGPA_df <- no_summer_df |>
-  mutate(
-    grade_points = grade_points[final_grade]
-  ) |>
-  filter(
-    final_grade %in% names(grade_points)
-  ) |>
-  group_by(masked_student_ID, term_enrolled) |>
-  summarize(
-    semGPA = mean(grade_points, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-prevGPA_df <- semGPA_df |>
-  arrange(masked_student_ID, term_enrolled) |>
-  group_by(masked_student_ID) |>
-  mutate(prev_semGPA = lag(semGPA)) |>
-  ungroup()
-
-with_gpa_df <- new_vars_df |>
-  left_join(
-    prevGPA_df |> 
-      select(masked_student_ID, term_enrolled, prev_semGPA),
-    by = c("masked_student_ID", "term_enrolled")
-  )
+divisions_df <- summer_df |>
+  left_join(student_divisions, by = "masked_student_ID") |>
+  filter(!str_detect(division, "Other"))
 ```
 
 ```{r}
 #| label: course-load
 
-# WORK IN PROGRESS INACCURATE
-# are graduate classes messing this up?
-# did we do credits differently in the past
+# Remove summer courses
+no_summer_df <- divisions_df |>
+  filter(!str_starts(term_enrolled, "Summer"))
 
-course_load_df <- with_gpa_df |>
+course_load_df <- no_summer_df |>
   arrange(masked_student_ID, term_enrolled) |>  # ensure semesters are in order
   group_by(masked_student_ID, term_enrolled) |>  # aggregate per student per term
   summarise(
@@ -603,69 +509,56 @@ course_load_df <- with_gpa_df |>
   mutate(total_overloads = max(num_overloads, na.rm = TRUE)) |>
   ungroup()
 
-final_df <- with_gpa_df |>
+divisions_df <- no_summer_df |>
   left_join(
     course_load_df, by = c("masked_student_ID", "term_enrolled")
   )
 ```
 
 ```{r}
-#| label: post-cleaning
+#| label: GPA
 
-# Number of observations before cleaning
-num_rows <- nrow(final_df)
-num_rows
+grade_points <- c(
+  "A+" = 4.0, "A" = 4.0, "A-" = 3.7,
+  "B+" = 3.3, "B" = 3.0, "B-" = 2.7,
+  "C+" = 2.3, "C" = 2.0, "C-" = 1.7,
+  "D+" = 1.3, "D" = 1.0, "D-" = 1.0,
+  "F" = 0.0
+)
 
-# Number of students before cleaning
-num_students <- final_df |>
-  distinct(masked_student_ID) |>
-  nrow()
-num_students
+# One row per student per semester
+semGPA_df <- divisions_df |>
+  mutate(
+    grade_points = grade_points[final_grade]
+  ) |>
+  filter(
+    final_grade %in% names(grade_points)
+  ) |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarize(
+    semGPA = mean(grade_points, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-# Cleaning, do this after GPA
-final_clean_df <- final_df |>
-  filter(!str_detect(division, "Other")) |>
+prevGPA_df <- semGPA_df |>
+  arrange(masked_student_ID, term_enrolled) |>
+  group_by(masked_student_ID) |>
+  mutate(prev_semGPA = lag(semGPA)) |>
+  ungroup()
+
+final_clean_df <- divisions_df |>
+  left_join(
+    prevGPA_df |> 
+      select(masked_student_ID, term_enrolled, prev_semGPA),
+    by = c("masked_student_ID", "term_enrolled")
+  ) |>
   filter(!str_detect(location, "ABROAD"))
-
-# Number of observations after cleaning
-nrow(final_clean_df)
-
-# Cleaning, can do this after creating took_summer_classes and summer EDA
-final_clean_df <- final_clean_df |>
-  filter(!str_starts(term_enrolled, "Summer"))
-
-# Number of observations after cleaning
-nrow(final_clean_df)
-
 ```
-
-## Data Loss
-
-```{r}
-#| label: data-loss
-
-# Number of observations remaining
-nrow(final_clean_df)
-# Total number of observations removed
-num_rows - nrow(final_clean_df)
-
-# Number of students remaining
-final_students <- final_clean_df |>
-  distinct(masked_student_ID) |>
-  nrow()
-final_students
-# Total number of students removed
-num_students - final_students
-```
-
-Dropping "Other" since hard to interpret
 
 ```{r}
 glimpse(final_clean_df)
 
 ```
-
-Transfer students? Drop outs? Early grad? Variable for \# of overloads or \# of credits?
 
 ```{r}
 #| label: missing-data-after
@@ -738,6 +631,69 @@ print(missing_summary, n = Inf)
 +-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
 
 ## EDA
+
+### Summer EDA
+
+```{r}
+#| label: summer-eda
+# Divisions
+summer_df |> 
+  filter(str_starts(term_enrolled, "Summer")) |> 
+  count(division) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n) 
+summer_df |> 
+  filter(!str_starts(term_enrolled, "Summer")) |> 
+  count(division) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n)
+
+# S/U
+summer_df |> 
+  filter(str_starts(term_enrolled, "Summer")) |> 
+  count(is_SU) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n) 
+summer_df |> 
+  filter(!str_starts(term_enrolled, "Summer")) |> 
+  count(is_SU) |> 
+  mutate(prop = n / sum(n)) |> 
+  select(-n)
+
+# Final Grades
+grade_order <- c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", 
+                 "S", "D+", "D", "D-", "AD", "F", "No Credit")
+grade_prop <- summer_df |>
+  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "P", "CR", "WE")) |>
+  mutate(
+    final_grade = case_when(
+      final_grade %in% c("A+", "A") ~ "A",
+      final_grade %in% c("F", "I", "U", "W", "W*", "WP", "WF") ~ "No Credit",
+      TRUE ~ final_grade
+    ),
+    final_grade = factor(final_grade, levels = grade_order, ordered = TRUE),
+    is_summer = str_starts(term_enrolled, "Summer")
+  ) |>
+  group_by(is_summer, final_grade) |>
+  summarise(count = n(), .groups = "drop") |>
+  group_by(is_summer) |>
+  mutate(prop = count / sum(count))
+
+ggplot(grade_prop, aes(y = final_grade, x = prop, fill = is_summer)) +
+  geom_col(position = "dodge") +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_fill_manual(values = c("FALSE" = "steelblue", "TRUE" = "orange"),
+                    labels = c("Non-Summer", "Summer")) +
+  labs(
+    title = "Distribution of Final Grades: Summer vs Non-Summer Classes",
+    y = "Final Grade",
+    x = "Proportion of Classes",
+    fill = ""
+  ) +
+  theme_minimal()
+```
+
+### Final DF EDA
 
 ```{r}
 #| label: eda-enrollment
@@ -965,5 +921,3 @@ ggplot(plot_df, aes(x = n_SU_courses, y = n_students)) +
   ) +
   theme_minimal()
 ```
-
-total_enrolled has some 0s???
