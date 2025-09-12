@@ -354,21 +354,41 @@ saveRDS(typed_df, file = "data/3-types.rds")
 ```
 
 ```{r}
-#| label: create-variables
+#| label: timeperiod
 
-new_vars_df <- typed_df |>
+timeperiod_df <- typed_df |>
   mutate(
     is_SU = if_else(final_grade %in% c("S", "U", "P"), 1, 0),
     timeperiod = case_when(
       term_enrolled < "Spring 2020" ~ "pre_covid",
       term_enrolled > "Summer 2 2022" ~ "post_covid",
       TRUE ~ "dur_covid"
-    ),
+    )
+  )
+
+saveRDS(timeperiod_df, file = "data/4-timeperiod.rds")
+```
+
+```{r}
+#| label: num_plans
+
+plans_df <- timeperiod_df |>
+  mutate(
     num_plans = rowSums(
       !is.na(pick(first_major, second_major,
                   first_minor, second_minor,
                   first_certificate, second_certificate))
-    ),
+    )
+  )
+
+saveRDS(plans_df, file = "data/5-num_plans.rds")
+```
+
+```{r}
+#| label: create-variables
+
+new_vars_df <- plans_df |>
+  mutate(
     location = case_when(
       location %in% c("DURHAM", "ONLINE") ~ location,
       is.na(location) ~ NA, 
