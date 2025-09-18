@@ -82,6 +82,18 @@ glimpse(combined_df)
     print(class_components, n = Inf)
     ```
 
+-   Course divisions
+
+    ```{r}
+    #| label: division
+
+    class_division <- combined_df |>
+      count(division) |>
+      mutate(prop = n / sum(n)) |>
+      arrange(n)
+    print(class_division, n = Inf)
+    ```
+
 -   Course locations
 
     ```{r}
@@ -319,9 +331,9 @@ clean_term_df <- clean_df |>
                            levels = term_levels, ordered = TRUE),
   ) |>
   select(-c(term_enrolled_new)) |>
-  filter(term_enrolled > "Summer 2 2010")
+  filter(term_enrolled > "Summer 2 2012")
 
-saveRDS(clean_term_df, file = "data/2-fall2010.rds")
+saveRDS(clean_term_df, file = "data/2-fall2012.rds")
 ```
 
 ```{r}
@@ -372,22 +384,19 @@ saveRDS(timeperiod_df, file = "data/4-timeperiod.rds")
 ```{r}
 #| label: admission
 
-# Warning here is okay, it's flagging TRAN and TR-E as it should for year 
-# (no new NAs for is_transfer)
+# Drop transfer students and students with unknown matriculuation
+timeperiod_df |>
+  mutate(starts_with_TR = str_sub(student_group, 1, 2) == "TR") |>
+  count(starts_with_TR)
+
 admit_df <- timeperiod_df |>
+  filter(str_sub(student_group, 1, 2) != "TR") |>
   mutate(
-    is_transfer = if_else(
-      is.na(student_group), 
-      NA, 
-      if_else(str_sub(student_group, 1, 2) == "TR", 1L, 0L)
-    ),
-    year_admitted = if_else(
-      is.na(student_group),
-      NA,
-      as.integer(paste0("20", str_sub(student_group, 3, 4)))
-    ),
-  ) |>
-  select(-student_group)
+    student_group = str_replace(student_group, "^..", "20"),
+    student_group = as.numeric(student_group)
+  )
+
+saveRDS(admit_df, file = "data/5-admission.rds")
 ```
 
 ```{r}
@@ -406,13 +415,13 @@ plans_df <- admit_df |>
             first_certificate, first_certificate_desc, 
             second_certificate, second_certificate_desc))
 
-saveRDS(plans_df, file = "data/5-num_plans.rds")
+saveRDS(plans_df, file = "data/6-numplans.rds")
 ```
 
 ```{r}
-#| label: study-abroad
-#| 
-abroad_df <- plans_df |>
+#| label: study-away
+
+away_df <- plans_df |>
   mutate(
     location = case_when(
       location %in% c("DURHAM", "ONLINE") ~ location,
@@ -425,18 +434,18 @@ abroad_df <- plans_df |>
 # taking advantage of alternative grading systems
 # (duke approved is TRC vs duke administered is graded), 
 # limited course offering, etc
-studied_abroad <- abroad_df |>
+studied_away <- away_df |>
   group_by(masked_student_ID) |>
   summarise(
-    studied_abroad = case_when(
-      any(location == "ABROAD", na.rm = TRUE) ~ 1L,
+    studied_away = case_when(
+      any(location == "AWAY", na.rm = TRUE) ~ 1L,
       any(is.na(location)) ~ NA,
       TRUE ~ 0L
     ),
     .groups = "drop"
   )
-abroad_df <- abroad_df |>
-  left_join(studied_abroad, by = "masked_student_ID")
+away_df <- away_df |>
+  left_join(studied_away, by = "masked_student_ID")
 ```
 
 ```{r}
@@ -444,14 +453,38 @@ abroad_df <- abroad_df |>
 
 # Summer courses could be indicators of financial aid, 
 # pre-med, lack of internship, retaking a course, etc
-summer_student <- abroad_df |>
+summer_student <- away_df |>
   group_by(masked_student_ID) |>
   summarise(
     took_summer_courses = as.integer(any(str_starts(term_enrolled, "Summer"))),
     .groups = "drop"
   )
-summer_df <- abroad_df |>
+summer_df <- away_df |>
   left_join(summer_student, by = "masked_student_ID")
+
+no_summer_df <- summer_df |>
+  filter(!str_starts(term_enrolled, "Summer"))
+```
+
+```{r}
+#| label: missing-majors
+
+proportion_first_major <- no_summer_df |>
+  group_by(student_group, masked_student_ID) |>
+  summarise(
+    has_first_major = mean(!is.na(first_major_descr)),
+    .groups = "drop"
+  ) |>
+  group_by(student_group) |>
+  summarise(
+    prop_major = mean(has_first_major),
+    n_students = n(),
+    .groups = "drop"
+  )
+print(proportion_first_major, n = Inf)
+
+fy2010_df <- no_summer_df |>
+  filter(student_group > 2009)
 ```
 
 ```{r}
@@ -459,7 +492,7 @@ summer_df <- abroad_df |>
 
 major_mapping <- read_excel("major_divisions.xlsx")
 
-student_divisions <- summer_df |>
+student_divisions <- fy2010_df |>
   select(masked_student_ID, first_major_descr, second_major_descr) |>
   pivot_longer(cols = c(first_major_descr, second_major_descr), 
                names_to = "major_type", values_to = "major") |>
@@ -478,19 +511,26 @@ student_divisions <- summer_df |>
     .groups = "drop"
   )
 
-divisions_df <- summer_df |>
-  left_join(student_divisions, by = "masked_student_ID") |>
-  filter(!str_detect(division, "Other"))
+divisions_df <- fy2010_df |>
+  left_join(student_divisions, by = "masked_student_ID")
+```
+
+```{r}
+#| label: non-acad
+
+# all ACT courses are either NA or < 1 credit
+# majority of MUS and STU are < 1, assuming NA are < 1
+academ_df <- divisions_df |>
+  filter(division != "Other") |>
+  filter(class_component != "ACT") |> 
+  filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
+  filter(!(class_component == "STU" & (max_units < 1 | is.na(max_units))))
 ```
 
 ```{r}
 #| label: course-load
 
-# Remove summer courses
-no_summer_df <- divisions_df |>
-  filter(!str_starts(term_enrolled, "Summer"))
-
-course_load_df <- no_summer_df |>
+course_load_df <- academ_df |>
   arrange(masked_student_ID, term_enrolled) |>  # ensure semesters are in order
   group_by(masked_student_ID, term_enrolled) |>  # aggregate per student per term
   summarise(
@@ -500,19 +540,33 @@ course_load_df <- no_summer_df |>
   group_by(masked_student_ID) |>
   arrange(term_enrolled) |>
   mutate(
-    # Increment semester counter
-    num_semesters = row_number(),
+    # Increment semester counter, note represents which semester not how many
+    semester_num = row_number(),
     # Increment overload if term_units > 4
     num_overloads = cumsum(term_units > 4)
   ) |>
   # Compute total overloads for each student
-  mutate(total_overloads = max(num_overloads, na.rm = TRUE)) |>
+  mutate(
+    total_overloads = max(num_overloads, na.rm = TRUE),
+    early_grad = if_else(max(semester_num, na.rm = TRUE) < 8, 1L, 0L)
+  ) |>
   ungroup()
 
-divisions_df <- no_summer_df |>
+divisions_df <- academ_df |>
   left_join(
     course_load_df, by = c("masked_student_ID", "term_enrolled")
   )
+```
+
+```{r}
+#| label: acad-lvl
+
+# academic_level_bot doesn't seem that trustworthy?
+# not as important now that we have complete course history for all students
+table(
+  divisions_df$semester_num[!is.na(divisions_df$semester_num)],
+  divisions_df$academic_level_bot[!is.na(divisions_df$academic_level_bot)]
+)
 ```
 
 ```{r}
@@ -536,7 +590,8 @@ semGPA_df <- divisions_df |>
   ) |>
   group_by(masked_student_ID, term_enrolled) |>
   summarize(
-    semGPA = mean(grade_points, na.rm = TRUE),
+    semGPA = sum(grade_points * max_units, na.rm = TRUE) 
+              / sum(max_units, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -546,18 +601,32 @@ prevGPA_df <- semGPA_df |>
   mutate(prev_semGPA = lag(semGPA)) |>
   ungroup()
 
-final_clean_df <- divisions_df |>
+gpa_df <- divisions_df |>
   left_join(
     prevGPA_df |> 
       select(masked_student_ID, term_enrolled, prev_semGPA),
     by = c("masked_student_ID", "term_enrolled")
   ) |>
-  filter(!str_detect(location, "ABROAD"))
+  filter(!str_detect(location, "AWAY"))
+
+class_components2 <- gpa_df |>
+  count(class_component) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(n)
+print(class_components2, n = Inf)
+```
+
+```{r}
+#| label: indep-study
+
+final_clean_df <- gpa_df |>
+  mutate(
+    did_indep_study = class_component == "IND"
+  )
 ```
 
 ```{r}
 glimpse(final_clean_df)
-
 ```
 
 ```{r}
