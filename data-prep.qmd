@@ -14,6 +14,8 @@ editor_options:
 library(readxl)
 library(tidyverse)
 library(viridis)
+library(binom)
+library(kableExtra)
 ```
 
 ## Load Data
@@ -35,100 +37,68 @@ glimpse(combined_df)
 
 ## Data Notes
 
--   There are `{r} n_distinct(combined_df$masked_student_ID)` distinct students.
+```{r}
+#| label: final-grades
 
--   The dataset contains data from Fall 2006 (Term `{r} min(combined_df$term_enrolled)`) to Spring 2025 (Term `{r} max(combined_df$term_enrolled)`).
+final_grades <- combined_df |>
+  count(final_grade) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(n)
+print(final_grades, n = Inf)
 
--   The suffix "U" for `student_acad_prog` represents "undeclared". This can already be obtained from looking at `first_major`.
+```
 
-    ```{r}
-    #| label: undeclared-check
+```{r}
+#| label: class_component
 
-    all(combined_df$student_acad_prog != "A&SU" |
-          is.na(combined_df$first_major))
-    all(combined_df$student_acad_prog != "E-UGU" |
-          is.na(combined_df$first_major))
-    ```
+class_components <- combined_df |>
+  count(class_component) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(n)
+print(class_components, n = Inf)
+```
 
--   All students in this dataset are undergraduates.
+```{r}
+#| label: division
 
-    ```{r}
-    #| label: career-check
+class_division <- combined_df |>
+  count(division) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(n)
+print(class_division, n = Inf)
+```
 
-    combined_df |> distinct(career)
-    ```
+```{r}
+#| label: class_location
 
--   I know what all values for `final_grade` mean.
+class_location <- combined_df |>
+  count(location) |>
+  mutate(prop = n / sum(n)) |>
+  arrange(desc(n))
+print(class_location, n = Inf)
+```
 
-    ```{r}
-    #| label: final-grades
+```{r}
+#| label: missing-data-before
 
-    final_grades <- combined_df |>
-      count(final_grade) |>
-      mutate(prop = n / sum(n)) |>
-      arrange(n)
-    print(final_grades, n = Inf)
-    ```
-
--   I know what all values for `class_component` mean.
-
-    ```{r}
-    #| label: class_component
-
-    class_components <- combined_df |>
-      count(class_component) |>
-      mutate(prop = n / sum(n)) |>
-      arrange(n)
-    print(class_components, n = Inf)
-    ```
-
--   Course divisions
-
-    ```{r}
-    #| label: division
-
-    class_division <- combined_df |>
-      count(division) |>
-      mutate(prop = n / sum(n)) |>
-      arrange(n)
-    print(class_division, n = Inf)
-    ```
-
--   Course locations
-
-    ```{r}
-    #| label: class_location
-
-    class_location <- combined_df |>
-      count(location) |>
-      mutate(prop = n / sum(n)) |>
-      arrange(desc(n))
-    print(class_location, n = Inf)
-    ```
-
--   Missingness prior to data cleaning:
-
-    ```{r}
-    #| label: missing-data-before
-
-    missing_summary <- combined_df |>
-      summarise(across(
-        everything(),
-        list(
-          n_missing = ~sum(is.na(.)),
-          prop_missing = ~mean(is.na(.))
-        ),
-        .names = "{.col}-{.fn}"
-      )) |>
-      pivot_longer(
-        everything(),
-        names_to = c("variable", ".value"),
-        names_sep = "-"
-      ) |>
-      arrange(desc(n_missing))
-              
-    print(missing_summary, n = Inf)
-    ```
+missing_summary <- combined_df |>
+  summarise(across(
+    everything(),
+    list(
+      n_missing = ~sum(is.na(.)),
+      prop_missing = ~mean(is.na(.))
+    ),
+    .names = "{.col}-{.fn}"
+  )) |>
+  pivot_longer(
+    everything(),
+    names_to = c("variable", ".value"),
+    names_sep = "-"
+  ) |>
+  arrange(desc(n_missing))
+          
+print(missing_summary, n = Inf)
+```
 
 ## Data Cleaning/Variable Creation
 
@@ -467,60 +437,11 @@ no_summer_df <- summer_df |>
 ```
 
 ```{r}
-#| label: missing-majors
-
-proportion_first_major <- no_summer_df |>
-  group_by(student_group, masked_student_ID) |>
-  summarise(
-    has_first_major = mean(!is.na(first_major_descr)),
-    .groups = "drop"
-  ) |>
-  group_by(student_group) |>
-  summarise(
-    prop_major = mean(has_first_major),
-    n_students = n(),
-    .groups = "drop"
-  )
-print(proportion_first_major, n = Inf)
-
-fy2010_df <- no_summer_df |>
-  filter(student_group > 2009)
-```
-
-```{r}
-#| label: major-divisons
-
-major_mapping <- read_excel("major_divisions.xlsx")
-
-student_divisions <- fy2010_df |>
-  select(masked_student_ID, first_major_descr, second_major_descr) |>
-  pivot_longer(cols = c(first_major_descr, second_major_descr), 
-               names_to = "major_type", values_to = "major") |>
-  filter(!is.na(major)) |>
-  mutate(
-    major_clean = str_remove(major, "\\s*\\([^)]*\\)$")
-  ) |>
-  left_join(major_mapping, by = "major_clean") |>
-  group_by(masked_student_ID) |>
-  summarise(
-    is_art_humanity = as.integer(any(is_art_humanity == 1, na.rm = TRUE)),
-    is_social_sci   = as.integer(any(is_social_sci == 1, na.rm = TRUE)),
-    is_natural_sci  = as.integer(any(is_natural_sci == 1, na.rm = TRUE)),
-    is_engr         = as.integer(any(is_engr == 1, na.rm = TRUE)),
-    tbd             = as.integer(any(tbd == 1, na.rm = TRUE)),
-    .groups = "drop"
-  )
-
-divisions_df <- fy2010_df |>
-  left_join(student_divisions, by = "masked_student_ID")
-```
-
-```{r}
 #| label: non-acad
 
 # all ACT courses are either NA or < 1 credit
 # majority of MUS and STU are < 1, assuming NA are < 1
-academ_df <- divisions_df |>
+academ_df <- no_summer_df |>
   filter(division != "Other") |>
   filter(class_component != "ACT") |> 
   filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
@@ -552,21 +473,66 @@ course_load_df <- academ_df |>
   ) |>
   ungroup()
 
-divisions_df <- academ_df |>
+numbered_df <- academ_df |>
   left_join(
     course_load_df, by = c("masked_student_ID", "term_enrolled")
   )
-```
-
-```{r}
-#| label: acad-lvl
 
 # academic_level_bot doesn't seem that trustworthy?
 # not as important now that we have complete course history for all students
-table(
-  divisions_df$semester_num[!is.na(divisions_df$semester_num)],
-  divisions_df$academic_level_bot[!is.na(divisions_df$academic_level_bot)]
-)
+numbered_df |>
+  filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
+  count(semester_num, academic_level_bot) |>
+  pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
+```
+
+```{r}
+#| label: missing-majors
+
+proportion_first_major <- numbered_df |>
+  group_by(student_group, masked_student_ID) |>
+  summarise(
+    has_first_major = mean(!is.na(first_major_descr)),
+    .groups = "drop"
+  ) |>
+  group_by(student_group) |>
+  summarise(
+    prop_major = mean(has_first_major),
+    n_students = n(),
+    .groups = "drop"
+  )
+print(proportion_first_major, n = Inf)
+
+fy2010_df <- numbered_df |>
+  filter(student_group > 2009)
+```
+
+```{r}
+#| label: major-divisons
+
+major_mapping <- read_excel("major_divisions.xlsx")
+
+student_divisions <- fy2010_df |>
+  select(masked_student_ID, first_major_descr, second_major_descr) |>
+  pivot_longer(cols = c(first_major_descr, second_major_descr), 
+               names_to = "major_type", values_to = "major") |>
+  filter(!is.na(major)) |>
+  mutate(
+    major_clean = str_remove(major, "\\s*\\([^)]*\\)$")
+  ) |>
+  left_join(major_mapping, by = "major_clean") |>
+  group_by(masked_student_ID) |>
+  summarise(
+    is_art_humanity = as.integer(any(is_art_humanity == 1, na.rm = TRUE)),
+    is_social_sci   = as.integer(any(is_social_sci == 1, na.rm = TRUE)),
+    is_natural_sci  = as.integer(any(is_natural_sci == 1, na.rm = TRUE)),
+    is_engr         = as.integer(any(is_engr == 1, na.rm = TRUE)),
+    tbd             = as.integer(any(tbd == 1, na.rm = TRUE)),
+    .groups = "drop"
+  )
+
+divisions_df <- fy2010_df |>
+  left_join(student_divisions, by = "masked_student_ID")
 ```
 
 ```{r}
@@ -626,11 +592,9 @@ final_clean_df <- gpa_df |>
 ```
 
 ```{r}
-glimpse(final_clean_df)
-```
-
-```{r}
 #| label: missing-data-after
+
+glimpse(final_clean_df)
 
 missing_summary <- final_clean_df |>
   summarise(across(
@@ -650,54 +614,6 @@ missing_summary <- final_clean_df |>
           
 print(missing_summary, n = Inf)
 ```
-
-## Data Dictionary
-
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| Variable name                             | Type                  | Description                                                                                                             |
-+===========================================+=======================+=========================================================================================================================+
-| masked_student_ID                         | numerical             | unique ID for students                                                                                                  |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| student_acad_prog                         | categorical           | whether or ot the student is in Trinity or Pratt                                                                        |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| academic_level_bot                        | categorical           | approximation of academic year of student                                                                               |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| first_major                               | categorical           | final values at graduation, may not reflect values at time of taking course                                             |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| major_division                            |                       | IDM + other divisions                                                                                                   |
-|                                           |                       |                                                                                                                         |
-|                                           |                       | (captures second major info as well)                                                                                    |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| num_plans                                 | numerical             | number of academic plans (majors, minors, and certificates) max=3                                                       |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| has_minor, has_certificate, double_major? |                       |                                                                                                                         |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| term_admit                                | categorical (ordered) | term and year combination                                                                                               |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| term_year_admit                           | categorical (ordered) | academic year (summer 2 - summer 1)                                                                                     |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| term_enrolled                             | categorical (ordered) | term and year combination                                                                                               |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| term_year_enrolled                        | categorical (ordered) | academic year (summer 2 - summer 1)                                                                                     |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| division                                  | categorical           | Arts and Humanities, Social Sciences, Natural Sciences (see Trinity) + Engineering, Writing, and Other                  |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| catalog_level                             | categorical           |                                                                                                                         |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| course_id                                 | numerical             | unique ID for courses, same across crosslists (might change across semesters?) \*use this over class_nbr_rev for counts |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| final_grade                               | categorical           |                                                                                                                         |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| is_SU                                     | binary                | response variable in model, S or U or P (before 2010)                                                                   |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| timeperiod                                | categorical           | pre_covid = before spring 2020, dur_covid = spring 2020 to summer 2 2022, post_covid fall 2022                          |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| took_summer_courses                       | binary                | if the student has taken courses during summer 1, summer 2, or summer full                                              |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| prev_sumGPA                               | numerical             | Approx GPA from previous spring/fall semester                                                                           |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
-| total_students_in_course                  | numerical             | total number of students in a course in given semester (includes all sections of a crosslist)                           |
-+-------------------------------------------+-----------------------+-------------------------------------------------------------------------------------------------------------------------+
 
 ## EDA
 
@@ -989,4 +905,258 @@ ggplot(plot_df, aes(x = n_SU_courses, y = n_students)) +
     y = "Number of Students"
   ) +
   theme_minimal()
+```
+
+Tables
+
+columns are students who have at least one major that falls into that division
+
+rows are classes that belong to which division
+
+cells are the probability a student who has major in that division takes a class in the division (student lvl)
+
+```{r}
+
+
+# Step 1: put majors in long format
+major_long <- final_clean_df %>%
+  select(masked_student_ID, division,
+         is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd) %>%
+  pivot_longer(
+    cols = c(is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd),
+    names_to = "major_division",
+    values_to = "has_major"
+  )
+
+# Step 2: expand to all student × division combos
+all_divisions <- unique(final_clean_df$division)
+
+expanded <- major_long %>%
+  distinct(masked_student_ID, major_division, has_major) %>%
+  crossing(division = all_divisions) %>%
+  left_join(
+    major_long %>% distinct(masked_student_ID, division) %>% mutate(took_course = 1),
+    by = c("masked_student_ID", "division")
+  ) %>%
+  mutate(took_course = if_else(is.na(took_course), 0L, took_course))
+
+# Step 3: counts for students WITH the major
+counts <- expanded %>%
+  filter(has_major == 1) %>%   # only students who have that major
+  group_by(division, major_division) %>%
+  summarise(
+    n_total = n(),
+    n_took  = sum(took_course),
+    .groups = "drop"
+  )
+
+# Step 4: compute probability + Wilson CI
+probs <- counts %>%
+  rowwise() %>%
+  mutate(
+    ci = list(binom.confint(n_took, n_total, methods = "wilson"))
+  ) %>%
+  unnest(ci) %>%
+  transmute(
+    division,
+    major_division,
+    display = sprintf("%.3f [%.3f, %.3f]", mean, lower, upper)
+  ) %>%
+  pivot_wider(names_from = major_division, values_from = display)
+
+# ---- Step 2: compute last row (percent of students who have each major) ----
+total_students <- expanded %>%
+  group_by(major_division) %>%
+  summarise(
+    pct_students = mean(has_major) * 100,
+    .groups = "drop"
+  ) %>%
+  transmute(major_division, display = sprintf("%.1f%%", pct_students)) %>%
+  pivot_wider(names_from = major_division, values_from = display) %>%
+  mutate(division = "Pct Ppl")
+
+# ---- Step 3: compute last column (percent of courses in each division) ----
+total_courses <- final_clean_df %>%
+  group_by(division) %>%
+  summarise(
+    pct_courses = n() / nrow(final_clean_df) * 100,
+    .groups = "drop"
+  ) %>%
+  transmute(division, Total = sprintf("%.1f%%", pct_courses))
+
+# ---- Step 4: merge totals into table ----
+final_table <- probs %>%
+  left_join(total_courses, by = "division") %>%
+  bind_rows(total_students)
+
+# Example abbreviation mapping for majors
+abbr_map <- c(
+  "is_art_humanity" = "ART",
+  "is_social_sci"   = "SS",
+  "is_natural_sci"  = "NS",
+  "is_engr"         = "EGR",
+  "tbd"             = "TBD"
+)
+
+# Replace column names
+final_table_abbr <- final_table %>%
+  rename_with(~ abbr_map[.x], .cols = names(abbr_map))
+
+# Example for row names / course divisions
+division_map <- c(
+  "Arts & Humanities" = "ART",
+  "Social Sciences"   = "SS",
+  "Natural Sciences"  = "NS",
+  "Engineering"       = "EGR",
+  "WRITING"           = "WR"
+)
+
+final_table_abbr <- final_table_abbr %>%
+  mutate(division = recode(division, !!!division_map))
+
+# format final_table for display
+final_table_abbr %>%
+  kable(
+    format = "latex", # <-- LaTeX format for PDF
+    booktabs = TRUE,
+    caption = "Student-Level Probabilities by Major and Course Division",
+    align = c("l", rep("c", ncol(.) - 1))
+  ) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>%
+  row_spec(nrow(final_table), bold = TRUE) %>%
+  column_spec(ncol(final_table), bold = TRUE)
+```
+
+```{r}
+# Percent of SU courses that are U
+final_clean_df |>
+  filter(is_SU == 1) |>
+  summarise(
+    pct_U = mean(final_grade == "U", na.rm = TRUE)
+  )
+
+# Percent of non-SU courses that are D-F
+grades_DF <- c("D-", "D", "D+", "F")
+final_clean_df |>
+  filter(is_SU == 0) |>
+  summarise(
+    pct_DF = mean(final_grade %in% grades_DF, na.rm = TRUE)
+  )
+```
+
+Major imputation test...
+
+```{r}
+students_with_major <- final_clean_df %>%
+  filter(!is.na(first_major))
+
+# --- Parameters ---
+division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences") # exclude Engineering
+x_vals <- 1:14  # candidate thresholds
+
+# --- Step 1: Student-level flags ---
+student_flags <- students_with_major %>%
+  select(masked_student_ID, is_art_humanity:is_engr) %>%
+  pivot_longer(
+    cols = is_art_humanity:is_engr,
+    names_to = "division_flag",
+    values_to = "is_division"
+  ) %>%
+  mutate(
+    division = case_when(
+      division_flag == "is_art_humanity" ~ "Arts & Humanities",
+      division_flag == "is_social_sci"  ~ "Social Sciences",
+      division_flag == "is_natural_sci" ~ "Natural Sciences",
+      TRUE ~ division_flag
+    )
+  ) %>%
+  filter(division %in% division_cols) %>%
+  select(masked_student_ID, division, is_division) %>%
+  distinct()
+
+# --- Step 2: Count courses per student per division ---
+student_div_counts <- students_with_major %>%
+  filter(!is.na(division), !(division %in% c("WRITING", "Engineering"))) %>%
+  group_by(masked_student_ID, division) %>%
+  summarise(
+    n_courses = n(),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(
+    names_from = division,
+    values_from = n_courses,
+    values_fill = 0
+  ) %>%
+  pivot_longer(
+    cols = all_of(division_cols),
+    names_to = "division",
+    values_to = "n_courses"
+  )
+
+# --- Step 3: Join counts with flags ---
+check_table <- student_div_counts %>%
+  left_join(student_flags, by = c("masked_student_ID", "division"))
+
+# --- Step 4: Function to compute error for one threshold ---
+compute_error <- function(x_thresh) {
+  check_table %>%
+    mutate(took_gt_x = n_courses > x_thresh) %>%
+    group_by(division) %>%
+    summarise(
+      TP = sum(took_gt_x & is_division == 1, na.rm = TRUE),
+      FP = sum(took_gt_x & is_division == 0, na.rm = TRUE),
+      TN = sum(!took_gt_x & is_division == 0, na.rm = TRUE),
+      FN = sum(!took_gt_x & is_division == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      x = x_thresh,
+      error_rate = (FP + FN) / (TP + FP + TN + FN)
+    )
+}
+
+# --- Step 5: Apply to all thresholds ---
+errors_by_x <- map_dfr(x_vals, compute_error)
+
+# --- Step 6: Plot error rate vs threshold ---
+ggplot(errors_by_x, aes(x = x, y = error_rate, color = division)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Course threshold (x)", y = "Error rate",
+       title = "Error rate vs course threshold for each division")
+
+# --- Step 7 (optional): Pick best x per division ---
+best_x <- errors_by_x %>%
+  group_by(division) %>%
+  slice_min(error_rate, n = 1) %>%
+  select(division, best_x = x, error_rate)
+
+# --- Step 8 (optional): Apply best threshold to flag students ---
+student_flags_estimated <- check_table %>%
+  left_join(best_x, by = "division") %>%
+  mutate(
+    estimated_flag = n_courses > best_x
+  )
+
+```
+
+```{r}
+students_missing_major <- final_clean_df %>%
+  filter(is.na(first_major) & student_group > 2019 & student_group < 2023) |>
+  filter(student_acad_prog == "Trinity") |>
+  filter(max_units >= 1)
+
+courses_by_division <- students_missing_major %>%
+  filter(!is.na(division), division != "WRITING", division != "Engineering") %>%
+  group_by(masked_student_ID, division) %>%
+  summarise(
+    n_courses = n(),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(
+    names_from = division,
+    values_from = n_courses,
+    values_fill = 0  # fill 0 if student took 0 courses in that division
+  )
+
 ```
