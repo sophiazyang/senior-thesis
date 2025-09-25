@@ -416,6 +416,8 @@ studied_away <- away_df |>
   )
 away_df <- away_df |>
   left_join(studied_away, by = "masked_student_ID")
+
+saveRDS(away_df, file = "data/7-abroad.rds")
 ```
 
 ```{r}
@@ -434,6 +436,8 @@ summer_df <- away_df |>
 
 no_summer_df <- summer_df |>
   filter(!str_starts(term_enrolled, "Summer"))
+
+saveRDS(no_summer_df, file = "data/8-no-summer.rds")
 ```
 
 ```{r}
@@ -484,6 +488,8 @@ numbered_df |>
   filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
   count(semester_num, academic_level_bot) |>
   pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
+
+saveRDS(numbered_df, file = "data/9-courseload.rds")
 ```
 
 ```{r}
@@ -505,6 +511,8 @@ print(proportion_first_major, n = Inf)
 
 fy2010_df <- numbered_df |>
   filter(student_group > 2009)
+
+saveRDS(fy2010_df, file = "data/10-fy2010.rds")
 ```
 
 ```{r}
@@ -529,10 +537,18 @@ student_divisions <- fy2010_df |>
     is_engr         = as.integer(any(is_engr == 1, na.rm = TRUE)),
     tbd             = as.integer(any(tbd == 1, na.rm = TRUE)),
     .groups = "drop"
-  )
+  ) 
+
+# dropping 204 students with program 2 or unknown IDM
+student_divisions |>
+  filter(tbd == 1) |>
+  summarise(n = n())
 
 divisions_df <- fy2010_df |>
-  left_join(student_divisions, by = "masked_student_ID")
+  left_join(student_divisions, by = "masked_student_ID") |> 
+  filter(!(tbd == 1))
+
+saveRDS(divisions_df, file = "data/11-major-div.rds")
 ```
 
 ```{r}
@@ -575,6 +591,8 @@ gpa_df <- divisions_df |>
   ) |>
   filter(!str_detect(location, "AWAY"))
 
+saveRDS(gpa_df, file = "data/12-gpa.rds")
+
 class_components2 <- gpa_df |>
   count(class_component) |>
   mutate(prop = n / sum(n)) |>
@@ -589,6 +607,8 @@ final_clean_df <- gpa_df |>
   mutate(
     did_indep_study = class_component == "IND"
   )
+
+saveRDS(final_clean_df, file = "data/13-final.rds")
 ```
 
 ```{r}
@@ -919,9 +939,9 @@ cells are the probability a student who has major in that division takes a class
 
 
 # Step 1: put majors in long format
-major_long <- final_clean_df %>%
+major_long <- final_clean_df |>
   select(masked_student_ID, division,
-         is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd) %>%
+         is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd) |>
   pivot_longer(
     cols = c(is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd),
     names_to = "major_division",
@@ -931,19 +951,19 @@ major_long <- final_clean_df %>%
 # Step 2: expand to all student × division combos
 all_divisions <- unique(final_clean_df$division)
 
-expanded <- major_long %>%
-  distinct(masked_student_ID, major_division, has_major) %>%
-  crossing(division = all_divisions) %>%
+expanded <- major_long |>
+  distinct(masked_student_ID, major_division, has_major) |>
+  crossing(division = all_divisions) |>
   left_join(
-    major_long %>% distinct(masked_student_ID, division) %>% mutate(took_course = 1),
+    major_long |> distinct(masked_student_ID, division) |> mutate(took_course = 1),
     by = c("masked_student_ID", "division")
-  ) %>%
+  ) |>
   mutate(took_course = if_else(is.na(took_course), 0L, took_course))
 
 # Step 3: counts for students WITH the major
-counts <- expanded %>%
-  filter(has_major == 1) %>%   # only students who have that major
-  group_by(division, major_division) %>%
+counts <- expanded |>
+  filter(has_major == 1) |>   # only students who have that major
+  group_by(division, major_division) |>
   summarise(
     n_total = n(),
     n_took  = sum(took_course),
@@ -951,42 +971,42 @@ counts <- expanded %>%
   )
 
 # Step 4: compute probability + Wilson CI
-probs <- counts %>%
-  rowwise() %>%
+probs <- counts |>
+  rowwise() |>
   mutate(
     ci = list(binom.confint(n_took, n_total, methods = "wilson"))
-  ) %>%
-  unnest(ci) %>%
+  ) |>
+  unnest(ci) |>
   transmute(
     division,
     major_division,
     display = sprintf("%.3f [%.3f, %.3f]", mean, lower, upper)
-  ) %>%
+  ) |>
   pivot_wider(names_from = major_division, values_from = display)
 
 # ---- Step 2: compute last row (percent of students who have each major) ----
-total_students <- expanded %>%
-  group_by(major_division) %>%
+total_students <- expanded |>
+  group_by(major_division) |>
   summarise(
     pct_students = mean(has_major) * 100,
     .groups = "drop"
-  ) %>%
-  transmute(major_division, display = sprintf("%.1f%%", pct_students)) %>%
-  pivot_wider(names_from = major_division, values_from = display) %>%
+  ) |>
+  transmute(major_division, display = sprintf("%.1f%%", pct_students)) |>
+  pivot_wider(names_from = major_division, values_from = display) |>
   mutate(division = "Pct Ppl")
 
 # ---- Step 3: compute last column (percent of courses in each division) ----
-total_courses <- final_clean_df %>%
-  group_by(division) %>%
+total_courses <- final_clean_df |>
+  group_by(division) |>
   summarise(
     pct_courses = n() / nrow(final_clean_df) * 100,
     .groups = "drop"
-  ) %>%
+  ) |>
   transmute(division, Total = sprintf("%.1f%%", pct_courses))
 
 # ---- Step 4: merge totals into table ----
-final_table <- probs %>%
-  left_join(total_courses, by = "division") %>%
+final_table <- probs |>
+  left_join(total_courses, by = "division") |>
   bind_rows(total_students)
 
 # Example abbreviation mapping for majors
@@ -999,7 +1019,7 @@ abbr_map <- c(
 )
 
 # Replace column names
-final_table_abbr <- final_table %>%
+final_table_abbr <- final_table |>
   rename_with(~ abbr_map[.x], .cols = names(abbr_map))
 
 # Example for row names / course divisions
@@ -1011,19 +1031,19 @@ division_map <- c(
   "WRITING"           = "WR"
 )
 
-final_table_abbr <- final_table_abbr %>%
+final_table_abbr <- final_table_abbr |>
   mutate(division = recode(division, !!!division_map))
 
 # format final_table for display
-final_table_abbr %>%
+final_table_abbr |>
   kable(
     format = "latex", # <-- LaTeX format for PDF
     booktabs = TRUE,
     caption = "Student-Level Probabilities by Major and Course Division",
     align = c("l", rep("c", ncol(.) - 1))
-  ) %>%
-  kable_styling(latex_options = c("striped", "hold_position")) %>%
-  row_spec(nrow(final_table), bold = TRUE) %>%
+  ) |>
+  kable_styling(latex_options = c("striped", "hold_position")) |>
+  row_spec(nrow(final_table), bold = TRUE) |>
   column_spec(ncol(final_table), bold = TRUE)
 ```
 
@@ -1047,7 +1067,7 @@ final_clean_df |>
 Major imputation test...
 
 ```{r}
-students_with_major <- final_clean_df %>%
+students_with_major <- final_clean_df |>
   filter(!is.na(first_major))
 
 # --- Parameters ---
@@ -1055,13 +1075,13 @@ division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences") #
 x_vals <- 1:14  # candidate thresholds
 
 # --- Step 1: Student-level flags ---
-student_flags <- students_with_major %>%
-  select(masked_student_ID, is_art_humanity:is_engr) %>%
+student_flags <- students_with_major |>
+  select(masked_student_ID, is_art_humanity:is_engr) |>
   pivot_longer(
     cols = is_art_humanity:is_engr,
     names_to = "division_flag",
     values_to = "is_division"
-  ) %>%
+  ) |>
   mutate(
     division = case_when(
       division_flag == "is_art_humanity" ~ "Arts & Humanities",
@@ -1069,24 +1089,24 @@ student_flags <- students_with_major %>%
       division_flag == "is_natural_sci" ~ "Natural Sciences",
       TRUE ~ division_flag
     )
-  ) %>%
-  filter(division %in% division_cols) %>%
-  select(masked_student_ID, division, is_division) %>%
+  ) |>
+  filter(division %in% division_cols) |>
+  select(masked_student_ID, division, is_division) |>
   distinct()
 
 # --- Step 2: Count courses per student per division ---
-student_div_counts <- students_with_major %>%
-  filter(!is.na(division), !(division %in% c("WRITING", "Engineering"))) %>%
-  group_by(masked_student_ID, division) %>%
+student_div_counts <- students_with_major |>
+  filter(!is.na(division), !(division %in% c("WRITING", "Engineering"))) |>
+  group_by(masked_student_ID, division) |>
   summarise(
     n_courses = n(),
     .groups = "drop"
-  ) %>%
+  ) |>
   pivot_wider(
     names_from = division,
     values_from = n_courses,
     values_fill = 0
-  ) %>%
+  ) |>
   pivot_longer(
     cols = all_of(division_cols),
     names_to = "division",
@@ -1094,21 +1114,21 @@ student_div_counts <- students_with_major %>%
   )
 
 # --- Step 3: Join counts with flags ---
-check_table <- student_div_counts %>%
+check_table <- student_div_counts |>
   left_join(student_flags, by = c("masked_student_ID", "division"))
 
 # --- Step 4: Function to compute error for one threshold ---
 compute_error <- function(x_thresh) {
-  check_table %>%
-    mutate(took_gt_x = n_courses > x_thresh) %>%
-    group_by(division) %>%
+  check_table |>
+    mutate(took_gt_x = n_courses > x_thresh) |>
+    group_by(division) |>
     summarise(
       TP = sum(took_gt_x & is_division == 1, na.rm = TRUE),
       FP = sum(took_gt_x & is_division == 0, na.rm = TRUE),
       TN = sum(!took_gt_x & is_division == 0, na.rm = TRUE),
       FN = sum(!took_gt_x & is_division == 1, na.rm = TRUE),
       .groups = "drop"
-    ) %>%
+    ) |>
     mutate(
       x = x_thresh,
       error_rate = (FP + FN) / (TP + FP + TN + FN)
@@ -1126,14 +1146,14 @@ ggplot(errors_by_x, aes(x = x, y = error_rate, color = division)) +
        title = "Error rate vs course threshold for each division")
 
 # --- Step 7 (optional): Pick best x per division ---
-best_x <- errors_by_x %>%
-  group_by(division) %>%
-  slice_min(error_rate, n = 1) %>%
+best_x <- errors_by_x |>
+  group_by(division) |>
+  slice_min(error_rate, n = 1) |>
   select(division, best_x = x, error_rate)
 
 # --- Step 8 (optional): Apply best threshold to flag students ---
-student_flags_estimated <- check_table %>%
-  left_join(best_x, by = "division") %>%
+student_flags_estimated <- check_table |>
+  left_join(best_x, by = "division") |>
   mutate(
     estimated_flag = n_courses > best_x
   )
@@ -1141,18 +1161,18 @@ student_flags_estimated <- check_table %>%
 ```
 
 ```{r}
-students_missing_major <- final_clean_df %>%
+students_missing_major <- final_clean_df |>
   filter(is.na(first_major) & student_group > 2019 & student_group < 2023) |>
   filter(student_acad_prog == "Trinity") |>
   filter(max_units >= 1)
 
-courses_by_division <- students_missing_major %>%
-  filter(!is.na(division), division != "WRITING", division != "Engineering") %>%
-  group_by(masked_student_ID, division) %>%
+courses_by_division <- students_missing_major |>
+  filter(!is.na(division), division != "WRITING", division != "Engineering") |>
+  group_by(masked_student_ID, division) |>
   summarise(
     n_courses = n(),
     .groups = "drop"
-  ) %>%
+  ) |>
   pivot_wider(
     names_from = division,
     values_from = n_courses,

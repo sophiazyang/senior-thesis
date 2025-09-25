@@ -1,0 +1,426 @@
+---
+title: "EDA"
+format: pdf
+editor: visual
+author: Sophia Yang
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(tidyverse)
+library(viridis)
+```
+
+```{r}
+#| label: load in data
+df <- readRDS("data/final.rds")
+```
+
+List of all variables of interest
+
+-   student_acad_prog
+
+-   academic_level_bot
+
+-   first_major
+
+-   second_major
+
+-   term_enrolled
+
+-   division
+
+-   catalog_level
+
+-   max_units
+
+-   class_component
+
+-   final_grade
+
+-   student_group
+
+-   total_enrolled (invalid)
+
+-   year_enrolled
+
+-   is_SU
+
+-   timeperiod
+
+-   num_plans
+
+-   studied_away
+
+-   took_summer_courses
+
+-   term_units
+
+-   semester_num
+
+-   num_overloads
+
+-   total_overloads
+
+-   early_grad
+
+-   is_art_humanity
+
+-   is_social_sci
+
+-   is_natural_sci
+
+-   is_engr
+
+-   prev_semGPA
+
+-   did_indep_study
+
+## Differences Between Student Groups
+
+```{r}
+df2 <- df |>
+  group_by(masked_student_ID) |>
+  mutate(total_num_SU = sum(is_SU, na.rm = TRUE))
+
+ggplot(df2, aes(x = total_num_SU, fill = factor(student_acad_prog))) +
+  geom_histogram(position = "dodge", bins = 30) +
+  facet_wrap(~ student_group, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Total S/U Courses by Student Group",
+    x = "Total Number of S/U Courses", y = "Count", fill = "Academic Program"
+  )
+```
+
+```{r}
+ggplot(df, aes(x = total_overloads, fill = factor(student_acad_prog))) +
+  geom_histogram(position = "dodge", bins = 30) +
+  facet_wrap(~ student_group, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Total Overloads by Student Group",
+    x = "Total Number of Overloads", y = "Count", fill = "Academic Program"
+  )
+```
+
+```{r}
+df2 <- df |>
+  mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away))
+
+ggplot(df2, aes(x = student_group)) +
+  geom_bar() +
+  facet_grid(student_acad_prog ~ studied_away, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Studied Away by Student Group and Academic Program",
+    x = "Student Group", y = "Count"
+  )
+```
+
+```{r}
+ggplot(df, aes(x = student_group)) +
+  geom_bar() +
+  facet_grid(student_acad_prog ~ did_indep_study, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Independent Study by Student Group and Academic Program",
+    x = "Student Group", y = "Count"
+  )
+```
+
+```{r}
+ggplot(df, aes(x = student_group)) +
+  geom_bar() +
+  facet_grid(student_acad_prog ~ early_grad, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Early Graduation by Student Group and Academic Program",
+    x = "Student Group", y = "Count"
+  )
+```
+
+```{r}
+ggplot(df, aes(x = student_group)) +
+  geom_bar() +
+  facet_grid(student_acad_prog ~ took_summer_courses, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = "Summer Courses by Student Group and Academic Program",
+    x = "Student Group", y = "Count"
+  )
+```
+
+## Course Trends over Terms
+
+```{r}
+df_course_counts <- df |>
+  group_by(term_enrolled, course_ID) |>
+  summarise(
+    enrollment_count = n(),
+    .groups = "drop"
+  )
+
+ggplot(df_course_counts, aes(x = term_enrolled, y = enrollment_count)) +
+  geom_boxplot(fill = "#1f77b4") +
+  theme_minimal() +
+  labs(
+    title = "Course Enrollment Distribution by Term",
+    x = "Term", y = "Number of Students"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(df_course_counts, aes(x = term_enrolled, y = enrollment_count)) +
+  geom_boxplot(fill = "#1f77b4") +
+  theme_minimal() +
+  labs(
+    title = "Course Enrollment Distribution by Term",
+    x = "Term", y = "Number of Students"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_cartesian(ylim = c(0, 100))
+```
+
+```{r}
+letter_grades <- c("A+", "A", "A-", 
+                   "B+", "B", "B-", 
+                   "C+", "C", "C-", 
+                   "D+", "D", "D-", 
+                   "F")
+
+df_course_SU <- df |>
+  group_by(term_enrolled, course_ID, division) |>
+  summarise(
+    n_total = n(),
+    n_letter = sum(final_grade %in% letter_grades, na.rm = TRUE),
+    n_SU = sum(final_grade %in% c("S", "U"), na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    prop_letter = n_letter / n_total,
+    prop_SU = n_SU / n_total,
+    SU_required = prop_letter == 0,
+    all_graded = prop_SU == 0
+  )
+
+
+df_term_summary <- df_course_SU |>
+  group_by(term_enrolled) |>
+  summarise(
+    n_courses = n(),
+    n_all_graded = sum(all_graded, na.rm = TRUE),
+    n_SU_required = sum(SU_required, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    prop_all_graded = n_all_graded / n_courses,
+    prop_SU_required = n_SU_required / n_courses,
+    prop_partial = 1- prop_all_graded - prop_SU_required
+  )
+
+df_term_long <- df_term_summary |>
+  select(term_enrolled, prop_all_graded, prop_SU_required, prop_partial) |>
+  pivot_longer(
+    cols = starts_with("prop"),
+    names_to = "type",
+    values_to = "proportion"
+  ) |>
+  mutate(
+    type = recode(type,
+                  prop_all_graded = "All Graded",
+                  prop_SU_required = "S/U Required",
+                  prop_partial = "At least 1 S/U")
+  )
+
+ggplot(df_term_long, aes(x = term_enrolled, y = proportion, 
+                         color = type, group = type)) +
+  geom_line() +
+  geom_point() +
+  scale_color_manual(values = c(
+    "All Graded" = "darkblue",
+    "S/U Required" = "green",
+    "At least 1 S/U" = "lightgray"
+  )) +
+  theme_minimal() +
+  labs(
+    title = "Proportion of Courses by Grading Requirement",
+    x = "Term", 
+    y = "Proportion of Courses",
+    color = "Course Type"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+
+df_term_div_summary <- df_course_SU |>
+  group_by(term_enrolled, division) |>
+  summarise(
+    n_courses = n(),
+    n_all_graded = sum(all_graded, na.rm = TRUE),
+    n_SU_required = sum(SU_required, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    prop_all_graded = n_all_graded / n_courses,
+    prop_SU_required = n_SU_required / n_courses,
+    prop_partial = 1- prop_all_graded - prop_SU_required
+  )
+
+df_term_div_long <- df_term_div_summary |>
+  select(term_enrolled, division, prop_all_graded, prop_SU_required, 
+         prop_partial, n_courses) |>
+  pivot_longer(
+    cols = starts_with("prop"),
+    names_to = "type",
+    values_to = "proportion"
+  ) |>
+  mutate(
+    type = recode(type,
+                  prop_all_graded = "All Graded",
+                  prop_SU_required = "S/U Required",
+                  prop_partial = "At least 1 S/U")
+  )
+
+ggplot(df_term_div_long, aes(x = term_enrolled, y = proportion, 
+                             color = type, group = type)) +
+  geom_line() +
+  geom_point() +
+  scale_color_manual(values = c(
+    "All Graded" = "darkblue",
+    "S/U Required" = "green",
+    "At least 1 S/U" = "lightgray"
+  )) +
+  facet_wrap(~ division) +
+  theme_minimal() +
+  labs(
+    title = "Proportion of Courses by Grading Requirement",
+    x = "Term",
+    y = "Proportion of Courses",
+    color = "Course Type"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+df_class_sizes <- df %>%
+  group_by(term_enrolled, course_ID, division) %>%
+  summarise(
+    class_size = n(),
+    .groups = "drop"
+  )
+
+df_div_summary <- df_class_sizes %>%
+  group_by(term_enrolled, division) %>%
+  summarise(
+    mean_size = mean(class_size),
+    sd_size   = sd(class_size),
+    n_classes = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    se = sd_size / sqrt(n_classes),
+    lower = mean_size - 1.96 * se,
+    upper = mean_size + 1.96 * se
+  )
+
+ggplot(df_div_summary, aes(x = term_enrolled, y = mean_size,
+                           color = division, group = division)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Average Class Size by Division Over Time",
+    x = "Term",
+    y = "Average Class Size",
+    color = "Division"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+df_div_summary |>
+  filter(division != "WRITING") |>
+  ggplot(aes(x = term_enrolled, y = mean_size, 
+               color = division, group = division)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Average Class Size by Division (excluding WRITING)",
+    x = "Term",
+    y = "Average Enrollment"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Relationship between Course Levels and Student Academic Status/# Semesters
+
+```{r}
+ggplot(df, aes(x = catalog_level)) +
+  geom_bar() +
+  facet_wrap(~ academic_level_bot) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+
+df_fallspring <- df |>
+  filter(str_detect(term_enrolled, "Fall|Spring")) |>
+  mutate(term_semester = str_extract(term_enrolled, "Fall|Spring"))
+
+ggplot(df_fallspring, aes(x = catalog_level, fill = term_semester)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~ academic_level_bot) +
+  scale_fill_manual(values = c("Fall" = "#1f77b4", "Spring" = "#ff7f0e")) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Catalog Levels: Fall vs Spring",
+    x = "Catalog Level", y = "Count", fill = "Semester"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+df_year <- df |>
+  mutate(
+    term_year = str_sub(term_enrolled, -4, -1) |> as.integer()
+  )
+
+ggplot(df_year, aes(x = term_year, fill = catalog_level)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~ academic_level_bot) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Catalog Levels Over Time",
+    x = "Year", y = "Proportion", fill = "Catalog Level"
+  )
+```
+
+```{r}
+df_year <- df |>
+  mutate(
+    term_year = str_sub(term_enrolled, -4, -1) |> as.integer()
+  )
+
+ggplot(df_year, aes(x = term_year, fill = catalog_level)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~ semester_num) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Catalog Levels Over Time",
+    x = "Year", y = "Proportion", fill = "Catalog Level"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Relation studied away and overloads
+
+Relation summer and overloads
+
+Relation studied away and summer
