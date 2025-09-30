@@ -18,6 +18,8 @@ library(viridis)
 ```{r}
 #| label: load in data
 df <- readRDS("data/final.rds")
+df_away <- readRDS("data/6-numplans.rds")
+df_summer <- readRDS("data/7-abroad.rds")
 ```
 
 List of all variables of interest
@@ -391,8 +393,8 @@ ggplot(df_term_div_long, aes(x = term_enrolled, y = proportion,
 ```
 
 ```{r}
-df_div_summary <- df %>%
-  group_by(term_enrolled, division) %>%
+df_div_summary <- df |>
+  group_by(term_enrolled, division) |>
   summarise(num_courses = n_distinct(course_ID), .groups = "drop")
 
 ggplot(df_div_summary, aes(x = term_enrolled, y = num_courses,
@@ -462,7 +464,7 @@ df_div_summary |>
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Relationship between Course Levels and Student Academic Status/# Semesters
+## Relationships with Student Academic Status/# Semesters
 
 ```{r}
 ggplot(df, aes(x = catalog_level, y = after_stat(prop), 
@@ -538,8 +540,6 @@ ggplot(df_year, aes(x = term_year, fill = catalog_level)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Relation studied away and overloads
-
 Relation summer and overloads
 
 Relation studied away and summer
@@ -612,8 +612,8 @@ ggplot(df_SU2, aes(x = factor(year_enrolled), y = total_SU)) +
 ```
 
 ```{r}
-df_divisions_unique <- df %>%
-  group_by(masked_student_ID) %>%
+df_divisions_unique <- df |>
+  group_by(masked_student_ID) |>
   mutate(
     num_divisions = is_art_humanity + is_social_sci + is_natural_sci + is_engr,
     division = case_when(
@@ -623,15 +623,15 @@ df_divisions_unique <- df %>%
       is_natural_sci == 1       ~ "Natural Sciences",
       is_engr == 1              ~ "Engineering"
     )
-  ) %>%
-  filter(!is.na(division)) %>%
+  ) |>
+  filter(!is.na(division)) |>
   select(masked_student_ID, division)
 
-df_SU_unique <- df_SU %>%
-  group_by(masked_student_ID, student_group, student_acad_prog, total_SU, has_ever_SU) %>%
+df_SU_unique <- df_SU |>
+  group_by(masked_student_ID, student_group, student_acad_prog, total_SU, has_ever_SU) |>
   summarise(.groups = "drop")
 
-df_SU_single_div <- df_SU_unique %>%
+df_SU_single_div <- df_SU_unique |>
   left_join(df_divisions_unique, by = "masked_student_ID")
 
 
@@ -729,4 +729,210 @@ ggplot(df_SU2, aes(x = factor(year_enrolled), y = total_SU)) +
     y = "Total S/U Courses",
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## More plots to organize...
+
+```{r}
+df_away <- df_away |>
+  filter(!is.na(location), location != "DURHAM", location != "ONLINE")
+
+df_summer <- df_summer |>
+  filter(str_starts(term_enrolled, "Summer"))
+
+ggplot(df_away, aes(x = academic_level_bot)) +
+  geom_bar(fill = "steelblue", color = "white") +
+  theme_minimal() +
+  labs(
+    title = "When do Students Study Away?",
+    x = "Academic Level",
+    y = "Count of Students"
+  )
+
+ggplot(df_summer, aes(x = academic_level_bot)) +
+  geom_bar(fill = "steelblue", color = "white") +
+  theme_minimal() +
+  labs(
+    title = "When do Students Take Summer Courses?",
+    x = "Academic Level",
+    y = "Count of Students"
+  )
+```
+
+```{r}
+
+# ---- Step 1: Summarize student-level grades to course-level ----
+course_summary <- df |>
+  group_by(course_ID, term_enrolled, timeperiod) |>
+  summarise(
+    n = n(),
+    n_AF = sum(final_grade %in% c("A+", "A", "A-", "B+", "B", "B-", 
+                            "C+", "C", "C-", "D+", "D", "D-", "F")),
+    n_SU = sum(final_grade %in% c("S", "U")),
+    n_W  = sum(final_grade == "W"),
+    .groups = "drop"
+  ) |>
+  mutate(
+    p_AF = n_AF / n,
+    p_SU = n_SU / n,
+    p_W  = n_W / n,
+    no_AF = (n_AF == 0),   # binary
+    no_SU = (n_SU == 0),    # binary
+    timeperiod = factor(timeperiod, 
+                        levels = c("pre_covid", "dur_covid", "post_covid"))
+  )
+
+# ---- Step 2: No AF / No SU plot with SE bars ----
+binary_summary <- course_summary |>
+  pivot_longer(c(no_AF, no_SU), names_to = "metric", values_to = "value") |>
+  group_by(timeperiod, metric) |>
+  summarise(
+    mean = mean(value),
+    se   = sqrt(mean * (1 - mean) / n()),  # binomial SE
+    .groups = "drop"
+  )
+
+p_noAF_SU <- ggplot(binary_summary, aes(x = timeperiod, y = mean, 
+                                        color = metric, group = metric)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  theme_minimal() +
+  labs(title = "Proportion of Courses with No AF or No SU Grades",
+       y = "Proportion")
+
+# ---- Step 3: High SU / High W threshold plots ----
+thresholds <- c(0.05, 0.10, 0.25)
+
+threshold_summary <- course_summary |>
+  tidyr::crossing(threshold = thresholds) |>
+  mutate(
+    high_SU = (p_SU >= threshold),
+    high_W  = (p_W  >= threshold)
+  ) |>
+  pivot_longer(c(high_SU, high_W), names_to = "metric", values_to = "value")
+
+# --- (A) Course-weighted version with SE bars ---
+threshold_courses <- threshold_summary |>
+  group_by(timeperiod, metric, threshold) |>
+  summarise(
+    prop = mean(value),
+    n_courses = n(),
+    se   = sqrt(prop * (1 - prop) / n_courses),  # binomial SE
+    .groups = "drop"
+  ) |>
+  mutate(weighting = "Course-weighted")
+
+# --- (B) Student-weighted version (weighted by course size, no SE) ---
+threshold_students <- threshold_summary |>
+  group_by(timeperiod, metric, threshold) |>
+  summarise(
+    prop = weighted.mean(value, w = n),
+    .groups = "drop"
+  ) |>
+  mutate(weighting = "Student-weighted",
+         se = NA)  # SE not meaningful for weighted students
+
+# Combine both
+threshold_combined <- bind_rows(threshold_courses, threshold_students)
+
+p_highSU_highW <- ggplot(threshold_combined, 
+                         aes(x = timeperiod, y = prop, 
+                             color = factor(threshold), group = threshold)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2,
+                data = threshold_combined |> filter(weighting == "Course-weighted")) +
+  facet_grid(metric ~ weighting, scales = "free_y",
+             labeller = labeller(weighting = c(
+               "Course-weighted" = "Proportion of Courses",
+               "Student-weighted" = "Proportion of Students"),
+               metric = c(
+                 "high_SU" = "High S/U",
+                 "high_W"  = "High W"
+               ))) +
+  theme_minimal() +
+  labs(title = "High S/U and High W Thresholds by Weighting Scheme",
+       y = NULL,
+       color = "Threshold")
+
+# ---- Step 4: Print or save plots ----
+p_noAF_SU
+p_highSU_highW
+
+```
+
+```{r}
+enrollment_summary <- df |>
+  group_by(course_ID, term_enrolled, timeperiod) |>
+  summarise(
+    total_enrollment = n(),  # number of students in the course
+    n_AF = sum(final_grade %in% c("A+", "A", "A-", "B+", "B", "B-", 
+                            "C+", "C", "C-", "D+", "D", "D-", "F")),
+    no_AF = (n_AF == 0),
+    .groups = "drop"
+  ) |>
+  filter(no_AF) |>  # keep only courses without A–F
+  group_by(timeperiod) |>
+  summarise(
+    avg_enrollment = mean(total_enrollment),
+    sd_enrollment  = sd(total_enrollment),
+    n_courses      = n(),
+    se_enrollment  = sd_enrollment / sqrt(n_courses),
+    .groups = "drop"
+  ) |>
+  mutate(
+    timeperiod = factor(timeperiod, levels = c("pre_covid", "dur_covid", "post_covid"))
+  )
+
+ggplot(enrollment_summary, aes(x = timeperiod, y = avg_enrollment, group = 1)) +
+  geom_line(color = "steelblue") +
+  geom_point(color = "steelblue") +
+  geom_errorbar(aes(ymin = avg_enrollment - se_enrollment,
+                    ymax = avg_enrollment + se_enrollment), width = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Average Class Size in Courses Without A–F Grades Over Time",
+    x = "Timeperiod",
+    y = "Average Enrollment",
+    caption = "Error bars = standard error of the mean"
+  )
+```
+
+```{r}
+withdrawal_summary <- df |>
+  group_by(course_ID, term_enrolled, timeperiod) |>
+  summarise(
+    total_enrollment = n(),
+    n_AF = sum(final_grade %in% c("A+", "A", "A-", "B+", "B", "B-", 
+                            "C+", "C", "C-", "D+", "D", "D-", "F")),
+    n_W  = sum(final_grade == "W"),
+    no_AF = (n_AF == 0),
+    prop_W = n_W / n(),
+    .groups = "drop"
+  ) |>
+  mutate(course_group = ifelse(no_AF, "No A–F grades", "Has A–F grades"))
+
+withdrawal_summary_by_term <- withdrawal_summary |>
+  group_by(timeperiod, course_group) |>
+  summarise(
+    mean_W = mean(prop_W),
+    se_W   = sd(prop_W) / sqrt(n()),
+    n_courses = n(),
+    .groups = "drop"
+  ) |>
+  mutate(timeperiod = factor(timeperiod, levels = c("pre_covid", "dur_covid", "post_covid")))
+
+ggplot(withdrawal_summary_by_term, aes(x = timeperiod, y = mean_W, 
+                                       color = course_group, group = course_group)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = mean_W - se_W, ymax = mean_W + se_W), width = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Withdrawal Proportions by Course Type Across Timeperiods",
+    x = "Timeperiod",
+    y = "Average Withdrawal Proportion",
+    color = "Course Type"
+  )
 ```
