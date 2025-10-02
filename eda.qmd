@@ -92,17 +92,18 @@ df2_props <- df |>
   count(student_group, student_acad_prog, total_num_SU) |>
   group_by(student_acad_prog, student_group) |>
   mutate(prop = n / sum(n)) |>
-  ungroup()
+  ungroup() |>
+  mutate(has_SU = ifelse(total_num_SU > 0, "Has S/U", "Never S/U"))
 
 ggplot(df2_props, aes(
-  x = student_group,
-  y = prop,
-  color = factor(total_num_SU),
-  group = total_num_SU
-)) +
+    x = student_group,
+    y = prop,
+    color = factor(total_num_SU),
+    group = total_num_SU
+  )) +
   geom_line() +
   geom_point() +
-  facet_wrap(~ student_acad_prog) +
+  facet_grid(vars(student_acad_prog), vars(has_SU)) +
   theme_minimal() +
   labs(
     title = "Proportion of Students by Group and Total S/U Courses",
@@ -194,10 +195,10 @@ ggplot(df_audit_counts, aes(x = student_group, y = prop)) +
 ```
 
 ```{r}
-df2 <- df |>
-  mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away))
-
-ggplot(df2, aes(x = student_group)) +
+df |>
+  mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away)) |>
+  distinct(masked_student_ID, .keep_all = TRUE) |>
+  ggplot(aes(x = student_group)) +
   geom_bar() +
   facet_grid(student_acad_prog ~ studied_away, scales = "free_y") +
   theme_minimal() +
@@ -208,7 +209,9 @@ ggplot(df2, aes(x = student_group)) +
 ```
 
 ```{r}
-ggplot(df, aes(x = student_group)) +
+df |>
+  distinct(masked_student_ID, .keep_all = TRUE) |>
+  ggplot(aes(x = student_group)) +
   geom_bar() +
   facet_grid(student_acad_prog ~ did_indep_study, scales = "free_y") +
   theme_minimal() +
@@ -219,7 +222,9 @@ ggplot(df, aes(x = student_group)) +
 ```
 
 ```{r}
-ggplot(df, aes(x = student_group)) +
+df |>
+  distinct(masked_student_ID, .keep_all = TRUE) |>
+  ggplot(aes(x = student_group)) +
   geom_bar() +
   facet_grid(student_acad_prog ~ early_grad, scales = "free_y") +
   theme_minimal() +
@@ -230,7 +235,9 @@ ggplot(df, aes(x = student_group)) +
 ```
 
 ```{r}
-ggplot(df, aes(x = student_group)) +
+df |>
+  distinct(masked_student_ID, .keep_all = TRUE) |>
+  ggplot(aes(x = student_group)) +
   geom_bar() +
   facet_grid(student_acad_prog ~ took_summer_courses, scales = "free_y") +
   theme_minimal() +
