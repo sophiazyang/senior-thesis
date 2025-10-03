@@ -18,8 +18,8 @@ library(viridis)
 ```{r}
 #| label: load in data
 df <- readRDS("data/final.rds")
-df_away <- readRDS("data/6-numplans.rds")
-df_summer <- readRDS("data/7-abroad.rds")
+df_away <- readRDS("data/7-courseload.rds")
+df_summer <- readRDS("data/8-abroad.rds")
 ```
 
 List of all variables of interest
@@ -718,24 +718,22 @@ ggplot(df_SU2, aes(x = factor(year_enrolled), y = total_SU)) +
 ```
 
 ```{r}
-df_SU2 <- df |>
-  group_by(masked_student_ID, num_overloads, year_enrolled) |>
+df_SU_total <- df |>
+  group_by(masked_student_ID) |>
   summarise(
     total_SU = sum(as.logical(is_SU), na.rm = TRUE),
-    has_ever_SU = any(as.logical(is_SU), na.rm = TRUE),
+    total_overloads = max(num_overloads, na.rm = TRUE),
     .groups = "drop"
   )
 
-ggplot(df_SU2, aes(x = factor(year_enrolled), y = total_SU)) +
+ggplot(df_SU_total, aes(x = factor(total_overloads), y = total_SU)) +
   geom_boxplot(alpha = 0.7, outlier.alpha = 0.3) +
-  facet_wrap(~ num_overloads, scales = "free_y") +
   theme_minimal() +
   labs(
-    title = "Total S/U Courses by Current Number of Overloads",
-    x = "Academic Year",
-    y = "Total S/U Courses",
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    title = "Total S/U Courses vs Total Overloads",
+    x = "Total Number of Overloads",
+    y = "Total S/U Courses"
+  )
 ```
 
 ## More plots to organize...

@@ -389,9 +389,61 @@ saveRDS(plans_df, file = "data/6-numplans.rds")
 ```
 
 ```{r}
+#| label: non-acad
+
+# all ACT courses are either NA or < 1 credit
+# majority of MUS and STU are < 1, assuming NA are < 1
+academ_df <- plans_df |>
+  filter(division != "Other") |>
+  filter(class_component != "ACT") |> 
+  filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
+  filter(!(class_component == "STU" & (max_units < 1 | is.na(max_units))))
+```
+
+```{r}
+#| label: course-load
+
+course_load_df <- academ_df |>
+  arrange(masked_student_ID, term_enrolled) |>  # ensure semesters are in order
+  group_by(masked_student_ID, term_enrolled) |>  # aggregate per student per term
+  summarise(
+    term_units = sum(max_units, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  group_by(masked_student_ID) |>
+  arrange(term_enrolled) |>
+  mutate(
+    # Increment semester counter, represents which semester not how many
+    semester_num = cumsum(!grepl("^Summer", term_enrolled)),
+    # Increment overload if term_units > 4
+    num_overloads = cumsum(term_units > 4 & !grepl("^Summer", term_enrolled))
+  ) |>
+  # Compute total overloads for each student
+  mutate(
+    total_overloads = max(num_overloads, na.rm = TRUE),
+    early_grad = if_else(max(semester_num, na.rm = TRUE) < 8, 1L, 0L)
+  ) |>
+  ungroup()
+
+numbered_df <- academ_df |>
+  left_join(
+    course_load_df, by = c("masked_student_ID", "term_enrolled")
+  )
+
+# academic_level_bot doesn't seem that trustworthy?
+# not as important now that we have complete course history for all students
+numbered_df |>
+  filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
+  count(semester_num, academic_level_bot) |>
+  pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
+
+saveRDS(numbered_df, file = "data/7-courseload.rds")
+```
+
+```{r}
 #| label: study-away
 
-away_df <- plans_df |>
+away_df <- numbered_df |>
   mutate(
     location = case_when(
       location %in% c("DURHAM", "ONLINE") ~ location,
@@ -417,7 +469,7 @@ studied_away <- away_df |>
 away_df <- away_df |>
   left_join(studied_away, by = "masked_student_ID")
 
-saveRDS(away_df, file = "data/7-abroad.rds")
+saveRDS(away_df, file = "data/8-abroad.rds")
 ```
 
 ```{r}
@@ -437,65 +489,13 @@ summer_df <- away_df |>
 no_summer_df <- summer_df |>
   filter(!str_starts(term_enrolled, "Summer"))
 
-saveRDS(no_summer_df, file = "data/8-no-summer.rds")
-```
-
-```{r}
-#| label: non-acad
-
-# all ACT courses are either NA or < 1 credit
-# majority of MUS and STU are < 1, assuming NA are < 1
-academ_df <- no_summer_df |>
-  filter(division != "Other") |>
-  filter(class_component != "ACT") |> 
-  filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
-  filter(!(class_component == "STU" & (max_units < 1 | is.na(max_units))))
-```
-
-```{r}
-#| label: course-load
-
-course_load_df <- academ_df |>
-  arrange(masked_student_ID, term_enrolled) |>  # ensure semesters are in order
-  group_by(masked_student_ID, term_enrolled) |>  # aggregate per student per term
-  summarise(
-    term_units = sum(max_units, na.rm = TRUE),
-    .groups = "drop"
-  ) |>
-  group_by(masked_student_ID) |>
-  arrange(term_enrolled) |>
-  mutate(
-    # Increment semester counter, note represents which semester not how many
-    semester_num = row_number(),
-    # Increment overload if term_units > 4
-    num_overloads = cumsum(term_units > 4)
-  ) |>
-  # Compute total overloads for each student
-  mutate(
-    total_overloads = max(num_overloads, na.rm = TRUE),
-    early_grad = if_else(max(semester_num, na.rm = TRUE) < 8, 1L, 0L)
-  ) |>
-  ungroup()
-
-numbered_df <- academ_df |>
-  left_join(
-    course_load_df, by = c("masked_student_ID", "term_enrolled")
-  )
-
-# academic_level_bot doesn't seem that trustworthy?
-# not as important now that we have complete course history for all students
-numbered_df |>
-  filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
-  count(semester_num, academic_level_bot) |>
-  pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
-
-saveRDS(numbered_df, file = "data/9-courseload.rds")
+saveRDS(no_summer_df, file = "data/9-no-summer.rds")
 ```
 
 ```{r}
 #| label: missing-majors
 
-proportion_first_major <- numbered_df |>
+proportion_first_major <- no_summer_df |>
   group_by(student_group, masked_student_ID) |>
   summarise(
     has_first_major = mean(!is.na(first_major_descr)),
@@ -509,7 +509,7 @@ proportion_first_major <- numbered_df |>
   )
 print(proportion_first_major, n = Inf)
 
-fy2010_df <- numbered_df |>
+fy2010_df <- no_summer_df |>
   filter(student_group > 2009)
 
 saveRDS(fy2010_df, file = "data/10-fy2010.rds")
@@ -541,12 +541,12 @@ student_divisions <- fy2010_df |>
 
 # dropping 204 students with program 2 or unknown IDM
 student_divisions |>
-  filter(tbd == 1) |>
+  filter(tbd == 1L) |>
   summarise(n = n())
 
 divisions_df <- fy2010_df |>
   left_join(student_divisions, by = "masked_student_ID") |> 
-  filter(!(tbd == 1))
+  filter(!(tbd == 1L) | is.na(tbd))
 
 saveRDS(divisions_df, file = "data/11-major-div.rds")
 ```
@@ -936,8 +936,6 @@ rows are classes that belong to which division
 cells are the probability a student who has major in that division takes a class in the division (student lvl)
 
 ```{r}
-
-
 # Step 1: put majors in long format
 major_long <- final_clean_df |>
   select(masked_student_ID, division,
@@ -1034,17 +1032,20 @@ division_map <- c(
 final_table_abbr <- final_table_abbr |>
   mutate(division = recode(division, !!!division_map))
 
-# format final_table for display
+n_cols <- ncol(final_table_abbr)
+n_rows <- nrow(final_table_abbr)
+
 final_table_abbr |>
   kable(
-    format = "latex", # <-- LaTeX format for PDF
+    format = "latex",
     booktabs = TRUE,
     caption = "Student-Level Probabilities by Major and Course Division",
-    align = c("l", rep("c", ncol(.) - 1))
+    align = c("l", rep("c", n_cols - 1))
   ) |>
   kable_styling(latex_options = c("striped", "hold_position")) |>
-  row_spec(nrow(final_table), bold = TRUE) |>
-  column_spec(ncol(final_table), bold = TRUE)
+  row_spec(n_rows, bold = TRUE) |>
+  column_spec(n_cols, bold = TRUE)
+
 ```
 
 ```{r}
