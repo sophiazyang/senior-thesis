@@ -603,7 +603,20 @@ print(class_components2, n = Inf)
 ```{r}
 #| label: indep-study
 
+course_counts <- gpa_df |>
+  group_by(term_enrolled, course_ID) |>
+  summarise(
+    num_students = n_distinct(masked_student_ID),
+    .groups = "drop"
+  )
+
+# Step 2: join back into your main pipeline
 final_clean_df <- gpa_df |>
+  left_join(course_counts, by = c("term_enrolled" = "term_enrolled", 
+                                  "course_ID" = "course_ID"))
+
+
+final_clean_df <- final_clean_df |>
   mutate(
     did_indep_study = class_component == "IND"
   )

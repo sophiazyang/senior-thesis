@@ -261,7 +261,7 @@ ggplot(df_course_counts, aes(x = term_enrolled, y = enrollment_count)) +
   geom_boxplot(fill = "#1f77b4") +
   theme_minimal() +
   labs(
-    title = "Course Enrollment Distribution by Term",
+    title = "Course Size Distribution by Term",
     x = "Term", y = "Number of Students"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -270,11 +270,41 @@ ggplot(df_course_counts, aes(x = term_enrolled, y = enrollment_count)) +
   geom_boxplot(fill = "#1f77b4") +
   theme_minimal() +
   labs(
-    title = "Course Enrollment Distribution by Term",
+    title = "Course Size Distribution by Term",
     x = "Term", y = "Number of Students"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   coord_cartesian(ylim = c(0, 100))
+```
+
+```{r}
+ggplot(df, aes(x = term_enrolled, y = total_enrolled)) +
+  geom_boxplot(fill = "#1f77b4") +
+  theme_minimal() +
+  labs(
+    title = "Course Size Distribution by Term",
+    x = "Term", y = "Number of Students"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(df, aes(x = term_enrolled, y = total_enrolled)) +
+  geom_boxplot(fill = "#1f77b4") +
+  theme_minimal() +
+  labs(
+    title = "Course Size Distribution by Term",
+    x = "Term", y = "Number of Students"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_cartesian(ylim = c(0, 100))
+```
+
+```{r}
+df_course_counts |>
+  filter(enrollment_count > 500)
+
+df |>
+  filter(course_ID == "012627") |>
+  select(division, catalog_level, location, max_units)
 ```
 
 ```{r}
@@ -467,6 +497,36 @@ df_div_summary |>
     title = "Average Class Size by Division (excluding WRITING)",
     x = "Term",
     y = "Average Enrollment"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+df_div_summary <- df |>
+  group_by(term_enrolled, division) |>
+  summarise(
+    mean_size = mean(total_enrolled),
+    sd_size   = sd(total_enrolled),
+    n_classes = n(),
+    .groups = "drop"
+  ) |>
+  mutate(
+    se = sd_size / sqrt(n_classes),
+    lower = mean_size - 1.96 * se,
+    upper = mean_size + 1.96 * se
+  )
+
+ggplot(df_div_summary, aes(x = term_enrolled, y = mean_size,
+                           color = division, group = division)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  theme_minimal() +
+  labs(
+    title = "Average Class Size by Division Over Time",
+    x = "Term",
+    y = "Average Class Size",
+    color = "Division"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
