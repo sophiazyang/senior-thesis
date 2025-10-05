@@ -15,9 +15,9 @@ Referencing Duke University Undergraduate Bulletins, prior to Spring 2020, S/U g
 
 A growing body of literature has examined the impact of the pandemic on student learning and a plethora of studies have been done on pass/fail grading in post-secondary education (although primarily in medical school). Rather than exploring impacts on student outcomes, this thesis seeks to determine how the changes in flexible grading policy have impacted student behaviors with the goal of better informing educators and administrators.
 
-## Background and Context
+# Background and Context
 
-**Birth of Traditional A-F Grading**
+## **Birth of Traditional A-F Grading**
 
 Education is notably missing from the US Constitution, but in the period between 1852 to 1918 all states had passed legislation requiring compulsory education (Diorio 2023)[^2]. As a result, K-12 enrollments nearly tripled from 1870 to 1910 (Goldin 2006)[^3]. Simultaneously, the Morrill Acts of 1862 and 1890 provided federal land for the establishment of public colleges, opening the doors for access to higher education. Historically, students were evaluated by descriptions and evaluations given by individual teachers. Even entrance exams for college were made by individuals and occurred at individual schools, making results unreliable (Schudson 1972; Wechsler 1977)[^4][^5]. The massive increase in the number of students required a revolutionary new approach to education that could scale with the increasing demand for education. A standard grading system was needed.
 
@@ -262,10 +262,42 @@ Increasingly, the American public has been losing trust in higher education. Acc
 
 ## **Flexible Grading in the 21st Century**
 
-In the early 21st century, research and usage of pass fail grading remained largely obscure. The most prominent use of pass fail grading was found in medical schools. Doctors are uniquely expected to be lifelong learners, staying up to date with the newest techniques, treatments, and health problems. To do so, the character of a doctor must be taken into account, particularly their intrinsic desire to learn. Additionally, concerningly higher than average rates of stress and burnout have been reported in medical students and the negative effects of distress have been well studied[^77][^78]. As a result, a wave of medical reforms were made including resident duty restrictions, self-development groups, and pass/fail grading systems.
+In the early 21st century, research and usage of pass fail grading remained largely obscure. The most prominent use of pass fail grading was found in medical schools. Doctors are expected to be lifelong learners, staying up to date with the newest techniques, treatments, and health problems. To do so, the character of a doctor must be taken into account, particularly their intrinsic desire to learn. Additionally, higher than average rates of stress and burnout had been reported in medical students and the negative effects of distress have been well studied[^77][^78]. As a result, a wave of medical reforms were made including resident duty restrictions, self-development groups, and pass/fail grading systems.
 
 [^77]: <https://pubmed.ncbi.nlm.nih.gov/10926029/>
 
 [^78]: <https://www.sciencedirect.com/science/article/pii/S0025619611610574>
 
-TBA...
+In a 2011 review of pass/fail and well-being literature (1980-2010) in medical schools, it was found that all (four) of the papers reported improvement in some measure of well-being (stress, anxiety, depression, self-control, good health, level of satisfaction, group cohesion, and amount of free time) (Spring et. al)[^79]. Student satisfaction was measured and found to have increased in two of the papers[^80][^81]. However, there were discrepancies in the long term effect of pass/fail with some claiming continued effect after the first semester while others found a return to typical levels in later semesters.
+
+[^79]: <https://doi.org/10.1111/j.1365-2923.2011.03989.x>
+
+[^80]: <https://journals.lww.com/academicmedicine/fulltext/2009/05000/a_change_to_pass_fail_grading_in_the_first_two.28.aspx>
+
+[^81]: <https://journals.lww.com/academicmedicine/abstract/1995/04000/the_effect_of_pass_fail_grading_and_weekly_quizzes.19.aspx>
+
+Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^82]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^83]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^84]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^85]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying[^86], defying expectations of increased laziness
+
+[^82]: <https://pubmed.ncbi.nlm.nih.gov/7718068/>
+
+[^83]: <https://pubmed.ncbi.nlm.nih.gov/7401142/>
+
+[^84]: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0240587>
+
+[^85]: <https://pubmed.ncbi.nlm.nih.gov/10353289/>
+
+[^86]: <https://pubmed.ncbi.nlm.nih.gov/5548587/>
+
+Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^87]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^88] while others argue pass/fail is a cause of grade inflation[^89].
+
+[^87]: <https://journals.lww.com/academicmedicine/fulltext/2019/06000/reflections_on_a_decade_leading_a_medical_student.27.aspx>
+
+[^88]: <https://core.ac.uk/download/pdf/132324597.pdf>
+
+[^89]: <https://www.jstor.org/stable/27797025>
+
+In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^90]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
+
+[^90]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
+
+## Higher Education and COVID-19
