@@ -288,16 +288,18 @@ Spring et. al also reviewed an additional five papers (9 total) on pass/fail and
 
 [^86]: <https://pubmed.ncbi.nlm.nih.gov/5548587/>
 
-Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^87]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^88] while others argue pass/fail is a cause of grade inflation[^89].
+Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^87]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts[^88]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^89] while others argue pass/fail is a cause of grade inflation[^90].
 
 [^87]: <https://journals.lww.com/academicmedicine/fulltext/2019/06000/reflections_on_a_decade_leading_a_medical_student.27.aspx>
 
-[^88]: <https://core.ac.uk/download/pdf/132324597.pdf>
+[^88]: <https://europepmc.org/article/med/30392003>
 
-[^89]: <https://www.jstor.org/stable/27797025>
+[^89]: <https://core.ac.uk/download/pdf/132324597.pdf>
 
-In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^90]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
+[^90]: <https://www.jstor.org/stable/27797025>
 
-[^90]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
+In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^91]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
+
+[^91]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
 
 ## Higher Education and COVID-19
