@@ -1,0 +1,153 @@
+---
+title: "traditional_students"
+format: pdf
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(viridis)
+library(lme4)
+```
+
+```{r}
+df <- readRDS("data/final.rds")
+```
+
+```{r}
+# Total number of students
+n_distinct(df$masked_student_ID)
+
+# Number of students taking more than 8 semesters (not-including summer)
+df |> 
+  group_by(masked_student_ID) |>
+  summarise(
+    n_semesters = n_distinct(term_enrolled),
+  ) |>
+  filter(n_semesters > 8) |>
+  count()
+
+# Number of students graduating early
+df |>
+  filter(early_grad == TRUE) |>
+  distinct(masked_student_ID) |>
+  nrow()
+
+# Identify non-traditional students
+non_trad_ids <- df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    n_semesters = n_distinct(term_enrolled),
+    early_grad = any(early_grad, na.rm = TRUE)
+  ) |>
+  mutate(
+    non_traditional = (n_semesters > 8) | early_grad
+  ) |>
+  filter(non_traditional) |>
+  pull(masked_student_ID)
+
+# Number of non-traditional students (not 8 semesters)
+nrow(non_trad_ids)
+
+# Drop those students from the main dataframe
+df_8sem <- df |>
+  filter(!masked_student_ID %in% non_trad_ids)
+
+# Number of students ever underloading (besides final semester)
+df_8sem |> 
+  filter(term_enrolled != 8) |>
+  group_by(masked_student_ID) |>
+  summarise(min_credits = min(term_units, na.rm = TRUE)) |>
+  filter(min_credits < 4) |>
+  count()
+```
+
+```{r}
+df_clean <- df_8sem %>%
+  # Fill NAs for studied_away
+  mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+         # Center numeric variables
+         term_units_c = term_units - mean(term_units, na.rm = TRUE),
+         prev_semGPA_c = if_else(is.na(prev_semGPA),
+                                 4,  # neutral effect for first-semester
+                                 prev_semGPA - mean(prev_semGPA, na.rm = TRUE)),
+         num_plans_c = num_plans - mean(num_plans, na.rm = TRUE),
+         total_overloads_c = total_overloads - mean(total_overloads, na.rm = TRUE),
+         semester_num_c = semester_num - mean(semester_num, na.rm = TRUE),
+         # Create unknown indicator
+         unknown = if_else(is.na(is_art_humanity), TRUE, FALSE),
+          # Replace NAs in division indicator columns with 0
+         is_art_humanity = if_else(is.na(is_art_humanity), 0, is_art_humanity),
+         is_social_sci   = if_else(is.na(is_social_sci), 0, is_social_sci),
+         is_natural_sci  = if_else(is.na(is_natural_sci), 0, is_natural_sci),
+         is_engr         = if_else(is.na(is_engr), 0, is_engr),
+         ) %>%
+  filter(
+         !is.na(catalog_level),
+         ) |>
+  # Convert categorical variables to factors
+  mutate(across(c(student_acad_prog, academic_level_bot, catalog_level,
+                  division, timeperiod, student_group), as.factor)) 
+```
+
+```{r}
+set.seed(123)
+student_ids <- unique(df_clean$masked_student_ID)
+train_ids <- sample(student_ids, size = 0.8 * length(student_ids))
+
+train_df <- df_clean %>% filter(masked_student_ID %in% train_ids)
+test_df  <- df_clean %>% filter(!masked_student_ID %in% train_ids)
+```
+
+```{r}
+library(glmnet)
+predictors <- c("term_units_c", "prev_semGPA_c", "early_grad",
+                "studied_away", "took_summer_courses", "is_art_humanity",
+                "is_social_sci", "is_natural_sci", "is_engr", "unknown", "student_group",
+                "timeperiod", "student_acad_prog", "academic_level_bot", "catalog_level", "semester_num",
+                "division")
+
+train_clean <- train_df %>%
+  select(is_SU, all_of(predictors))
+
+X_train <- model.matrix(is_SU ~ ., train_clean)[,-1]
+y_train <- train_clean$is_SU
+
+# Lasso with cross-validation
+set.seed(123)
+cvfit <- cv.glmnet(X_train, y_train, family = "binomial", alpha = 1)
+best_lambda <- cvfit$lambda.min
+
+# See which variables are kept
+selected_vars <- coef(cvfit, s = best_lambda)
+selected_vars
+
+
+```
+
+```{r}
+glm_model <- glm(
+  is_SU ~ term_units_c + prev_semGPA_c + early_grad + studied_away +
+    took_summer_courses + is_art_humanity + is_social_sci + unknown + semester_num + timeperiod,
+  data = train_df,
+  family = binomial
+)
+
+summary(glm_model)
+```
+
+```{r}
+exp(coef(glm_model))
+exp(confint(glm_model))
+```
+
+```{r}
+
+# Evaluate performance
+library(pROC)
+test_df$pred_prob <- predict(glm_model, newdata = test_df, type = "response")
+
+roc_obj <- roc(test_df$is_SU, test_df$pred_prob)
+auc(roc_obj)
+```
