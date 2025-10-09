@@ -393,7 +393,17 @@ saveRDS(plans_df, file = "data/6-numplans.rds")
 
 # all ACT courses are either NA or < 1 credit
 # majority of MUS and STU are < 1, assuming NA are < 1
-academ_df <- plans_df |>
+underload_df <- plans_df |>
+  group_by(masked_student_ID, term_enrolled) |>
+  mutate(term_units = sum(max_units, na.rm = TRUE)) |>   # total units that term
+  group_by(masked_student_ID) |>
+  mutate(
+  underload = as.integer(
+    any(term_units < 4 & !str_starts(term_enrolled, "Summer"))
+  )) |>
+  ungroup()
+  
+academ_df <- underload_df |>
   filter(division != "Other") |>
   filter(class_component != "ACT") |> 
   filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
@@ -416,7 +426,7 @@ course_load_df <- academ_df |>
     # Increment semester counter, represents which semester not how many
     semester_num = cumsum(!grepl("^Summer", term_enrolled)),
     # Increment overload if term_units > 4
-    num_overloads = cumsum(term_units > 4 & !grepl("^Summer", term_enrolled))
+    num_overloads = cumsum(term_units > 4 & !grepl("^Summer", term_enrolled)),
   ) |>
   # Compute total overloads for each student
   mutate(

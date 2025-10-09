@@ -9,10 +9,12 @@ editor_options:
 library(tidyverse)
 library(viridis)
 library(lme4)
+library(glmnet)
+library(pROC)
 ```
 
 ```{r}
-df <- readRDS("data/final.rds")
+df <- readRDS("data/13-final.rds")
 ```
 
 ```{r}
@@ -48,23 +50,25 @@ non_trad_ids <- df |>
   pull(masked_student_ID)
 
 # Number of non-traditional students (not 8 semesters)
-nrow(non_trad_ids)
+length(non_trad_ids)
 
 # Drop those students from the main dataframe
 df_8sem <- df |>
   filter(!masked_student_ID %in% non_trad_ids)
 
-# Number of students ever underloading (besides final semester)
+# Number of students ever underloading
 df_8sem |> 
-  filter(term_enrolled != 8) |>
-  group_by(masked_student_ID) |>
-  summarise(min_credits = min(term_units, na.rm = TRUE)) |>
-  filter(min_credits < 4) |>
-  count()
+  filter(underload > 0) |>
+  distinct(masked_student_ID) |>
+  nrow()
+
+# Number of students ever underloading (besides final semester)
 ```
 
+MAKE SURE TO DROP ALL COURSE_ID/VARIABLE FOR 99% S/U
+
 ```{r}
-df_clean <- df_8sem %>%
+df_clean <- df_8sem |>
   # Fill NAs for studied_away
   mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away),
          # Center numeric variables
@@ -82,7 +86,7 @@ df_clean <- df_8sem %>%
          is_social_sci   = if_else(is.na(is_social_sci), 0, is_social_sci),
          is_natural_sci  = if_else(is.na(is_natural_sci), 0, is_natural_sci),
          is_engr         = if_else(is.na(is_engr), 0, is_engr),
-         ) %>%
+         ) |>
   filter(
          !is.na(catalog_level),
          ) |>
@@ -96,33 +100,30 @@ set.seed(123)
 student_ids <- unique(df_clean$masked_student_ID)
 train_ids <- sample(student_ids, size = 0.8 * length(student_ids))
 
-train_df <- df_clean %>% filter(masked_student_ID %in% train_ids)
-test_df  <- df_clean %>% filter(!masked_student_ID %in% train_ids)
+train_df <- df_clean |> filter(masked_student_ID %in% train_ids)
+test_df  <- df_clean |> filter(!masked_student_ID %in% train_ids)
 ```
 
 ```{r}
-library(glmnet)
 predictors <- c("term_units_c", "prev_semGPA_c", "early_grad",
                 "studied_away", "took_summer_courses", "is_art_humanity",
                 "is_social_sci", "is_natural_sci", "is_engr", "unknown", "student_group",
                 "timeperiod", "student_acad_prog", "academic_level_bot", "catalog_level", "semester_num",
                 "division")
 
-train_clean <- train_df %>%
+train_clean <- train_df |>
   select(is_SU, all_of(predictors))
 
 X_train <- model.matrix(is_SU ~ ., train_clean)[,-1]
 y_train <- train_clean$is_SU
 
 # Lasso with cross-validation
-set.seed(123)
 cvfit <- cv.glmnet(X_train, y_train, family = "binomial", alpha = 1)
 best_lambda <- cvfit$lambda.min
 
 # See which variables are kept
 selected_vars <- coef(cvfit, s = best_lambda)
 selected_vars
-
 
 ```
 
@@ -143,11 +144,17 @@ exp(confint(glm_model))
 ```
 
 ```{r}
-
 # Evaluate performance
-library(pROC)
 test_df$pred_prob <- predict(glm_model, newdata = test_df, type = "response")
 
 roc_obj <- roc(test_df$is_SU, test_df$pred_prob)
 auc(roc_obj)
+```
+
+```{r}
+library(lme4)
+glmm_model <- glmer(is_SU ~ term_units_c + prev_semGPA_c + early_grad + studied_away +
+        took_summer_courses + is_art_humanity + is_social_sci + unknown +
+        semester_num + timeperiod + (1 | masked_student_ID),
+      data = train_df, family = binomial)
 ```
