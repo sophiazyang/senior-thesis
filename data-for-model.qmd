@@ -1,0 +1,564 @@
+---
+title: "Data for Modeling"
+format: pdf
+editor: visual
+author: Sophia Yang
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(readxl)
+library(tidyverse)
+library(binom)
+```
+
+## Load Data
+
+```{r}
+#| label: load-data
+
+file1 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sophia/exported data for project, terms 1080 to 1570 V2.xlsx", 
+                    guess_max = 1000000)
+
+file2 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sophia/exported data for project, terms 1580 and forward V2.xlsx", 
+                    guess_max = 10000)
+
+combined_df <- rbind(file1, file2)
+```
+
+```{r}
+#| label: reduce-data
+
+smaller_df <- combined_df |> 
+  filter(str_starts(student_acad_prog, "A&S")) |> # Remove Pratt
+  filter(str_sub(student_group, 1, 2) != "TR") |> # Remove Transfers
+  mutate(
+    student_group = str_replace(student_group, "^..", "20"),
+    student_group = as.numeric(student_group),
+    term_enrolled = as.numeric(term_enrolled),
+  ) |>
+  filter(student_group > 2011) |> # Remove prior to P/F -> S/U F2012
+  mutate( # Compute number of academic plans
+    num_plans = rowSums(
+      !is.na(pick(first_major, second_major,
+                  first_minor, second_minor,
+                  first_certificate, second_certificate))
+    )
+  ) |> # Drop extra variables
+  select(-c(
+    first_minor, first_minor_desc, second_minor, second_minor_desc, 
+    first_certificate, first_certificate_desc, 
+    second_certificate, second_certificate_desc, 
+    career, student_acad_prog, course_crosslisted, class_nbr_rev
+  )) 
+
+```
+
+```{r}
+#| label: term-codes
+
+term_lookup <- tribble(
+  ~term_number, ~term_enrolled_new,  ~year_enrolled,
+  1400,         "Summer Full 2012", "2011-2012",
+  1405,         "Summer 1 2012",    "2011-2012",
+  1410,         "Summer 2 2012",    "2012-2013",
+  1420,         "Fall 2012",        "2012-2013",
+  1430,         "Spring 2013",      "2012-2013",
+  1440,         "Summer Full 2013", "2012-2013",
+  1445,         "Summer 1 2013",    "2012-2013",
+  1450,         "Summer 2 2013",    "2013-2014",
+  1460,         "Fall 2013",        "2013-2014",
+  1470,         "Spring 2014",      "2013-2014",
+  1480,         "Summer Full 2014", "2013-2014",
+  1485,         "Summer 1 2014",    "2013-2014",
+  1490,         "Summer 2 2014",    "2014-2015",
+  1500,         "Fall 2014",        "2014-2015",
+  1510,         "Spring 2015",      "2014-2015",
+  1520,         "Summer Full 2015", "2014-2015",
+  1525,         "Summer 1 2015",    "2014-2015",
+  1530,         "Summer 2 2015",    "2015-2016",
+  1540,         "Fall 2015",        "2015-2016",
+  1550,         "Spring 2016",      "2015-2016",
+  1565,         "Summer 1 2016",    "2015-2016",
+  1570,         "Summer 2 2016",    "2016-2017",
+  1580,         "Fall 2016",        "2016-2017",
+  1590,         "Spring 2017",      "2016-2017",
+  1605,         "Summer 1 2017",    "2016-2017",
+  1610,         "Summer 2 2017",    "2017-2018",
+  1620,         "Fall 2017",        "2017-2018",
+  1630,         "Spring 2018",      "2017-2018",
+  1645,         "Summer 1 2018",    "2017-2018",
+  1650,         "Summer 2 2018",    "2018-2019",
+  1660,         "Fall 2018",        "2018-2019",
+  1670,         "Spring 2019",      "2018-2019",
+  1685,         "Summer 1 2019",    "2018-2019",
+  1690,         "Summer 2 2019",    "2019-2020",
+  1700,         "Fall 2019",        "2019-2020",
+  1710,         "Spring 2020",      "2019-2020",
+  1725,         "Summer 1 2020",    "2019-2020",
+  1730,         "Summer 2 2020",    "2020-2021",
+  1740,         "Fall 2020",        "2020-2021",
+  1750,         "Spring 2021",      "2020-2021",
+  1765,         "Summer 1 2021",    "2020-2021",
+  1770,         "Summer 2 2021",    "2021-2022",
+  1780,         "Fall 2021",        "2021-2022",
+  1790,         "Spring 2022",      "2021-2022",
+  1805,         "Summer 1 2022",    "2021-2022",
+  1810,         "Summer 2 2022",    "2022-2023",
+  1820,         "Fall 2022",        "2022-2023",
+  1830,         "Spring 2023",      "2022-2023",
+  1845,         "Summer 1 2023",    "2022-2023",
+  1850,         "Summer 2 2023",    "2023-2024",
+  1860,         "Fall 2023",        "2023-2024",
+  1870,         "Spring 2024",      "2023-2024",
+  1885,         "Summer 1 2024",    "2023-2024",
+  1890,         "Summer 2 2024",    "2024-2025",
+  1900,         "Fall 2024",        "2024-2025",
+  1910,         "Spring 2025",      "2024-2025"
+)
+
+term_levels <- c(
+  "Summer Full 2012",
+  "Summer 1 2012",
+  "Summer 2 2012",
+  "Fall 2012",
+  "Spring 2013",
+  "Summer Full 2013",
+  "Summer 1 2013",
+  "Summer 2 2013",
+  "Fall 2013",
+  "Spring 2014",
+  "Summer Full 2014",
+  "Summer 1 2014",
+  "Summer 2 2014",
+  "Fall 2014",
+  "Spring 2015",
+  "Summer Full 2015",
+  "Summer 1 2015",
+  "Summer 2 2015",
+  "Fall 2015",
+  "Spring 2016",
+  "Summer 1 2016",
+  "Summer 2 2016",
+  "Fall 2016",
+  "Spring 2017",
+  "Summer 1 2017",
+  "Summer 2 2017",
+  "Fall 2017",
+  "Spring 2018",
+  "Summer 1 2018",
+  "Summer 2 2018",
+  "Fall 2018",
+  "Spring 2019",
+  "Summer 1 2019",
+  "Summer 2 2019",
+  "Fall 2019",
+  "Spring 2020",
+  "Summer 1 2020",
+  "Summer 2 2020",
+  "Fall 2020",
+  "Spring 2021",
+  "Summer 1 2021",
+  "Summer 2 2021",
+  "Fall 2021",
+  "Spring 2022",
+  "Summer 1 2022",
+  "Summer 2 2022",
+  "Fall 2022",
+  "Spring 2023",
+  "Summer 1 2023",
+  "Summer 2 2023",
+  "Fall 2023",
+  "Spring 2024",
+  "Summer 1 2024",
+  "Summer 2 2024",
+  "Fall 2024",
+  "Spring 2025"
+)
+
+term_df <- smaller_df |>
+  left_join(
+    term_lookup,
+    by = c("term_enrolled" = "term_number")
+  ) |>
+  mutate(
+    term_enrolled = factor(term_enrolled_new,
+                           levels = term_levels, ordered = TRUE),
+  ) |>
+  select(-c(term_enrolled_new))
+
+```
+
+```{r}
+#| label: types-SU-timeperiod
+clean_df <- term_df |>
+  rename(num_students = Tot_Enrl) |>
+  mutate(
+    catalog_level = factor(
+      catalog_level,
+      levels = c("1-99", "100-199", "200-299", 
+                 "300-399", "400-499", "500 and above"),
+      ordered = TRUE
+    ),
+    year_enrolled = factor(
+      year_enrolled, levels = sort(unique(year_enrolled)), ordered = TRUE
+    ),
+    masked_student_ID = as.character(masked_student_ID),
+    academic_level_bot = recode(academic_level_bot,
+                                "1st Year Undergraduate" = "1st Year",
+                                "5th Year Undergraduate" = "5th Year"
+                                ),
+    academic_level_bot = factor(
+      academic_level_bot,
+      levels = c("1st Year", "Sophomore", "Junior", "Senior", "5th Year"),
+      ordered = TRUE
+    ),
+    is_SU = if_else(final_grade %in% c("S", "U", "P"), 1, 0),
+    timeperiod = case_when(
+      term_enrolled < "Spring 2020" ~ "pre_covid",
+      term_enrolled > "Summer 2 2022" ~ "post_covid",
+      TRUE ~ "dur_covid"
+    ),
+    timeperiod = factor(timeperiod, 
+                        levels = c("pre_covid", "dur_covid", "post_covid"), 
+                        ordered = TRUE)
+  )
+```
+
+```{r}
+#| label: 8-sem-grads
+
+just_8sem_ids <- clean_df |>
+  filter(!str_starts(term_enrolled, "Summer")) |>
+  distinct(masked_student_ID, term_enrolled) |>  # make sure each term counts once
+  group_by(masked_student_ID) |>
+  summarise(max_semester = n(), .groups = "drop") |>
+  filter(max_semester == 8) |>
+  pull(masked_student_ID)
+
+only8_sem_df <- clean_df |> 
+  filter(masked_student_ID %in% just_8sem_ids | student_group >= 2022)
+```
+
+```{r}
+#| label: non-acad
+
+# Not using this...
+underload_ids <- only8_sem_df |>
+  filter(!str_starts(term_enrolled, "Summer")) |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarise(term_units = sum(max_units, na.rm = TRUE), .groups = "drop") |>
+  arrange(masked_student_ID, term_enrolled) |>
+  group_by(masked_student_ID) |>
+  mutate(
+    semester_num = row_number(),
+  ) |>
+  summarise(
+    underload = any(term_units < 4 &
+                    !str_starts(term_enrolled, "Summer") &
+                    semester_num < 8), # allow underloads last semester
+    .groups = "drop"
+  ) |>
+  filter(underload) |>
+  pull(masked_student_ID)
+
+no_underload_df <- only8_sem_df |> 
+  filter(!masked_student_ID %in% underload_ids)
+```
+
+```{r}
+#| label: course-load
+
+# remove "non-academic" courses
+# all ACT courses are either NA or < 1 credit
+# majority of MUS and STU are < 1, assuming NA are < 1
+academ_df <- only8_sem_df |>
+  filter(division != "Other") |>
+  filter(class_component != "ACT") |> 
+  filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
+  filter(!(class_component == "STU" & (max_units < 1 | is.na(max_units))))
+
+course_load_df <- academ_df |>
+  arrange(masked_student_ID, term_enrolled) |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarise(
+    term_units = sum(max_units, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  group_by(masked_student_ID) |>
+  arrange(term_enrolled) |>
+  mutate(
+    # Increment semester counter, represents which semester not how many
+    semester_num = cumsum(!grepl("^Summer", term_enrolled)),
+    # Increment overload if term_units > 4
+    num_overloads = cumsum(term_units > 4 & !grepl("^Summer", term_enrolled)),
+  ) |>
+  mutate(
+    total_overloads = max(num_overloads, na.rm = TRUE),
+  ) |>
+  ungroup()
+
+numbered_df <- academ_df |>
+  left_join(
+    course_load_df, by = c("masked_student_ID", "term_enrolled")
+  )
+
+# academic_level_bot doesn't seem that trustworthy?
+# not as important now that we have complete course history for all students
+numbered_df |>
+  filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
+  count(semester_num, academic_level_bot) |>
+  pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
+
+```
+
+```{r}
+#| label: study-away
+
+away_df <- numbered_df |>
+  mutate(
+    location = case_when(
+      location %in% c("DURHAM", "ONLINE") ~ location,
+      is.na(location) ~ NA, 
+      TRUE ~ "AWAY"
+    )
+  )
+
+studied_away <- away_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    studied_away = case_when(
+      any(location == "AWAY", na.rm = TRUE) ~ 1L,
+      any(is.na(location)) ~ NA,
+      TRUE ~ 0L
+    ),
+    .groups = "drop"
+  )
+away_df <- away_df |>
+  left_join(studied_away, by = "masked_student_ID")
+```
+
+```{r}
+#| label: summer
+
+summer_student <- away_df |>
+  group_by(masked_student_ID) |>
+  summarise(
+    took_summer_courses = as.integer(any(str_starts(term_enrolled, "Summer"))),
+    .groups = "drop"
+  )
+summer_df <- away_df |>
+  left_join(summer_student, by = "masked_student_ID")
+
+no_summer_df <- summer_df |>
+  filter(!str_starts(term_enrolled, "Summer"))
+```
+
+```{r}
+#| label: major-divisons
+
+major_mapping <- read_excel("major_divisions.xlsx")
+
+student_divisions <- no_summer_df |>
+  select(masked_student_ID, first_major_descr, second_major_descr) |>
+  pivot_longer(cols = c(first_major_descr, second_major_descr), 
+               names_to = "major_type", values_to = "major") |>
+  filter(!is.na(major)) |>
+  mutate(
+    major_clean = str_remove(major, "\\s*\\([^)]*\\)$")
+  ) |>
+  left_join(major_mapping, by = "major_clean") |>
+  group_by(masked_student_ID) |>
+  summarise(
+    is_art_humanity = as.integer(any(is_art_humanity == 1, na.rm = TRUE)),
+    is_social_sci   = as.integer(any(is_social_sci == 1, na.rm = TRUE)),
+    is_natural_sci  = as.integer(any(is_natural_sci == 1, na.rm = TRUE)),
+    tbd             = as.integer(any(tbd == 1, na.rm = TRUE)),
+    .groups = "drop"
+  ) 
+
+divisions_df <- no_summer_df |>
+  left_join(student_divisions, by = "masked_student_ID") |> 
+  filter(!(tbd == 1L) | is.na(tbd)) # Drop Program 2 and unknown IDM
+
+```
+
+```{r}
+#| label: GPA
+
+grade_points <- c(
+  "A+" = 4.0, "A" = 4.0, "A-" = 3.7,
+  "B+" = 3.3, "B" = 3.0, "B-" = 2.7,
+  "C+" = 2.3, "C" = 2.0, "C-" = 1.7,
+  "D+" = 1.3, "D" = 1.0, "D-" = 1.0,
+  "F" = 0.0
+)
+
+# One row per student per semester
+semGPA_df <- divisions_df |>
+  mutate(
+    grade_points = grade_points[final_grade]
+  ) |>
+  filter(
+    final_grade %in% names(grade_points)
+  ) |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarize(
+    semGPA = sum(grade_points * max_units, na.rm = TRUE) 
+              / sum(max_units, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+prevGPA_df <- semGPA_df |>
+  arrange(masked_student_ID, term_enrolled) |>
+  group_by(masked_student_ID) |>
+  mutate(prev_semGPA = lag(semGPA)) |>
+  ungroup()
+
+gpa_df <- divisions_df |>
+  left_join(
+    prevGPA_df |> 
+      select(masked_student_ID, term_enrolled, prev_semGPA),
+    by = c("masked_student_ID", "term_enrolled")
+  ) |>
+  filter(!str_detect(location, "AWAY"))
+
+```
+
+```{r}
+#| label: indep-study
+
+indep_df <- gpa_df |>
+  group_by(masked_student_ID) |>
+  mutate(did_indep_study = any(class_component == "IND")) |>
+  ungroup()
+
+t <- indep_df |>
+  filter(!is.na(course_ID)) |>
+  select(-c(first_major, first_major_descr, 
+            second_major, second_major_descr, tbd))
+
+# drop courses that have NAs, 99% S/U, etc
+
+saveRDS(final_clean_df, file = "data/modeling.rds")
+```
+
+Major imputation test...
+
+```{r}
+students_with_major <- final_clean_df |>
+  filter(!is.na(first_major))
+
+# --- Parameters ---
+division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences")
+x_vals <- 1:14  # candidate thresholds
+
+# --- Step 1: Student-level flags ---
+student_flags <- students_with_major |>
+  select(masked_student_ID, is_art_humanity:is_engr) |>
+  pivot_longer(
+    cols = is_art_humanity:is_engr,
+    names_to = "division_flag",
+    values_to = "is_division"
+  ) |>
+  mutate(
+    division = case_when(
+      division_flag == "is_art_humanity" ~ "Arts & Humanities",
+      division_flag == "is_social_sci"  ~ "Social Sciences",
+      division_flag == "is_natural_sci" ~ "Natural Sciences",
+      TRUE ~ division_flag
+    )
+  ) |>
+  filter(division %in% division_cols) |>
+  select(masked_student_ID, division, is_division) |>
+  distinct()
+
+# --- Step 2: Count courses per student per division ---
+student_div_counts <- students_with_major |>
+  filter(!is.na(division), !(division %in% c("WRITING", "Engineering"))) |>
+  group_by(masked_student_ID, division) |>
+  summarise(
+    n_courses = n(),
+    .groups = "drop"
+  ) |>
+  pivot_wider(
+    names_from = division,
+    values_from = n_courses,
+    values_fill = 0
+  ) |>
+  pivot_longer(
+    cols = all_of(division_cols),
+    names_to = "division",
+    values_to = "n_courses"
+  )
+
+# --- Step 3: Join counts with flags ---
+check_table <- student_div_counts |>
+  left_join(student_flags, by = c("masked_student_ID", "division"))
+
+# --- Step 4: Function to compute error for one threshold ---
+compute_error <- function(x_thresh) {
+  check_table |>
+    mutate(took_gt_x = n_courses > x_thresh) |>
+    group_by(division) |>
+    summarise(
+      TP = sum(took_gt_x & is_division == 1, na.rm = TRUE),
+      FP = sum(took_gt_x & is_division == 0, na.rm = TRUE),
+      TN = sum(!took_gt_x & is_division == 0, na.rm = TRUE),
+      FN = sum(!took_gt_x & is_division == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(
+      x = x_thresh,
+      error_rate = (FP + FN) / (TP + FP + TN + FN)
+    )
+}
+
+# --- Step 5: Apply to all thresholds ---
+errors_by_x <- map_dfr(x_vals, compute_error)
+
+# --- Step 6: Plot error rate vs threshold ---
+ggplot(errors_by_x, aes(x = x, y = error_rate, color = division)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Course threshold (x)", y = "Error rate",
+       title = "Error rate vs course threshold for each division")
+
+# --- Step 7 (optional): Pick best x per division ---
+best_x <- errors_by_x |>
+  group_by(division) |>
+  slice_min(error_rate, n = 1) |>
+  select(division, best_x = x, error_rate)
+
+# --- Step 8 (optional): Apply best threshold to flag students ---
+student_flags_estimated <- check_table |>
+  left_join(best_x, by = "division") |>
+  mutate(
+    estimated_flag = n_courses > best_x
+  )
+
+```
+
+```{r}
+students_missing_major <- final_clean_df |>
+  filter(is.na(first_major) & student_group > 2019 & student_group < 2023) |>
+  filter(max_units >= 1)
+
+courses_by_division <- students_missing_major |>
+  filter(!is.na(division), division != "WRITING", division != "Engineering") |>
+  group_by(masked_student_ID, division) |>
+  summarise(
+    n_courses = n(),
+    .groups = "drop"
+  ) |>
+  pivot_wider(
+    names_from = division,
+    values_from = n_courses,
+    values_fill = 0  # fill 0 if student took 0 courses in that division
+  )
+
+```
