@@ -245,32 +245,6 @@ only8_sem_df <- clean_df |>
 ```
 
 ```{r}
-#| label: non-acad
-
-# Not using this...
-underload_ids <- only8_sem_df |>
-  filter(!str_starts(term_enrolled, "Summer")) |>
-  group_by(masked_student_ID, term_enrolled) |>
-  summarise(term_units = sum(max_units, na.rm = TRUE), .groups = "drop") |>
-  arrange(masked_student_ID, term_enrolled) |>
-  group_by(masked_student_ID) |>
-  mutate(
-    semester_num = row_number(),
-  ) |>
-  summarise(
-    underload = any(term_units < 4 &
-                    !str_starts(term_enrolled, "Summer") &
-                    semester_num < 8), # allow underloads last semester
-    .groups = "drop"
-  ) |>
-  filter(underload) |>
-  pull(masked_student_ID)
-
-no_underload_df <- only8_sem_df |> 
-  filter(!masked_student_ID %in% underload_ids)
-```
-
-```{r}
 #| label: course-load
 
 # remove "non-academic" courses
@@ -437,17 +411,17 @@ indep_df <- gpa_df |>
   mutate(did_indep_study = any(class_component == "IND")) |>
   ungroup()
 
-t <- indep_df |>
+temp <- indep_df |>
   filter(!is.na(course_ID)) |>
   select(-c(first_major, first_major_descr, 
             second_major, second_major_descr, tbd))
 
 # drop courses that have NAs, 99% S/U, etc
 
-saveRDS(final_clean_df, file = "data/modeling.rds")
+final_clean_df <- indep_df
 ```
 
-Major imputation test...
+## Major imputation test
 
 ```{r}
 students_with_major <- final_clean_df |>
@@ -459,9 +433,9 @@ x_vals <- 1:14  # candidate thresholds
 
 # --- Step 1: Student-level flags ---
 student_flags <- students_with_major |>
-  select(masked_student_ID, is_art_humanity:is_engr) |>
+  select(masked_student_ID, is_art_humanity:is_natural_sci) |>
   pivot_longer(
-    cols = is_art_humanity:is_engr,
+    cols = is_art_humanity:is_natural_sci,
     names_to = "division_flag",
     values_to = "is_division"
   ) |>
@@ -560,5 +534,178 @@ courses_by_division <- students_missing_major |>
     values_from = n_courses,
     values_fill = 0  # fill 0 if student took 0 courses in that division
   )
+
+```
+
+```{r}
+library(kableExtra)
+
+# --- Step 1: Filter to students with a declared major ---
+students_with_major <- final_clean_df |>
+  filter(!is.na(first_major))
+
+# --- Parameters ---
+division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences")
+p_vals <- seq(0.1, 0.9, by = 0.05)  # candidate proportion thresholds
+
+# --- Step 2: Compute upper-level (>199) course counts ---
+student_div_props <- students_with_major |>
+  filter(!is.na(division),
+         !(division %in% c("WRITING", "Engineering")),
+         catalog_level > "100-199") |>
+  group_by(masked_student_ID, division) |>
+  summarise(n_div_courses = n(), .groups = "drop_last") |>
+  mutate(total_200 = sum(n_div_courses)) |>
+  ungroup() |>
+  filter(total_200 >= 3) |>  # at least 3 upper-level courses
+  mutate(prop_division = n_div_courses / total_200)
+
+# --- Step 3: Get the "true" divisions from declared major flags ---
+student_flags <- students_with_major |>
+  select(masked_student_ID, is_art_humanity:is_natural_sci) |>
+  pivot_longer(
+    cols = is_art_humanity:is_natural_sci,
+    names_to = "division_flag",
+    values_to = "is_division"
+  ) |>
+  mutate(
+    division = case_when(
+      division_flag == "is_art_humanity" ~ "Arts & Humanities",
+      division_flag == "is_social_sci"  ~ "Social Sciences",
+      division_flag == "is_natural_sci" ~ "Natural Sciences",
+      TRUE ~ division_flag
+    )
+  ) |>
+  filter(division %in% division_cols) |>
+  select(masked_student_ID, division, is_division) |>
+  distinct()
+
+# --- Step 4: Merge the proportions with the known flags ---
+check_table <- student_div_props |>
+  left_join(student_flags, by = c("masked_student_ID", "division"))
+
+# --- Step 5: Function to compute classification error at a given proportion threshold ---
+compute_error <- function(p_thresh) {
+  check_table |>
+    mutate(
+      took_gt_p = prop_division > p_thresh
+    ) |>
+    group_by(division) |>
+    summarise(
+      TP = sum(took_gt_p & is_division == 1, na.rm = TRUE),
+      FP = sum(took_gt_p & is_division == 0, na.rm = TRUE),
+      TN = sum(!took_gt_p & is_division == 0, na.rm = TRUE),
+      FN = sum(!took_gt_p & is_division == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(
+      p = p_thresh,
+      error_rate = (FP + FN) / (TP + FP + TN + FN)
+    )
+}
+
+# --- Step 6: Apply to all proportion thresholds ---
+errors_by_p <- map_dfr(p_vals, compute_error)
+
+# --- Step 7: Plot error vs proportion threshold ---
+ggplot(errors_by_p, aes(x = p, y = error_rate, color = division)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Proportion threshold (p)",
+    y = "Error rate",
+    title = "Error rate vs proportion threshold by division"
+  ) +
+  theme_minimal()
+
+# --- Step 8: Select best threshold per division ---
+best_p <- errors_by_p |>
+  group_by(division) |>
+  slice_min(error_rate, n = 1) |>
+  select(division, best_p = p, error_rate)
+
+# --- Step 9: Apply best threshold to classify students ---
+student_flags_estimated <- check_table |>
+  left_join(best_p, by = "division") |>
+  mutate(
+    estimated_flag = prop_division > best_p
+  )
+
+# --- Step 10: Compare estimated vs actual counts ---
+student_flags_estimated |>
+  group_by(division) |>
+  summarise(
+    accuracy = mean(estimated_flag == (is_division == 1), na.rm = TRUE),
+    best_p = unique(best_p)
+  )
+
+```
+
+```{r}
+# for each candidate proportion threshold
+confusion_table <- map_dfr(p_vals, function(p_thresh) {
+  check_table |>
+    mutate(predicted = prop_division > p_thresh) |>
+    group_by(division) |>
+    summarise(
+      TP = sum(predicted & is_division == 1, na.rm = TRUE),
+      FP = sum(predicted & is_division == 0, na.rm = TRUE),
+      FN = sum(!predicted & is_division == 1, na.rm = TRUE),
+      TN = sum(!predicted & is_division == 0, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(threshold = p_thresh)
+})
+
+confusion_long <- confusion_table |>
+  pivot_longer(cols = TP:TN, names_to = "metric", values_to = "count")
+
+ggplot(confusion_long, aes(x = threshold, y = count, color = metric)) +
+  geom_line(size = 1) +
+  facet_wrap(~division, scales = "free_y") +
+  labs(
+    title = "TP/FP/FN/TN counts vs proportion threshold",
+    x = "Proportion threshold",
+    y = "Number of students",
+    color = "Confusion Metric"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+# --- Step 1: filter students without declared major ---
+students_no_major <- final_clean_df |>
+  filter(is.na(first_major) & student_group %in% c(2022, 2023))
+
+# --- Step 2: compute upper-level course proportions per student/division ---
+student_div_props_no_major <- students_no_major |>
+  filter(!is.na(division),
+         !(division %in% c("WRITING", "Engineering")),
+         catalog_level > "100-199") |>
+  group_by(masked_student_ID, division) |>
+  summarise(n_div_courses = n(), .groups = "drop_last") |>
+  mutate(total_200 = sum(n_div_courses)) |>
+  ungroup() |>
+  #filter(total_200 >= 3) |>  # optional: require at least 3 upper-level courses
+  mutate(prop_division = n_div_courses / total_200)
+
+# --- Step 3: join the best_p thresholds learned from declared majors ---
+student_div_props_no_major <- student_div_props_no_major |>
+  left_join(best_p, by = "division")
+
+# --- Step 4: classify students using the learned threshold ---
+student_div_props_no_major <- student_div_props_no_major |>
+  mutate(estimated_flag = prop_division > best_p)
+
+# --- Step 5: summarize per student which divisions are predicted ---
+predicted_divisions <- student_div_props_no_major |>
+  filter(estimated_flag) |>
+  group_by(masked_student_ID) |>
+  summarise(predicted_divisions = paste(division, collapse = ", "), .groups = "drop")
+
+# --- Step 6: optional check ---
+predicted_divisions |>
+  count(predicted_divisions, sort = TRUE)
 
 ```
