@@ -709,3 +709,49 @@ predicted_divisions |>
   count(predicted_divisions, sort = TRUE)
 
 ```
+
+```{r}
+# --- Step 1: pivot predicted divisions into wide format ---
+predicted_flags_wide <- predicted_divisions |>
+  # one row per student per predicted division
+  separate_rows(predicted_divisions, sep = ",\\s*") |>
+  mutate(value = 1) |>
+  pivot_wider(
+    names_from = predicted_divisions,
+    values_from = value,
+    values_fill = 0
+  ) |>
+  rename(
+    is_art_humanity = `Arts & Humanities`,
+    is_social_sci   = `Social Sciences`,
+    is_natural_sci  = `Natural Sciences`
+  ) |>
+  mutate(estimated = TRUE)
+
+# --- Step 2: join back to original dataset ---
+final_with_estimates <- final_clean_df |>
+  left_join(predicted_flags_wide, by = "masked_student_ID") |>
+  # replace only for students with predictions
+  mutate(
+    is_art_humanity = coalesce(is_art_humanity.y, is_art_humanity.x),
+    is_social_sci   = coalesce(is_social_sci.y,   is_social_sci.x),
+    is_natural_sci  = coalesce(is_natural_sci.y,  is_natural_sci.x),
+    estimated = coalesce(estimated, FALSE)
+  ) |>
+  select(-ends_with(".x"), -ends_with(".y"))
+
+```
+
+```{r}
+# Compare estimates with actual
+final_with_estimates |>
+  filter(estimated == TRUE) |>
+  mutate(n_divisions = is_art_humanity + is_social_sci + is_natural_sci) |>
+  count(n_divisions)
+
+final_with_estimates |>
+  filter(estimated == FALSE) |>
+  mutate(n_divisions = is_art_humanity + is_social_sci + is_natural_sci) |>
+  count(n_divisions)
+
+```
