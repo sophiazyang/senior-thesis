@@ -11,6 +11,9 @@ library(viridis)
 library(lme4)
 library(glmnet)
 library(pROC)
+library(tidymodels)
+library(rsample)
+
 ```
 
 ```{r}
@@ -18,58 +21,63 @@ df <- readRDS("data/model_df.rds")
 ```
 
 ```{r}
-df_clean <- df |>
-  # Fill NAs for studied_away
-  mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away),
-         # Center numeric variables
-         term_units_c = term_units - mean(term_units, na.rm = TRUE),
-         prev_semGPA_c = if_else(is.na(prev_semGPA),
-                                 4,  # neutral effect for first-semester
-                                 prev_semGPA - mean(prev_semGPA, na.rm = TRUE)),
-         num_plans_c = num_plans - mean(num_plans, na.rm = TRUE),
-         total_overloads_c = total_overloads - mean(total_overloads, na.rm = TRUE),
-         semester_num_c = semester_num - mean(semester_num, na.rm = TRUE),
-         # Create unknown indicator
-         unknown = if_else(is.na(is_art_humanity), TRUE, FALSE),
-          # Replace NAs in division indicator columns with 0
-         is_art_humanity = if_else(is.na(is_art_humanity), 0, is_art_humanity),
-         is_social_sci   = if_else(is.na(is_social_sci), 0, is_social_sci),
-         is_natural_sci  = if_else(is.na(is_natural_sci), 0, is_natural_sci),
-         )
-  # Convert categorical variables to factors
-  # mutate(across(c(division, student_group), as.factor)) 
-```
-
-```{r}
 set.seed(123)
-student_ids <- unique(df_clean$masked_student_ID)
-train_ids <- sample(student_ids, size = 0.8 * length(student_ids))
+split <- group_initial_split(df, group = masked_student_ID, prop = 0.8)
+train_df <- training(split)
+test_df  <- testing(split)
 
-train_df <- df_clean |> filter(masked_student_ID %in% train_ids)
-test_df  <- df_clean |> filter(!masked_student_ID %in% train_ids)
+# want to predict on new students (no data leakage about students)
 ```
 
 ```{r}
-predictors <- c("term_units_c", "prev_semGPA_c", "num_plans_c",
-                "studied_away", "took_summer_courses", "is_art_humanity",
-                "is_social_sci", "is_natural_sci", "unknown", "student_group",
-                "timeperiod", "academic_level_bot", "catalog_level",
-                "semester_num_c", "division", "max_units", "num_students",
-                "did_indep_study", "num_overloads")
+su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      student_group + timeperiod + academic_level_bot +
+                      catalog_level + semester_num + division +
+                      max_units + num_students + did_indep_study +
+                      num_overloads,
+                    data = train_df) |>
+  step_mutate(
+    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
+    unknown      = is.na(is_art_humanity)
+  ) |>
+  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
+  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
+  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
+  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_zv(all_predictors()) |>
+  step_smote(is_SU)
+```
 
-train_clean <- train_df |>
-  select(is_SU, all_of(predictors))
+```{r}
+lasso_spec <- logistic_reg(
+  mode = "classification",
+  penalty = tune(),  # lambda
+  mixture = 1        # 1 = LASSO
+) |>
+  set_engine("glmnet")
 
-X_train <- model.matrix(is_SU ~ ., train_clean)[,-1]
-y_train <- train_clean$is_SU
+lasso_workflow <- workflow() |>
+  add_model(lasso_spec) |>
+  add_recipe(su_recipe)
 
-# Lasso with cross-validation
-cvfit <- cv.glmnet(X_train, y_train, family = "binomial", alpha = 1)
-best_lambda <- cvfit$lambda.min
+folds <- vfold_cv(train_df, v = 5, strata = is_SU)
 
-# See which variables are kept
-selected_vars <- coef(cvfit, s = best_lambda)
-selected_vars
+lasso_tuned <- tune_grid(
+  lasso_workflow,
+  resamples = folds,
+  grid = 30
+)
+best_lambda <- select_best(lasso_tuned, "roc_auc")
+final_lasso <- finalize_workflow(lasso_workflow, best_lambda)
+lasso_fit <- fit(final_lasso, data = train_df)
+
+lasso_fit |>
+  extract_fit_parsnip() |>
+  tidy() |>
+  filter(estimate != 0)
 
 ```
 
