@@ -14,61 +14,11 @@ library(pROC)
 ```
 
 ```{r}
-df <- readRDS("data/13-final.rds")
+df <- readRDS("data/model_df.rds")
 ```
 
 ```{r}
-# Total number of students
-n_distinct(df$masked_student_ID)
-
-# Number of students taking more than 8 semesters (not-including summer)
-df |> 
-  group_by(masked_student_ID) |>
-  summarise(
-    n_semesters = n_distinct(term_enrolled),
-  ) |>
-  filter(n_semesters > 8) |>
-  count()
-
-# Number of students graduating early
-df |>
-  filter(early_grad == TRUE) |>
-  distinct(masked_student_ID) |>
-  nrow()
-
-# Identify non-traditional students
-non_trad_ids <- df |>
-  group_by(masked_student_ID) |>
-  summarise(
-    n_semesters = n_distinct(term_enrolled),
-    early_grad = any(early_grad, na.rm = TRUE)
-  ) |>
-  mutate(
-    non_traditional = (n_semesters > 8) | early_grad
-  ) |>
-  filter(non_traditional) |>
-  pull(masked_student_ID)
-
-# Number of non-traditional students (not 8 semesters)
-length(non_trad_ids)
-
-# Drop those students from the main dataframe
-df_8sem <- df |>
-  filter(!masked_student_ID %in% non_trad_ids)
-
-# Number of students ever underloading
-df_8sem |> 
-  filter(underload > 0) |>
-  distinct(masked_student_ID) |>
-  nrow()
-
-# Number of students ever underloading (besides final semester)
-```
-
-MAKE SURE TO DROP ALL COURSE_ID/VARIABLE FOR 99% S/U
-
-```{r}
-df_clean <- df_8sem |>
+df_clean <- df |>
   # Fill NAs for studied_away
   mutate(studied_away = if_else(is.na(studied_away), FALSE, studied_away),
          # Center numeric variables
@@ -85,14 +35,9 @@ df_clean <- df_8sem |>
          is_art_humanity = if_else(is.na(is_art_humanity), 0, is_art_humanity),
          is_social_sci   = if_else(is.na(is_social_sci), 0, is_social_sci),
          is_natural_sci  = if_else(is.na(is_natural_sci), 0, is_natural_sci),
-         is_engr         = if_else(is.na(is_engr), 0, is_engr),
-         ) |>
-  filter(
-         !is.na(catalog_level),
-         ) |>
+         )
   # Convert categorical variables to factors
-  mutate(across(c(student_acad_prog, academic_level_bot, catalog_level,
-                  division, timeperiod, student_group), as.factor)) 
+  # mutate(across(c(division, student_group), as.factor)) 
 ```
 
 ```{r}
@@ -105,11 +50,12 @@ test_df  <- df_clean |> filter(!masked_student_ID %in% train_ids)
 ```
 
 ```{r}
-predictors <- c("term_units_c", "prev_semGPA_c", "early_grad",
+predictors <- c("term_units_c", "prev_semGPA_c", "num_plans_c",
                 "studied_away", "took_summer_courses", "is_art_humanity",
-                "is_social_sci", "is_natural_sci", "is_engr", "unknown", "student_group",
-                "timeperiod", "student_acad_prog", "academic_level_bot", "catalog_level", "semester_num",
-                "division")
+                "is_social_sci", "is_natural_sci", "unknown", "student_group",
+                "timeperiod", "academic_level_bot", "catalog_level",
+                "semester_num_c", "division", "max_units", "num_students",
+                "did_indep_study", "num_overloads")
 
 train_clean <- train_df |>
   select(is_SU, all_of(predictors))
@@ -129,7 +75,7 @@ selected_vars
 
 ```{r}
 glm_model <- glm(
-  is_SU ~ term_units_c + prev_semGPA_c + early_grad + studied_away +
+  is_SU ~ term_units_c + prev_semGPA_c + studied_away +
     took_summer_courses + is_art_humanity + is_social_sci + unknown + semester_num + timeperiod,
   data = train_df,
   family = binomial
