@@ -220,86 +220,90 @@ One of the most predominant reasons for grade inflation was the rise of student 
 
 [^61]: https://scholar.harvard.edu/files/btl/files/bettinger_long_2010_does_cheaper_mean_better\_-\_impact_of_using_adjuncts\_-\_restat.pdf
 
-Despite the increase in proportion of A’s, this does not seem to reflect an increasing caliber of student. According to the 2019 National Assessment of Educational Progress High School Transcript Study, the average GPA has increased from 3.00 in 2009 to 3.11 in 2019 while over the same time period Grade 12 assessment scores decreased in mathematics and did not significantly change in the sciences[^62]. Additionally, it is still debated as to how good of a predictor high school GPA is compared to standardized tests like the ACT and SAT. In a study comparing the predictive power of high school GPA against composite ACT scores, Noble and Sawyer (2004) found that across all levels of achievement, ACT scores provide greater differentiation than high school GPAs on success in the first year in college[^63]. In particular, “at 93 percent of the institutions, a student with a 4.00 high school GPA had less than a 0.50 probability of earning a 3.75 or higher first-year GPA” in higher education and “in some cases, HSGPA values less than 3.00 provided little differentiation in terms of students' chances of achieving different first-year GPAs” (Noble and Sawyer 2004)[^64]. On the other hand, some studies show that ACT scores and high school GPA are both valid predictors of first year performance (Westrick et al. 2015)[^65]. Overall, there is insufficient evidence to suggest that the quality of students has risen, despite significant increases in GPA. GPA is no longer an effective tool for differentiating skill.
+Grade inflation is unevenly applied across institutions and subjects. Average student GPAs in private schools have historically been higher than their public counterparts. This is in part due to the selection of higher achieving students, but pre-college performance does not completely explain the difference. A 2010 study by Rojstaczer and Healy analyzed patterns within their database of over 160 colleges and universities from 1920 to 2006[^62]. They found that on average private school students were graded 0.1 to 0.2 higher on a 4.0 scale for a given caliber of student (measured with SAT scores or a selectivity measure). When looking at grading across divisions, they found that on average science departments grade 0.4 lower on a 4.0 scale than humanities departments and 0.2 lower than social science departments. Evidently, both the institution and the division of a student's courses are correlated with a student's GPA.
 
-[^62]: <https://www.nationsreportcard.gov/hstsreport/>
+[^62]: <https://www.gradeinflation.com/tcr2010grading.pdf>
 
-[^63]: <https://www.proquest.com/docview/225613390?sourcetype=Scholarly%20Journals>
+Despite the increase in proportion of A’s, this does not seem to reflect an increasing caliber of student. According to the 2019 National Assessment of Educational Progress High School Transcript Study, the average GPA has increased from 3.00 in 2009 to 3.11 in 2019 while over the same time period Grade 12 assessment scores decreased in mathematics and did not significantly change in the sciences[^63]. Additionally, it is still debated as to how good of a predictor high school GPA is compared to standardized tests like the ACT and SAT. In a study comparing the predictive power of high school GPA against composite ACT scores, Noble and Sawyer (2004) found that across all levels of achievement, ACT scores provide greater differentiation than high school GPAs on success in the first year in college[^64]. In particular, “at 93 percent of the institutions, a student with a 4.00 high school GPA had less than a 0.50 probability of earning a 3.75 or higher first-year GPA” in higher education and “in some cases, HSGPA values less than 3.00 provided little differentiation in terms of students' chances of achieving different first-year GPAs” (Noble and Sawyer 2004)[^65]. On the other hand, some studies show that ACT scores and high school GPA are both valid predictors of first year performance (Westrick et al. 2015)[^66]. Overall, there is insufficient evidence to suggest that the quality of students has risen, despite significant increases in GPA. GPA is no longer an effective tool for differentiating skill.
 
-[^64]: <https://www.proquest.com/scholarly-journals/is-high-school-gpa-better-than-admission-test/docview/225613390/se-2>
+[^63]: <https://www.nationsreportcard.gov/hstsreport/>
 
-[^65]: Westrick, P. A., Le, H., Robbins, S. B., Radunzel, J. M. R., & Schmidt, F. L. (2015). College Performance and Retention: A Meta-Analysis of the Predictive Validities of ACT^®^ Scores, High School Grades, and SES. *Educational Assessment*, *20*(1), 23–45. https://doi.org/10.1080/10627197.2015.997614
+[^64]: <https://www.proquest.com/docview/225613390?sourcetype=Scholarly%20Journals>
+
+[^65]: <https://www.proquest.com/scholarly-journals/is-high-school-gpa-better-than-admission-test/docview/225613390/se-2>
+
+[^66]: Westrick, P. A., Le, H., Robbins, S. B., Radunzel, J. M. R., & Schmidt, F. L. (2015). College Performance and Retention: A Meta-Analysis of the Predictive Validities of ACT^®^ Scores, High School Grades, and SES. *Educational Assessment*, *20*(1), 23–45. https://doi.org/10.1080/10627197.2015.997614
 
 ## Falling Confidence in Higher Education
 
-Grade inflation devalues education. The weight of a 4.0 GPA no longer carries the weight it once did. For colleges, participation in grade inflation lessens rigor, lowers quality of education, and degrades reputation (Chan, Hao, & Suen, 2007; Ehlers & Schwager, 2016)[^66][^67]. For students, they are deprived of feedback and left unmotivated by lack of recognition of exceptional effort (O’Halloran & Gordon, 2014)[^68]. For society, grade inflation means graduates are unprepared for the workforce without the skills, dedication, knowledge, and work ethic desired by employers (Franz, 2010; Love & Kotchen, 2010; Yang & Yip, 2003)[^69][^70][^71].
+Grade inflation devalues education. The weight of a 4.0 GPA no longer carries the weight it once did. For colleges, participation in grade inflation lessens rigor, lowers quality of education, and degrades reputation (Chan, Hao, & Suen, 2007; Ehlers & Schwager, 2016)[^67][^68]. For students, they are deprived of feedback and left unmotivated by lack of recognition of exceptional effort (O’Halloran & Gordon, 2014)[^69]. For society, grade inflation means graduates are unprepared for the workforce without the skills, dedication, knowledge, and work ethic desired by employers (Franz, 2010; Love & Kotchen, 2010; Yang & Yip, 2003)[^70][^71][^72].
 
-[^66]: <https://doi.org/10.1111/j.1468-2354.2007.00454.x>
+[^67]: <https://doi.org/10.1111/j.1468-2354.2007.00454.x>
 
-[^67]: <https://econpapers.repec.org/RePEc:oup:cesifo:v:62:y:2016:i:3:p:506-521>
+[^68]: <https://econpapers.repec.org/RePEc:oup:cesifo:v:62:y:2016:i:3:p:506-521>
 
-[^68]: <https://link.springer.com/article/10.1007/s10734-014-9758-5>
+[^69]: <https://link.springer.com/article/10.1007/s10734-014-9758-5>
 
-[^69]: <https://doi.org/10.1016/j.econedurev.2009.10.013>
+[^70]: <https://doi.org/10.1016/j.econedurev.2009.10.013>
 
-[^70]: <https://ideas.repec.org/a/pal/easeco/v36y2010i2p151-163.html>
+[^71]: <https://ideas.repec.org/a/pal/easeco/v36y2010i2p151-163.html>
 
-[^71]: <https://www.asc.ohio-state.edu/yang.1041/grade-inflation.pdf>
+[^72]: <https://www.asc.ohio-state.edu/yang.1041/grade-inflation.pdf>
 
-With more degree holders and higher GPAs, degrees are no longer a sufficient edge over other job seekers to obtain employment. Simultaneously, the rate of tuition increase has outpaced wages. This discrepancy has not gone unnoticed. Multiple news sources have published articles with headlines such as "Price Of College Increasing Almost 8 Times Faster Than Wages"[^72]. This crisis has been expedited by rising housing costs and other costs of living. In order to afford degrees, federal student loan debt increased by over seven-fold between 1995 and 2017 (Durk and Perry 2020)[^73].
+With more degree holders and higher GPAs, degrees are no longer a sufficient edge over other job seekers to obtain employment. Simultaneously, the rate of tuition increase has outpaced wages. This discrepancy has not gone unnoticed. Multiple news sources have published articles with headlines such as "Price Of College Increasing Almost 8 Times Faster Than Wages"[^73]. This crisis has been expedited by rising housing costs and other costs of living. In order to afford degrees, federal student loan debt increased by over seven-fold between 1995 and 2017 (Durk and Perry 2020)[^74].
 
-[^72]: <https://www.forbes.com/sites/camilomaldonado/2018/07/24/price-of-college-increasing-almost-8-times-faster-than-wages/?utm_source=chatgpt.com>
+[^73]: <https://www.forbes.com/sites/camilomaldonado/2018/07/24/price-of-college-increasing-almost-8-times-faster-than-wages/?utm_source=chatgpt.com>
 
-[^73]: <https://eric.ed.gov/?id=ED610721>
+[^74]: <https://eric.ed.gov/?id=ED610721>
 
-Increasingly, the American public has been losing trust in higher education. According to a 2024 Gallup poll, reported confidence in higher education has fallen since 2015 from over 65% down to 36% in 2024[^74]. Meanwhile the percentage of people reporting very little/no confidence has tripled from approximately 10% to 32%. Additionally, the gap in unemployment rates of Americans aged 25 and up by educational attainment has shrunk. What used to be a 5% difference in unemployment rates between those without a high school diploma and bachelor degree holders in 2005 is nearly halved in 2025[^75]. However, the relative difference in median income of high school graduates and bachelor degree holders has stayed roughly the same since 2004, adjusted for inflation[^76].
+Increasingly, the American public has been losing trust in higher education. According to a 2024 Gallup poll, reported confidence in higher education has fallen since 2015 from over 65% down to 36% in 2024[^75]. Meanwhile the percentage of people reporting very little/no confidence has tripled from approximately 10% to 32%. Additionally, the gap in unemployment rates of Americans aged 25 and up by educational attainment has shrunk. What used to be a 5% difference in unemployment rates between those without a high school diploma and bachelor degree holders in 2005 is nearly halved in 2025[^76]. However, the relative difference in median income of high school graduates and bachelor degree holders has stayed roughly the same since 2004, adjusted for inflation[^77].
 
-[^74]: <https://news.gallup.com/poll/646880/confidence-higher-education-closely-divided.aspx>
+[^75]: <https://news.gallup.com/poll/646880/confidence-higher-education-closely-divided.aspx>
 
-[^75]: <https://www.bls.gov/charts/employment-situation/unemployment-rates-for-persons-25-years-and-older-by-educational-attainment.htm>
+[^76]: <https://www.bls.gov/charts/employment-situation/unemployment-rates-for-persons-25-years-and-older-by-educational-attainment.htm>
 
-[^76]: <https://www.census.gov/library/stories/2025/09/education-and-income.html>
+[^77]: <https://www.census.gov/library/stories/2025/09/education-and-income.html>
 
 ## **Flexible Grading in the 21st Century**
 
-In the early 21st century, research and usage of pass fail grading remained largely obscure. The most prominent use of pass fail grading was found in medical schools. Doctors are expected to be lifelong learners, staying up to date with the newest techniques, treatments, and health problems. To do so, the character of a doctor must be taken into account, particularly their intrinsic desire to learn. Additionally, higher than average rates of stress and burnout had been reported in medical students and the negative effects of distress have been well studied[^77][^78]. As a result, a wave of medical reforms were made including resident duty restrictions, self-development groups, and pass/fail grading systems.
+In the early 21st century, research and usage of pass fail grading remained largely obscure. The most prominent use of pass fail grading was found in medical schools. Doctors are expected to be lifelong learners, staying up to date with the newest techniques, treatments, and health problems. To do so, the character of a doctor must be taken into account, particularly their intrinsic desire to learn. Additionally, higher than average rates of stress and burnout had been reported in medical students and the negative effects of distress have been well studied[^78][^79]. As a result, a wave of medical reforms were made including resident duty restrictions, self-development groups, and pass/fail grading systems.
 
-[^77]: <https://pubmed.ncbi.nlm.nih.gov/10926029/>
+[^78]: <https://pubmed.ncbi.nlm.nih.gov/10926029/>
 
-[^78]: <https://www.sciencedirect.com/science/article/pii/S0025619611610574>
+[^79]: <https://www.sciencedirect.com/science/article/pii/S0025619611610574>
 
-In a 2011 review of pass/fail and well-being literature (1980-2010) in medical schools, it was found that all (four) of the papers reported improvement in some measure of well-being (stress, anxiety, depression, self-control, good health, level of satisfaction, group cohesion, and amount of free time) (Spring et. al)[^79]. Student satisfaction was measured and found to have increased in two of the papers[^80][^81]. However, there were discrepancies in the long term effect of pass/fail with some claiming continued effect after the first semester while others found a return to typical levels in later semesters.
+In a 2011 review of pass/fail and well-being literature (1980-2010) in medical schools, it was found that all (four) of the papers reported improvement in some measure of well-being (stress, anxiety, depression, self-control, good health, level of satisfaction, group cohesion, and amount of free time) (Spring et. al)[^80]. Student satisfaction was measured and found to have increased in two of the papers[^81][^82]. However, there were discrepancies in the long term effect of pass/fail with some claiming continued effect after the first semester while others found a return to typical levels in later semesters.
 
-[^79]: <https://doi.org/10.1111/j.1365-2923.2011.03989.x>
+[^80]: <https://doi.org/10.1111/j.1365-2923.2011.03989.x>
 
-[^80]: <https://journals.lww.com/academicmedicine/fulltext/2009/05000/a_change_to_pass_fail_grading_in_the_first_two.28.aspx>
+[^81]: <https://journals.lww.com/academicmedicine/fulltext/2009/05000/a_change_to_pass_fail_grading_in_the_first_two.28.aspx>
 
-[^81]: <https://journals.lww.com/academicmedicine/abstract/1995/04000/the_effect_of_pass_fail_grading_and_weekly_quizzes.19.aspx>
+[^82]: <https://journals.lww.com/academicmedicine/abstract/1995/04000/the_effect_of_pass_fail_grading_and_weekly_quizzes.19.aspx>
 
-Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^82]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^83]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^84]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^85]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying[^86], defying expectations of increased laziness
+Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^83]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^84]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^85]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^86]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying[^87], defying expectations of increased laziness
 
-[^82]: <https://pubmed.ncbi.nlm.nih.gov/7718068/>
+[^83]: <https://pubmed.ncbi.nlm.nih.gov/7718068/>
 
-[^83]: <https://pubmed.ncbi.nlm.nih.gov/7401142/>
+[^84]: <https://pubmed.ncbi.nlm.nih.gov/7401142/>
 
-[^84]: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0240587>
+[^85]: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0240587>
 
-[^85]: <https://pubmed.ncbi.nlm.nih.gov/10353289/>
+[^86]: <https://pubmed.ncbi.nlm.nih.gov/10353289/>
 
-[^86]: <https://pubmed.ncbi.nlm.nih.gov/5548587/>
+[^87]: <https://pubmed.ncbi.nlm.nih.gov/5548587/>
 
-Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^87]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts[^88]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^89] while others argue pass/fail is a cause of grade inflation[^90].
+Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^88]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts[^89]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^90] while others argue pass/fail is a cause of grade inflation[^91].
 
-[^87]: <https://journals.lww.com/academicmedicine/fulltext/2019/06000/reflections_on_a_decade_leading_a_medical_student.27.aspx>
+[^88]: <https://journals.lww.com/academicmedicine/fulltext/2019/06000/reflections_on_a_decade_leading_a_medical_student.27.aspx>
 
-[^88]: <https://europepmc.org/article/med/30392003>
+[^89]: <https://europepmc.org/article/med/30392003>
 
-[^89]: <https://core.ac.uk/download/pdf/132324597.pdf>
+[^90]: <https://core.ac.uk/download/pdf/132324597.pdf>
 
-[^90]: <https://www.jstor.org/stable/27797025>
+[^91]: <https://www.jstor.org/stable/27797025>
 
-In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^91]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
+In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^92]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
 
-[^91]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
+[^92]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
 
 ## Higher Education and COVID-19
