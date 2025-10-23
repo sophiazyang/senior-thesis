@@ -6,6 +6,7 @@ editor_options:
 ---
 
 ```{r}
+#| label: load-libraries
 library(tidyverse)
 library(viridis)
 library(lme4)
@@ -13,14 +14,18 @@ library(glmnet)
 library(pROC)
 library(tidymodels)
 library(rsample)
-
+library(themis)
 ```
 
 ```{r}
+#| label: load-data
 df <- readRDS("data/model_df.rds")
+df <- df |>
+  mutate(is_SU = factor(is_SU, levels = c(0, 1)))
 ```
 
 ```{r}
+#| label: train-test-split
 set.seed(123)
 split <- group_initial_split(df, group = masked_student_ID, prop = 0.8)
 train_df <- training(split)
@@ -30,6 +35,7 @@ test_df  <- testing(split)
 ```
 
 ```{r}
+#| label: preprocess
 su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
@@ -41,21 +47,24 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
   step_mutate(
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-    unknown      = is.na(is_art_humanity)
+    unknown      = is.na(is_art_humanity),
+    did_indep_study = factor(did_indep_study),
+    unknown = factor(unknown)
   ) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
   step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
   step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
   step_normalize(all_numeric_predictors()) |>      # center + scale automatically
   step_zv(all_predictors()) |>
-  step_smote(is_SU)
+  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+
 ```
 
 ```{r}
 lasso_spec <- logistic_reg(
   mode = "classification",
   penalty = tune(),  # lambda
-  mixture = 1        # 1 = LASSO
+  mixture = 1        # pure LASSO
 ) |>
   set_engine("glmnet")
 
@@ -63,52 +72,89 @@ lasso_workflow <- workflow() |>
   add_model(lasso_spec) |>
   add_recipe(su_recipe)
 
-folds <- vfold_cv(train_df, v = 5, strata = is_SU)
-
+folds <- group_vfold_cv(train_df, group = masked_student_ID, v = 5)
+lambda_grid <- grid_regular(penalty(range = c(-4, 1)), levels = 20)
 lasso_tuned <- tune_grid(
   lasso_workflow,
   resamples = folds,
-  grid = 30
+  grid = lambda_grid,
+  metrics = metric_set(roc_auc, accuracy),
+  control = control_grid(save_pred = TRUE, verbose = TRUE)
 )
-best_lambda <- select_best(lasso_tuned, "roc_auc")
+
+best_lambda <- select_best(lasso_tuned, metric = "roc_auc")
+
 final_lasso <- finalize_workflow(lasso_workflow, best_lambda)
 lasso_fit <- fit(final_lasso, data = train_df)
+glmnet_fit <- pull_workflow_fit(lasso_fit)$fit
 
-lasso_fit |>
-  extract_fit_parsnip() |>
-  tidy() |>
-  filter(estimate != 0)
+coef_mat <- coef(glmnet_fit, s = best_lambda$penalty)  # best_lambda is a tibble
+coef_df <- as.data.frame(as.matrix(coef_mat))
+coef_df$term <- rownames(coef_df)
+colnames(coef_df)[1] <- "estimate"
+
+# Select nonzero coefficients (excluding intercept)
+selected_vars <- coef_df |> 
+  filter(estimate != 0, term != "(Intercept)") |> 
+  pull(term)
+
+selected_vars
+```
+
+```{r}
+# Determining best threshold for classifying true
+cv_preds <- lasso_tuned$.predictions[[1]]
+
+thresholds <- seq(0, 1, by = 0.01)
+
+f1_by_thresh <- sapply(thresholds, function(t){
+  cv_preds_thresh <- cv_preds %>%
+    mutate(pred_class_thresh = factor(
+      ifelse(.pred_1 >= t, 1, 0), 
+      levels = levels(is_SU)  # match outcome levels
+    ))
+  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
+})
+
+best_thresh <- thresholds[which.max(f1_by_thresh)]
+best_thresh
+
+plot(thresholds, f1_by_thresh, type = "b", xlab = "Threshold", ylab = "F1 Score")
+abline(v = thresholds[which.max(f1_by_thresh)], col = "red", lty = 2)  # best threshold
+
+```
+
+
+```{r}
+glm_formula <- as.formula(paste("is_SU ~", paste(selected_vars, collapse = " + ")))
+glm_fit <- glm(glm_formula, data = juice(prep(su_recipe)), family = binomial)
+summary(glm_fit)
+```
+
+```{r}
+exp(coef(glm_fit))
+exp(confint(glm_fit))
+```
+
+```{r}
+# Evaluate performance on test
+test_probs <- predict(final_lasso_fit, test_df, type = "prob")
+test_results <- test_df |>
+  bind_cols(test_probs) |>
+  mutate(pred_class = ifelse(.pred_1 >= best_thresh, 1, 0))
+results <- bind_cols(test_processed |> select(is_SU), test_probs, test_results)
+
+# ROC / AUC
+roc_auc(results, truth = is_SU, .pred_1)
+
+# Confusion matrix
+conf_mat(results, truth = is_SU, estimate = .pred_class)
 
 ```
 
 ```{r}
-glm_model <- glm(
-  is_SU ~ term_units_c + prev_semGPA_c + studied_away +
-    took_summer_courses + is_art_humanity + is_social_sci + unknown + semester_num + timeperiod,
-  data = train_df,
-  family = binomial
-)
-
-summary(glm_model)
-```
-
-```{r}
-exp(coef(glm_model))
-exp(confint(glm_model))
-```
-
-```{r}
-# Evaluate performance
-test_df$pred_prob <- predict(glm_model, newdata = test_df, type = "response")
-
-roc_obj <- roc(test_df$is_SU, test_df$pred_prob)
-auc(roc_obj)
-```
-
-```{r}
-library(lme4)
-glmm_model <- glmer(is_SU ~ term_units_c + prev_semGPA_c + early_grad + studied_away +
-        took_summer_courses + is_art_humanity + is_social_sci + unknown +
-        semester_num + timeperiod + (1 | masked_student_ID),
-      data = train_df, family = binomial)
+#glmm_model <- glmer(is_SU ~ term_units_c + prev_semGPA_c + early_grad + studied_away +
+#        took_summer_courses + is_art_humanity + is_social_sci + unknown +
+#        semester_num + timeperiod + (1 | masked_student_ID),
+#      data = train_df, family = binomial)
 ```
