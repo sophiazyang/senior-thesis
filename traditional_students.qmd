@@ -108,7 +108,7 @@ cv_preds <- lasso_tuned$.predictions[[1]]
 thresholds <- seq(0, 1, by = 0.01)
 
 f1_by_thresh <- sapply(thresholds, function(t){
-  cv_preds_thresh <- cv_preds %>%
+  cv_preds_thresh <- cv_preds |>
     mutate(pred_class_thresh = factor(
       ifelse(.pred_1 >= t, 1, 0), 
       levels = levels(is_SU)  # match outcome levels
@@ -124,7 +124,6 @@ abline(v = thresholds[which.max(f1_by_thresh)], col = "red", lty = 2)  # best th
 
 ```
 
-
 ```{r}
 glm_formula <- as.formula(paste("is_SU ~", paste(selected_vars, collapse = " + ")))
 glm_fit <- glm(glm_formula, data = juice(prep(su_recipe)), family = binomial)
@@ -138,18 +137,114 @@ exp(confint(glm_fit))
 
 ```{r}
 # Evaluate performance on test
-test_probs <- predict(final_lasso_fit, test_df, type = "prob")
+test_probs <- predict(lasso_fit, new_data = test_df, type = "prob")
 test_results <- test_df |>
+  select(is_SU) |>
   bind_cols(test_probs) |>
-  mutate(pred_class = ifelse(.pred_1 >= best_thresh, 1, 0))
-results <- bind_cols(test_processed |> select(is_SU), test_probs, test_results)
+  mutate(
+    pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
+    pred_class = factor(pred_class, levels = c(0, 1))
+        )
 
 # ROC / AUC
-roc_auc(results, truth = is_SU, .pred_1)
+roc_auc(test_results, truth = is_SU, .pred_1)
 
 # Confusion matrix
-conf_mat(results, truth = is_SU, estimate = .pred_class)
+conf_mat(test_results, truth = is_SU, estimate = pred_class)
 
+```
+
+```{r}
+# Weighted version
+# Compute class weights
+w_pos <- nrow(train_df) / sum(train_df$is_SU == 1)
+w_neg <- nrow(train_df) / sum(train_df$is_SU == 0)
+
+train_df_weighted <- train_df |>
+  mutate(weight = ifelse(is_SU == 1, w_pos, w_neg))
+
+su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      student_group + timeperiod + academic_level_bot +
+                      catalog_level + semester_num + division +
+                      max_units + num_students + did_indep_study +
+                      num_overloads + weight,
+                    data = train_df_weighted) |>
+  update_role(weight, new_role = "case_weight") |>
+  step_mutate(
+    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
+    unknown      = is.na(is_art_humanity),
+    did_indep_study = factor(did_indep_study),
+    unknown = factor(unknown)
+  ) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors())
+
+weighted_spec <- logistic_reg(mode = "classification") |>
+  set_engine("glm")
+
+weighted_workflow <- workflow() |>
+  add_model(weighted_spec) |>
+  add_recipe(su_recipe)
+
+# Grouped cross-validation
+folds <- group_vfold_cv(train_df_weighted, group = masked_student_ID, v = 5)
+
+# Fit with resampling
+weighted_res <- fit_resamples(
+  weighted_workflow,
+  resamples = folds,
+  metrics = metric_set(roc_auc, accuracy),
+  control = control_resamples(save_pred = TRUE)
+)
+
+# Collect all predictions from CV folds
+cv_preds <- collect_predictions(weighted_res)
+
+# Try multiple thresholds and compute F1
+thresholds <- seq(0.05, 0.95, by = 0.05)
+f1_by_thresh <- sapply(thresholds, function(t) {
+  cv_preds_thresh <- cv_preds |>
+    mutate(pred_class_thresh = factor(ifelse(.pred_1 >= t, 1, 0),
+                                      levels = levels(is_SU)))
+  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
+})
+
+best_thresh <- thresholds[which.max(f1_by_thresh)]
+best_thresh
+
+tibble(thresholds, f1 = f1_by_thresh) |>
+  ggplot(aes(thresholds, f1)) +
+  geom_line() + geom_point() +
+  geom_vline(xintercept = best_thresh, linetype = "dashed", color = "red") +
+  labs(title = "F1 vs Threshold (Training CV)", y = "F1 Score")
+
+final_weighted_fit <- fit(weighted_workflow, data = train_df_weighted)
+
+# Add a dummy weight column to test data
+test_df_weighted <- test_df |>
+  mutate(weight = 1)  # all equal weights for prediction
+
+# Evaluate performance on test
+test_probs <- predict(lasso_fit, new_data = test_df_weighted, type = "prob")
+test_results <- test_df_weighted |>
+  select(is_SU) |>
+  bind_cols(test_probs) |>
+  mutate(
+    pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
+    pred_class = factor(pred_class, levels = c(0, 1))
+        )
+
+# ROC / AUC
+roc_auc(test_results, truth = is_SU, .pred_1)
+
+# Confusion matrix
+conf_mat(test_results, truth = is_SU, estimate = pred_class)
 ```
 
 ```{r}
