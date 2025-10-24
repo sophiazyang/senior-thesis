@@ -9,7 +9,7 @@ author: Sophia Yang
 
 In the wake of the COVID-19 pandemic, the Trinity College of Arts and Sciences at Duke University introduced academic policy changes. During the Spring 2020 semester, all courses were switched to Satisfactory/Unsatisfactory (S/U) grading as opposed to the traditional graded (A- F) scale. While this was the only semester where all courses were allowed to be S/U and count for all requirements, other policy changes during the pandemic regarding S/U still remain.
 
-Referencing Duke University Undergraduate Bulletins, prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements (commonly known as “T-reqs”). Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of many changes has been a switch in defaults so instructors have to opt-in for allowing S/U rather than having to specifically opt-out of allowing S/U[^1]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
+Referencing Duke University Undergraduate Bulletins, prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements. Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of many changes has been a switch in defaults so instructors have to opt-in for allowing S/U rather than having to specifically opt-out of allowing S/U[^1]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
 
 [^1]: <https://dukechronicle.com/article/duke-university-arts-and-sciences-council-changes-satisfactory-unsatisfactory-grading-system-duke-athletics-changing-landscape-20250503>
 
@@ -280,7 +280,7 @@ In a 2011 review of pass/fail and well-being literature (1980-2010) in medical s
 
 [^82]: <https://journals.lww.com/academicmedicine/abstract/1995/04000/the_effect_of_pass_fail_grading_and_weekly_quizzes.19.aspx>
 
-Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^83]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^84]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^85]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^86]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying[^87], defying expectations of increased laziness
+Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^83]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^84]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^85]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^86]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying, defying expectations of increased laziness[^87].
 
 [^83]: <https://pubmed.ncbi.nlm.nih.gov/7718068/>
 
@@ -306,4 +306,66 @@ In summary, there has been an increased interest in pass/fail arising from a pre
 
 [^92]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
 
-## Higher Education and COVID-19
+## Education During the COVID-19 Pandemic
+
+Disaster preparedness, response, and relief is an important role that education fulfills. Schools help educate the public about how to prepare and act during disasters, and the return to school can serve to ease stress with its familiarity[^93]. There is a plenitude of literature on crises such as school shootings[^94], political conflicts[^95][^96], and natural disasters[^97][^98][^99]. However, the COVID-19 pandemic was at an abrupt, unprecedented scale affecting the daily lives of nearly all communities.
+
+[^93]: <https://www.tandfonline.com/doi/abs/10.1080/02643944.2014.880123>
+
+[^94]: <https://journals.sagepub.com/doi/full/10.3102/0162373715590683?casa_token=MLQZHaa7CC0AAAAA%3AnmMeAqWwjR5xoLHvw1Pf_HpCYkNPlN0WBcPF6sNBUXuPynJzsv3wYds0Wd4Ca5gFJZCQE66oPWRT>
+
+[^95]: <https://academic.oup.com/jeea/article/17/5/1502/5292664>
+
+[^96]: <https://journals.sagepub.com/doi/full/10.3102/0034654315609419?casa_token=S7N8UD6MVlMAAAAA%3AEAJI_7_3siHstlFQfw-laLYSxgUwJUEeVmI_yLS5VGCdTi743zFWVnaTrIhZZwoQfTy7srTJblOF>
+
+[^97]: <https://www.sciencedirect.com/science/article/pii/S0890856709634675>
+
+[^98]: <https://www.aeaweb.org/articles?id=10.1257/app.4.1.109>
+
+[^99]: <https://www.researchgate.net/profile/Thomas-Devaney/publication/295702490_Impact_of_Hurricane_Katrina_on_the_Educational_System_in_Southeast_Louisiana_One_Year_Follow-Up/links/56cc9d5208ae059e37506abd/Impact-of-Hurricane-Katrina-on-the-Educational-System-in-Southeast-Louisiana-One-Year-Follow-Up.pdf>
+
+On March 11, 2020 the World Health Organization declared a global pandemic. Policies such as travel restrictions, telehealth, social distancing, stay-at-home orders, and screening were implemented. In education, the response included remote learning, flexible deadlines, alternate assessment strategies, and relaxed grading policies. There is a growing body of research on the immediate and long-term effects of the pandemic on education. In the aftermath of widespread school closures in spring 2020 there is evidence of a negative effect of school closures on student achievement[^100]. In the three years spanning the pandemic (2020-2023), test scores were observed to have fallen compared to pre-pandemic levels and achievement gaps were amplified[^101]. Numerous other studies support disproportionate impact of the pandemic on vulnerable groups[^102][^103][^104]. Yet, grade inflation during this period exceeded multiannual trends and still persists in some academic divisions[^105]. In addition to cases of COVID-19, students’ physical well-being trended down as there was less engagement in physical activity[^106]. Similarly, mental well-being also declined with increased world wide prevalence of depression and anxiety[^107]. A plethora of research supports the idea that the pandemic exacerbated the pre-existing youth mental health crisis in facets from eating disorders to peer connectedness to substance use[^108][^109][^110][^111].
+
+[^100]: <https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.746289/full>
+
+[^101]: <https://journals.sagepub.com/doi/abs/10.3102/0013189X221109178>
+
+[^102]: <https://www.pnas.org/doi/full/10.1073/pnas.2020685118>
+
+[^103]: <https://www.tandfonline.com/doi/full/10.1080/21681376.2022.2084447>
+
+[^104]: <https://www.sciencedirect.com/science/article/pii/S0272775722000103?via%3Dihub>
+
+[^105]: <https://www.tandfonline.com/doi/full/10.1080/03075079.2025.2470297?src=recsys>
+
+[^106]: <https://jamanetwork.com/journals/jamapediatrics/fullarticle/2794075>
+
+[^107]: <https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(21)02143-7/fulltext>
+
+[^108]: <https://www.thelancet.com/journals/lanpsy/article/PIIS2215-0366(21)00156-5/fulltext>
+
+[^109]: <https://www.academicpedsjnl.net/article/S1876-2859(24)00021-4/fulltext>
+
+[^110]: <https://www.mdpi.com/1660-4601/19/11/6768>
+
+[^111]: <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2786919>
+
+**Intersection Between Flexible Grading and the Pandemic**
+
+The focus of this thesis is the impact of the pandemic on flexible grading policy. In the wake of school closures and remote learning, state DOE guidance often suggested or even required alternative grading[^112]. A review paper on COVID-19 academic changes in higher education identified binary grading as one of their five key themes[^113]. It’s reported that at least 194 American universities implemented pass-fail policies during the Spring 2020 semester[^114]. However, there is a dearth of research specifically evaluating the impact of COVID-19 induced flexible grading. In one study using data from Queens College suggested flexible grading policies helped reduce negative impacts of the pandemic, particularly for lower income students[^115]. Another study using data during the first three semesters of the pandemic from a historically black college and university in North Carolina found that: utilization of flexible grading varied significantly between subjects, flexible grading was less likely to be used in general education courses, flexible grading use varies across socio-economic groups, freshman students are more likely to choose flexible grading, and STEM students were less likely to use flexible grading[^116]. When looking at some of the most popular course sequences, they noticed a mix between students who benefited and those who were disadvantaged in the subsequent course. Perhaps related to this is a finding that in a study of two Canadian universities from the 2018-2019 to 2022-2023 academic year, in some subject areas GPAs have returned to pre-pandemic levels while in others GPAs remain inflated[^117]. While there is no question flexible grading changed during the pandemic, its long term effects are unknown.
+
+[^112]: <https://eric.ed.gov/?id=EJ1374189>
+
+[^113]: <https://www.tandfonline.com/doi/abs/10.1080/02602938.2022.2140780>
+
+[^114]: <https://oudigitools.blogspot.com/2020/03/feedback-alternate-grading-in-crisis.html>
+
+[^115]: <https://www.sciencedirect.com/science/article/pii/S0047272722000081?casa_token=vIy0DAM8D2MAAAAA:6xlm4a-PRCdeIUgQRzhnJWOnl69rgiO1T2vfUg9EdYaYK_2wpHSAdMIoGpbym3qbOVrkjH6Q>
+
+[^116]: <https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/>
+
+[^117]: <https://www.tandfonline.com/doi/full/10.1080/03075079.2025.2470297?src=#d1e327>
+
+While a couple studies do examine the interaction between pandemic policies and flexible grading on student outcomes, their timeframes struggle to capture post-pandemic changes as the pandemic was not officially declared over until May 2023. While changes in behavior occurred in the height of the pandemic, it is unclear whether or not they persisted as education returned to pre-pandemic trends or if they will stabilize at a new norm. Additionally, both Rodríguez-Planas (2022) and Mostafa et. al (2023) used data from only moderately selective, affordable, and large public universities. There is a lack of research on impacts of pandemic policies on flexible grading on highly selective, prestigious, expensive, or private universities.
+
+As students during the pandemic have begun and continue to graduate and enter the workforce, it is important to understand how pandemic policies have impacted them. For administrators, it is time to evaluate if changes in policies continue to be supportive in a post-pandemic world. With more disasters possible in the future, it’s critical to understand the impact of the pandemic on settings including that of higher education. Hence, this thesis aims to determine whether or not there is evidence to suggest a change in student behavior under persisting pandemic changes. If so, I hope to identify patterns of change.
