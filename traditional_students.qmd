@@ -224,7 +224,11 @@ tibble(thresholds, f1 = f1_by_thresh) |>
   geom_vline(xintercept = best_thresh, linetype = "dashed", color = "red") +
   labs(title = "F1 vs Threshold (Training CV)", y = "F1 Score")
 
+# Resulting model
 final_weighted_fit <- fit(weighted_workflow, data = train_df_weighted)
+final_model <- pull_workflow_fit(final_weighted_fit)
+summary(final_model$fit)
+exp(coef(final_model$fit))
 
 # Add a dummy weight column to test data
 test_df_weighted <- test_df |>
