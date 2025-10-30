@@ -789,6 +789,137 @@ final_with_estimates |>
 ```
 
 ```{r}
+#| label: across-years
+# --- Step 1: Filter to students with a declared major ---
+students_with_major <- valid_courses_df |>
+  filter(!is.na(first_major))
+
+# --- Parameters ---
+division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences")
+p_vals <- seq(0.1, 0.9, by = 0.05)  # candidate proportion thresholds
+
+# --- Step 2: Compute upper-level (>199) course counts (fixed) ---
+# Count courses per student × division × student_group
+student_div_counts <- students_with_major |>
+  filter(!is.na(division),
+         !(division %in% c("WRITING", "Engineering")),
+         catalog_level > "100-199") |>
+  group_by(masked_student_ID, student_group, division) |>
+  summarise(n_div_courses = n(), .groups = "drop")
+
+# Compute total upper-level courses per student (across divisions)
+student_div_props <- student_div_counts |>
+  group_by(masked_student_ID, student_group) |>
+  mutate(total_200 = sum(n_div_courses)) |>
+  ungroup() |>
+  filter(total_200 >= 3) |>            # at least 3 upper-level courses
+  mutate(prop_division = n_div_courses / total_200)
+
+# --- Step 3: Get the "true" divisions from declared major flags ---
+student_flags <- students_with_major |>
+  select(masked_student_ID, student_group, is_art_humanity:is_natural_sci) |>
+  pivot_longer(
+    cols = is_art_humanity:is_natural_sci,
+    names_to = "division_flag",
+    values_to = "is_division"
+  ) |>
+  mutate(
+    division = case_when(
+      division_flag == "is_art_humanity" ~ "Arts & Humanities",
+      division_flag == "is_social_sci"  ~ "Social Sciences",
+      division_flag == "is_natural_sci" ~ "Natural Sciences",
+      TRUE ~ division_flag
+    )
+  ) |>
+  filter(division %in% division_cols) |>
+  select(masked_student_ID, student_group, division, is_division) |>
+  distinct()
+
+# --- Step 4: Merge proportions with known flags ---
+check_table <- student_div_props |>
+  left_join(student_flags, by = c("masked_student_ID", "student_group", "division"))
+
+# --- Step 5: Function to compute classification error at a given threshold ---
+compute_error <- function(p_thresh) {
+  check_table |>
+    mutate(took_gt_p = prop_division > p_thresh) |>
+    group_by(student_group, division) |>
+    summarise(
+      TP = sum(took_gt_p & is_division == 1, na.rm = TRUE),
+      FP = sum(took_gt_p & is_division == 0, na.rm = TRUE),
+      TN = sum(!took_gt_p & is_division == 0, na.rm = TRUE),
+      FN = sum(!took_gt_p & is_division == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(
+      p = p_thresh,
+      error_rate = (FP + FN) / pmax(TP + FP + TN + FN, 1)  # safe divide
+    )
+}
+
+# --- Step 6: Apply to all thresholds ---
+errors_by_p <- map_dfr(p_vals, compute_error)
+
+# --- Step 7: Find best threshold per student group and division (tie-safe) ---
+best_p <- errors_by_p |>
+  group_by(student_group, division) |>
+  filter(error_rate == min(error_rate, na.rm = TRUE)) |>
+  arrange(p) |>
+  slice(1) |>
+  ungroup() |>
+  select(student_group, division, best_p = p, min_error = error_rate)
+
+# --- Step 8: Apply best thresholds to classify students ---
+student_flags_estimated <- check_table |>
+  left_join(best_p, by = c("student_group", "division")) |>
+  mutate(estimated_flag = prop_division > best_p)
+
+# --- Step 9: Compute accuracy by student group and division ---
+accuracy_by_group <- student_flags_estimated |>
+  group_by(student_group, division) |>
+  reframe(
+    accuracy = mean(estimated_flag == (is_division == 1), na.rm = TRUE),
+    best_p = unique(best_p),
+    min_error = unique(min_error)
+  ) |>
+  arrange(division, student_group)
+
+# --- Step 10: Plots results ---
+ggplot(accuracy_by_group, aes(x = student_group, y = best_p, color = division)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = division), linewidth = 1) +
+  scale_color_brewer(palette = "Set2") +
+  labs(
+    title = "Best p-values by Student Group and Division",
+    x = "Student Group",
+    y = "Best p-value",
+    color = "Division"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+
+ggplot(accuracy_by_group, aes(x = student_group, y = min_error, color = division)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = division), linewidth = 1) +
+  scale_color_brewer(palette = "Set1") +
+  labs(
+    title = "Minimum Error by Student Group and Division",
+    x = "Student Group",
+    y = "Minimum Error",
+    color = "Division"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+
+```
+
+```{r}
 model_df <- final_with_estimates |>
   select(-c(first_major, first_major_descr, 
             second_major, second_major_descr, 
@@ -796,3 +927,6 @@ model_df <- final_with_estimates |>
 
 saveRDS(model_df, file = "data/model_df.rds")
 ```
+
+
+
