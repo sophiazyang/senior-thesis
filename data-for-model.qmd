@@ -414,14 +414,14 @@ gpa_df <- divisions_df |>
 all_grades <- c("A+", "A", "A-", "B+", "B", "B-", 
                 "C+", "C", "C-", "D+", "D", "D-", "F")
 
-# Step 1: Find courses with no grades
+# Step 1: Find courses with no A-F grades
 courses_no_grades <- gpa_df |>
   group_by(term_enrolled, course_ID) |>
   summarize(letter_grades = any(final_grade %in% all_grades), .groups = "drop") |>
   filter(!letter_grades) |>
   select(term_enrolled, course_ID)
 
-# Number of courses with no grades
+# Number of courses with no A-F grades
 nrow(courses_no_grades)
 gpa_df |>
   group_by(term_enrolled, course_ID) |>
@@ -437,8 +437,11 @@ graded_df <- gpa_df |>
 
 valid_courses_df <- graded_df |>
   filter(!is.na(course_ID)) |>
-  filter(str_detect(location, "DURHAM")) |>
-  filter(!is.na(catalog_level)) 
+  filter(str_detect(location, "DURHAM") | str_detect(location, "ONLINE")) |>
+  filter(!is.na(catalog_level)) |>
+  # Remove non-credited courses (withdraws, audits, etc)
+  filter(final_grade %in% c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", 
+                            "D+", "D", "D-", "F", "S", "U"))
 
 ```
 
