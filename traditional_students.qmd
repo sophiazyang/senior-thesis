@@ -15,18 +15,48 @@ library(pROC)
 library(tidymodels)
 library(rsample)
 library(themis)
+library(caret)
 ```
 
 ```{r}
 #| label: load-data
 df <- readRDS("data/model_df.rds")
-df <- df |>
-  mutate(is_SU = factor(is_SU, levels = c(0, 1)))
+
 ```
+
+```{r}
+#| label: class-imbalance
+imbalance_by_group <- df |>
+  group_by(student_group) |>
+  summarise(
+    n_total = n(),
+    n_true  = sum(is_SU, na.rm = TRUE),
+    n_false = sum(!is_SU, na.rm = TRUE),
+    prop_true = mean(is_SU, na.rm = TRUE)
+  ) |>
+  arrange(desc(prop_true))
+
+# --- overall imbalance (across all groups) ---
+overall_imbalance <- df |>
+  summarise(
+    n_total = n(),
+    n_true  = sum(is_SU, na.rm = TRUE),
+    n_false = sum(!is_SU, na.rm = TRUE),
+    prop_true = mean(is_SU, na.rm = TRUE)
+  )
+
+print(imbalance_by_group)
+print(overall_imbalance)
+```
+
 
 ```{r}
 #| label: train-test-split
 set.seed(123)
+df <- df |>
+  mutate(is_SU = factor(is_SU, levels = c(0, 1))) |>
+  filter(term_enrolled > "Summer 2 2015")
+
 split <- group_initial_split(df, group = masked_student_ID, prop = 0.8)
 train_df <- training(split)
 test_df  <- testing(split)
@@ -40,16 +70,13 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       student_group + timeperiod + academic_level_bot +
-                      catalog_level + semester_num + division +
-                      max_units + num_students + did_indep_study +
+                      catalog_level + division +
+                      max_units + num_students +
                       num_overloads,
                     data = train_df) |>
   step_mutate(
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-    unknown      = is.na(is_art_humanity),
-    did_indep_study = factor(did_indep_study),
-    unknown = factor(unknown)
   ) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
   step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
@@ -167,17 +194,14 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       student_group + timeperiod + academic_level_bot +
-                      catalog_level + semester_num + division +
-                      max_units + num_students + did_indep_study +
+                      catalog_level + division +
+                      max_units + num_students +
                       num_overloads + weight,
                     data = train_df_weighted) |>
   update_role(weight, new_role = "case_weight") |>
   step_mutate(
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-    unknown      = is.na(is_art_humanity),
-    did_indep_study = factor(did_indep_study),
-    unknown = factor(unknown)
   ) |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
@@ -252,8 +276,7 @@ conf_mat(test_results, truth = is_SU, estimate = pred_class)
 ```
 
 ```{r}
-
-train_df_weighted <- train_df_weighted %>%
+train_df <- train_df |>
   mutate(final_grade = recode(final_grade,
     "A+" = "A_plus",
     "A"  = "A",
@@ -270,7 +293,7 @@ train_df_weighted <- train_df_weighted %>%
     "F"  = "F"
   ))
 
-test_df_weighted <- test_df_weighted %>%
+test_df <- test_df |>
   mutate(final_grade = recode(final_grade,
     "A+" = "A_plus",
     "A"  = "A",
@@ -287,27 +310,46 @@ test_df_weighted <- test_df_weighted %>%
     "F"  = "F"
   ))
 
-glmer_recipe <- recipe(is_SU ~ ., data = train_df_weighted) %>%
-  update_role(weight, new_role = "case_weight") %>%
-  update_role(masked_student_ID, new_role = "id") %>%
+# Train set
+train_df |> count(is_SU)
+
+# Test set
+test_df |> count(is_SU)
+
+#train_idx <- createDataPartition(train_df$is_SU, p = 1000 / nrow(train_df), list = FALSE)
+#train_df_small <- train_df[train_idx, ]
+
+#test_idx <- createDataPartition(test_df_weighted$is_SU, p = 1000 / nrow(test_df), list = FALSE)
+#test_df_small <- test_df[test_idx, ]
+
+train_df_small <- train_df |>
+  group_by(is_SU) |>
+  slice_sample(n = 5000) |>  # 3000 rows per class
+  ungroup()
+
+test_df_small <- test_df |>
+  group_by(is_SU) |>
+  slice_sample(n = 1000) |>  # 1000 rows per class
+  ungroup()
+
+glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
+  update_role(masked_student_ID, new_role = "id") |>
   step_mutate(
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-    did_indep_study = factor(did_indep_study),
-    unknown = factor(is.na(is_art_humanity))
-  ) %>%
-  step_impute_median(all_numeric_predictors()) %>%
-  step_impute_mode(all_nominal_predictors()) %>%
-  step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) %>%
-  step_normalize(all_numeric_predictors()) %>%
+  ) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors())  # remove zero-variance predictors
 
 # 2. Prep and bake
-train_baked <- prep(glmer_recipe) %>% bake(new_data = NULL)
+train_baked <- prep(glmer_recipe) |> bake(new_data = NULL)
 
-# 3. Keep only LASSO-selected columns + masked_student_ID + weight + outcome
-glmer_data <- train_baked %>%
-  select(all_of(selected_vars), masked_student_ID, weight, is_SU)
+# 3. Keep only LASSO-selected columns + masked_student_ID + outcome
+glmer_data <- train_baked |>
+  select(all_of(selected_vars), masked_student_ID, is_SU)
 
 # 4. Build formula dynamically
 glm_formula <- as.formula(
@@ -319,15 +361,14 @@ glmer_fit <- glmer(
   glm_formula,
   data = glmer_data,
   family = binomial(link = "logit"),
-  weights = weight,
-  control = glmerControl(optimizer = "bobyqa")
+  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
 )
 summary(glmer_fit)
 
 # Evaluate performance on test
 best_thesh = 0.5
-test_probs <- predict(lasso_fit, new_data = test_df_weighted, type = "prob")
-test_results <- test_df_weighted |>
+test_probs <- predict(lasso_fit, new_data = test_df_small, type = "prob")
+test_results <- test_df_small |>
   select(is_SU) |>
   bind_cols(test_probs) |>
   mutate(
