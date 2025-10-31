@@ -350,7 +350,7 @@ On March 11, 2020 the World Health Organization declared a global pandemic. Poli
 
 [^111]: <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2786919>
 
-**Intersection Between Flexible Grading and the Pandemic**
+## **Intersection Between Flexible Grading and the Pandemic**
 
 The focus of this thesis is the impact of the pandemic on flexible grading policy. In the wake of school closures and remote learning, state DOE guidance often suggested or even required alternative grading[^112]. A review paper on COVID-19 academic changes in higher education identified binary grading as one of their five key themes[^113]. It’s reported that at least 194 American universities implemented pass-fail policies during the Spring 2020 semester[^114]. However, there is a dearth of research specifically evaluating the impact of COVID-19 induced flexible grading. In one study using data from Queens College suggested flexible grading policies helped reduce negative impacts of the pandemic, particularly for lower income students[^115]. Another study using data during the first three semesters of the pandemic from a historically black college and university in North Carolina found that: utilization of flexible grading varied significantly between subjects, flexible grading was less likely to be used in general education courses, flexible grading use varies across socio-economic groups, freshman students are more likely to choose flexible grading, and STEM students were less likely to use flexible grading[^116]. When looking at some of the most popular course sequences, they noticed a mix between students who benefited and those who were disadvantaged in the subsequent course. Perhaps related to this is a finding that in a study of two Canadian universities from the 2018-2019 to 2022-2023 academic year, in some subject areas GPAs have returned to pre-pandemic levels while in others GPAs remain inflated[^117]. While there is no question flexible grading changed during the pandemic, its long term effects are unknown.
 
@@ -368,4 +368,108 @@ The focus of this thesis is the impact of the pandemic on flexible grading polic
 
 While a couple studies do examine the interaction between pandemic policies and flexible grading on student outcomes, their timeframes struggle to capture post-pandemic changes as the pandemic was not officially declared over until May 2023. While changes in behavior occurred in the height of the pandemic, it is unclear whether or not they persisted as education returned to pre-pandemic trends or if they will stabilize at a new norm. Additionally, both Rodríguez-Planas (2022) and Mostafa et. al (2023) used data from only moderately selective, affordable, and large public universities. There is a lack of research on impacts of pandemic policies on flexible grading on highly selective, prestigious, expensive, or private universities.
 
+## Purpose of this Thesis
+
 As students during the pandemic have begun and continue to graduate and enter the workforce, it is important to understand how pandemic policies have impacted them. For administrators, it is time to evaluate if changes in policies continue to be supportive in a post-pandemic world. With more disasters possible in the future, it’s critical to understand the impact of the pandemic on settings including that of higher education. Hence, this thesis aims to determine whether or not there is evidence to suggest a change in student behavior under persisting pandemic changes. If so, I hope to identify patterns of change.
+
+# Data
+
+## Institution of Study
+
+maybe stuff about Duke somewhere?
+
+## Note on Ethics and Data Inaccuracies
+
+All data used in this thesis is sourced from the Duke University Assessment Office through Jennifer Hill. Rows represent student-course pairs. In order to protect student privacy, data was masked and no socio-demographic data was provided. Furthermore, all data remains on in-office devices and I will no longer have access upon completion of my thesis. Please contact Jennifer Hill if you have questions/concerns about my base dataset.
+
+While these data come from official records, there are some aspects that I remain skeptical of but assume are accurate for the sake of this analysis. Notably, it remains unclear to me what the exact algorithm for calculating a student's academic level is. I experimented with matching a student's current semester number with their reported academic level. Results can be seen in Table TODO. While there are some significant discrepancies, I choose to believe the algorithm for academic level must include other factors such as progress towards degree completion. I also noted some questionable values for total enrollment in which I occasionally found classes claiming zero enrollment, yet that student still received a grade. After discussion with the Assessment Office, we believe it may be due to enrollment in a different section of that course being mistakenly used instead of totaling enrollment across sections. For instance, a course may be cross-listed in department A and department B but instruction is identical in both sections. While other potential accuracy issues may be present in my data, they should have relatively low impact on my overall analysis.
+
+\[insert num sem vs acad lvl bot table\]
+
+## Data Cleaning
+
+Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution.
+
+In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all half-credit courses due to the existence of courses such as the half-credit STA 211 which was required for the major in Statistical Science. All full-credit courses in Arts & Humanities, Social Sciences, or Natural Sciences still remain in the dataset.
+
+For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program.
+
+A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal, etc) I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive A-F (or withdrawal, etc) I choose not to assume the course is graded only. My belief is that in the majority of cases students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
+
+## Data Engineering
+
+Table TODO below shows a list of provided variables:
+
+| Variable | Type | Notes |
+|----------|------|-------|
+|          |      |       |
+|          |      |       |
+|          |      |       |
+
+: I established my baseline years as Fall 2012 to Fall 2019. Prior to Fall 2012, Duke used P/F grading in which students could only choose flexible grading after the declaration of their major (typically in sophomore year). Beginning in Fall 2012, Duke introduced the S/U grading system which, to my knowledge via the Duke Bulletins, is otherwise identical to the P/F system. I define the pandemic years as Spring 2020 until Summer 2 2022. The cutoff is chosen because by Fall 2022 there were no reported instances in which a period of mandatory remote learning was instituted (there were a couple days for which this was the case in Spring 2022) <https://trinity.duke.edu/sites/trinity.duke.edu/files/documents/S_U%20policy%20history.pdf> . While there may have been a couple odd remote classes that are only offered online (i.e. Cherokee) or exceptions for international students, it does not represent the experience of the vast majority of undergraduate students. Masking was still enforced in classrooms and the pandemic was only officially declared by WHO to be over in May 2023, but I claim its effect was relatively minimal and a return to normalcy was perceived. Data for post-pandemic semesters are Fall 2022 through Spring 2025.
+
+Flexible grading policy has become more flexible in the aftermath of COVID-19, so I hypothesize that student utilization of flexible grading will be higher after the policy change when compared to the years prior. Specifically, students are now allowed to use S/U for general education requirements so I believe that any change in S/U will likely be reflected in general education courses. Curriculum 2000, under which all students in my data fall, general education requirements mandate that Trinity students to take two credits in each of five Areas of Knowledge as well as two credits in each of five Modes of Inquiry. Unfortunately, I was unable to obtain these course codes as part of my dataset.
+
+As a proxy for determining general education courses, I attempt to classify students by their academic plans under the assumption that most of the courses taken outside of the division(s) of their major(s) are taken for general education requirements. Trinity students are permitted to have up to three academic plans (majors, minors, and certificates) of which only two can be majors. Since minors and certificates tend to only require 5 or 6 courses and tend to be added towards the end, I do not classify students as belonging to divisions based on their minors and certificates. Due to privacy concerns and the potential to identify individuals given full records, course names, numbers, and departments were omitted. Instead, I was given catalog level (i.e. 100-199, 200-299, etc) and course division (Engineering, Arts & Humanities, Social Sciences, Natural Sciences, and Writing). In order to match majors with course divisions, I manually assigned each major with the appropriate division based on classifications at <https://trinity.duke.edu/>. While most majors were relatively straight-forward, I was unable to classify Program II and unlabeled interdepartmental (IDM) majors. These students are excluded from my model. A table showing classifications for each major can be found in the Appendix.
+
+In addition to unclear majors, there are also a significant number of unknown majors in my data. Student academic plans in my dataset come from post-graduation records. This means that I lack any graduated students for the Class of 2026 (matriculated in Fall 2022) onward. Note that this is precisely the classes of students who fall after my pandemic time period (Spring 2020 – Summer 2 2022). I cannot afford to systematically have data loss during this period. To address this problem, I recognize potential bias but resorted to data imputation.
+
+I used labeled data to inform my imputation, assuming that there has been no significant change in the distribution of courses a student takes in their major(s). Initial attempts included experimentation to determine the best threshold for number of courses and major divisions. However, using a number of courses does not extend well to students who have not completed a full eight semesters. In fact, it is plausible that some students remain undecided in their first several semesters, some students space out their requirements across all four years, and some students focus on their major and only later are reminded of general education requirements.
+
+My current approach is to use proportion of 200 and above levels courses a student has taken per division to assign major divisions. With a 0.93%, 0.87%, and 0.87% accuracy for major divisions, the data suggested a threshold of 0.5, 0.4, 0.3 for Arts & Humanities, Natural Sciences, and Social Sciences respectively. The high threshold for Arts & Humanities logically makes sense, the more classes more likely to be majoring. However, the threshold for Social Sciences seems abnormally low as it insinuates a student who has a major in Social Sciences only takes roughly a third of their courses in Social Sciences. However, it should also be taken into consideration that 1) many students end up double majoring, 2) students might have minors or certificates in other divisions, 3) students could have other academic interests, 4) courses could be cross-listed across divisions, and 5) categorization of majors is somewhat debatable. To provide as example of 5, as defined by Trinity, African & African American Studies is classified as a Social Science while Asian & Middle Eastern Studies is a Arts & Humanities. Looking at the confusion metrics for each proportion threshold in Figure TODO, it becomes evident that the increase in false positives with higher thresholds offsets the increase in true positives.
+
+In addition to constructing variables for major divisions and time period relative to COVID-19, I also engineered several other variables as I describe below:
+
+-   prev semGPA
+
+-   num plans
+
+-   took summer courses
+
+-   studied away
+
+-   term units
+
+-   num semesters
+
+-   something about overloads (total or so far....)
+
+I create a logistic regression where the response variable is whether or not the course was taken S/U by a particular student.
+
+In order to test my model, I began by splitting my data into training (80%) and test (20%) sets. Since my goal is to .... I made sure to split on student IDs to prevent data leakage...
+
+An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Class imbalance is not an unique problem. The literature suggests methods such as ....
+
+While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes. Therefore, I used LASSO for variable selection...
+
+Due to student and course effects I added random effects...
+
+\[Insert latex formula\]
+
+After training, I evaluated model fit on the test set using ....
+
+# Results
+
+## Exploratory Data Analysis
+
+Before fitting my model, I created several exploratory plots. In these plots, I use a more complete dataset than I do for my model by including mandatory S/U courses, non-traditional students, ....
+
+\*mention enrollement at Duke stable across years
+
+\[prop of grades given out A, B, etc by AY/term + GPAs\]
+
+\[prop of overloads, S/U, \# plans by CY\]
+
+\[# S/U required(?) courses\]
+
+\[prop S/U, S/U allowed courses, course sizes –\> across divisions\]
+
+\[acad lvl and catalog lvl\]
+
+\[acad lvl/catalog lvl and S/U\]
+
+\[# overloads and \# S/U\]
+
+\[time periods –\> increase S/U decrease in W, 2014 vs 2019 vs 2024\]
+
+\[student majors/divisions by AY\]
