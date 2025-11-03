@@ -394,25 +394,15 @@ In addition to dropping the small fraction of courses that were unable to be mat
 
 For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program.
 
-A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal, etc) I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive A-F (or withdrawal, etc) I choose not to assume the course is graded only. My belief is that in the majority of cases students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
+My goal is to model student choice of S/U over A-F grading. Hence, I drop all withdrawals, audits, and other non-credit courses. A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal, etc) I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive A-F (or withdrawal, etc) I choose not to assume the course is graded only. My belief is that in the majority of cases students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
 
 ## Data Engineering
 
-Table TODO below shows a list of provided variables:
-
-| Variable | Type | Notes |
-|----------|------|-------|
-|          |      |       |
-|          |      |       |
-|          |      |       |
-
-: I established my baseline years as Fall 2012 to Fall 2019. Prior to Fall 2012, Duke used P/F grading in which students could only choose flexible grading after the declaration of their major (typically in sophomore year). Beginning in Fall 2012, Duke introduced the S/U grading system which, to my knowledge via the Duke Bulletins, is otherwise identical to the P/F system. I define the pandemic years as Spring 2020 until Summer 2 2022. The cutoff is chosen because by Fall 2022 there were no reported instances in which a period of mandatory remote learning was instituted (there were a couple days for which this was the case in Spring 2022) <https://trinity.duke.edu/sites/trinity.duke.edu/files/documents/S_U%20policy%20history.pdf> . While there may have been a couple odd remote classes that are only offered online (i.e. Cherokee) or exceptions for international students, it does not represent the experience of the vast majority of undergraduate students. Masking was still enforced in classrooms and the pandemic was only officially declared by WHO to be over in May 2023, but I claim its effect was relatively minimal and a return to normalcy was perceived. Data for post-pandemic semesters are Fall 2022 through Spring 2025.
-
 Flexible grading policy has become more flexible in the aftermath of COVID-19, so I hypothesize that student utilization of flexible grading will be higher after the policy change when compared to the years prior. Specifically, students are now allowed to use S/U for general education requirements so I believe that any change in S/U will likely be reflected in general education courses. Curriculum 2000, under which all students in my data fall, general education requirements mandate that Trinity students to take two credits in each of five Areas of Knowledge as well as two credits in each of five Modes of Inquiry. Unfortunately, I was unable to obtain these course codes as part of my dataset.
 
-As a proxy for determining general education courses, I attempt to classify students by their academic plans under the assumption that most of the courses taken outside of the division(s) of their major(s) are taken for general education requirements. Trinity students are permitted to have up to three academic plans (majors, minors, and certificates) of which only two can be majors. Since minors and certificates tend to only require 5 or 6 courses and tend to be added towards the end, I do not classify students as belonging to divisions based on their minors and certificates. Due to privacy concerns and the potential to identify individuals given full records, course names, numbers, and departments were omitted. Instead, I was given catalog level (i.e. 100-199, 200-299, etc) and course division (Engineering, Arts & Humanities, Social Sciences, Natural Sciences, and Writing). In order to match majors with course divisions, I manually assigned each major with the appropriate division based on classifications at <https://trinity.duke.edu/>. While most majors were relatively straight-forward, I was unable to classify Program II and unlabeled interdepartmental (IDM) majors. These students are excluded from my model. A table showing classifications for each major can be found in the Appendix.
+As a proxy for determining general education courses, I attempt to classify students by their academic plans under the assumption that most of the courses taken outside of the division(s) of their major(s) are taken for general education requirements. Trinity students are permitted to have up to three academic plans (majors, minors, and certificates) of which only two can be majors. Since minors and certificates tend to only require 5 or 6 courses and tend to be added towards the end, I do not classify students as belonging to divisions based on their minors and certificates. Due to privacy concerns and the potential to identify individuals given full records, course names, numbers, and departments were omitted. Instead, I was given catalog level (i.e. 100-199, 200-299, etc) and course division (Engineering, Arts & Humanities, Social Sciences, Natural Sciences, and Writing). In order to match majors with course divisions, I manually assigned each major with the appropriate division based on classifications at <https://trinity.duke.edu/>. While most majors were relatively straight-forward, I was unable to classify Program II and unlabeled interdepartmental (IDM) majors. These students are excluded from my model. The spreadsheet I used for classification of majors can be found in my GitHub repo.
 
-In addition to unclear majors, there are also a significant number of unknown majors in my data. Student academic plans in my dataset come from post-graduation records. This means that I lack any graduated students for the Class of 2026 (matriculated in Fall 2022) onward. Note that this is precisely the classes of students who fall after my pandemic time period (Spring 2020 – Summer 2 2022). I cannot afford to systematically have data loss during this period. To address this problem, I recognize potential bias but resorted to data imputation.
+In addition to unclear majors, there are also a significant number of unknown majors in my data. Student academic plans in my dataset come from post-graduation records. While some NAs are expected for the small percentage of students that do not graduate, there is a more substantial problem: I lack any graduated students for the Class of 2026 (matriculated in Fall 2022) onward. Note that this is precisely the classes of students who fall after my pandemic time period (Spring 2020 – Summer 2 2022). I cannot afford to systematically have data loss during this period. To address this problem, I recognize potential bias but resorted to data imputation.
 
 I used labeled data to inform my imputation, assuming that there has been no significant change in the distribution of courses a student takes in their major(s). Initial attempts included experimentation to determine the best threshold for number of courses and major divisions. However, using a number of courses does not extend well to students who have not completed a full eight semesters. In fact, it is plausible that some students remain undecided in their first several semesters, some students space out their requirements across all four years, and some students focus on their major and only later are reminded of general education requirements.
 
@@ -420,37 +410,66 @@ My current approach is to use proportion of 200 and above levels courses a stude
 
 In addition to constructing variables for major divisions and time period relative to COVID-19, I also engineered several other variables as I describe below:
 
--   prev semGPA
+-   `prev_semGPA` is the weighted GPA from the semester prior or NA if this is the first semester, only A-F grades count towards GPA
 
--   num plans
+-   `num_plans` is the number of majors, minors, and certificates a student holds
 
--   took summer courses
+-   `took_summer_courses` is a binary indicator if a student has ever taken summer courses
 
--   studied away
+-   `studied_away` is a binary indicator if a student has ever taken a course somewhere other than in Durham or online
 
--   term units
-
--   num semesters
+-   `term_units` is the number of academic credits a student is taking in a semester, excludes "Other" courses, P.E., etc
 
 -   something about overloads (total or so far....)
 
-I create a logistic regression where the response variable is whether or not the course was taken S/U by a particular student.
+## Model Choice
 
-In order to test my model, I began by splitting my data into training (80%) and test (20%) sets. Since my goal is to .... I made sure to split on student IDs to prevent data leakage...
+I create a logistic regression where the response variable is whether or not the course was taken S/U by a particular student. In order to test my model, I began by splitting my data into training (80%) and test (20%) sets. Since my goal is to .... I made sure to split on student IDs to prevent data leakage...
 
-An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Class imbalance is not an unique problem. The literature suggests methods such as ....
+An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to drop data from ... This marginally helped with an improved imbalance of X to Y, but this is not nearly enough.
 
-While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes. Therefore, I used LASSO for variable selection...
+Class imbalance is not an unique problem. The literature suggests methods such as the use of weights (source), oversampling of the minority class (source), SMOTE (source), adjusting decision thresholds, and usage of more robust methods such as support vector machines (source). I experimented with several of these techniques and my results are shown below in Table ....
 
-Due to student and course effects I added random effects...
+| Technique(s) | True Positive | True Negative | False Positive | False Negative |
+|--------------|---------------|---------------|----------------|----------------|
+|              |               |               |                |                |
+|              |               |               |                |                |
+|              |               |               |                |                |
 
-\[Insert latex formula\]
+While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes. Techniques used for variable selection include ... I used LASSO for variable selection because ...(source). The final variables used in my modeling are shown below:
 
-After training, I evaluated model fit on the test set using ....
+| Variable            | Data Type   | Reason for Interest                                                                                                                                               | Use in Final Model?                     |
+|---------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|
+| term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                            |                                         |
+| prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA. |                                         |
+| num_plans           | numerical   |                                                                                                                                                                   |                                         |
+| studied_away        | binary      |                                                                                                                                                                   |                                         |
+| took_summer_courses | numerical   |                                                                                                                                                                   |                                         |
+| is_art_humanity     | binary      |                                                                                                                                                                   |                                         |
+| is_social_sci       | binary      |                                                                                                                                                                   |                                         |
+| is_natural_sci      | binary      |                                                                                                                                                                   |                                         |
+| student_group       | ordinal     |                                                                                                                                                                   |                                         |
+| timeperiod          | ordinal     |                                                                                                                                                                   |                                         |
+| academic_level_bot  | ordinal     |                                                                                                                                                                   |                                         |
+| catalog_level       | ordinal     |                                                                                                                                                                   |                                         |
+| division            | categorical |                                                                                                                                                                   |                                         |
+| max_units           | numerical   |                                                                                                                                                                   |                                         |
+| num_students        | numerical   |                                                                                                                                                                   |                                         |
+| num_overloads??     |             |                                                                                                                                                                   |                                         |
+| num_semesters       | numerical   |                                                                                                                                                                   | No, colinearity with academic_level_bot |
+| term_enrolled       | ordinal     |                                                                                                                                                                   | No, colinearity with timeperiod         |
+
+After initial model selection I also opted to add a random effect on student ID. The random effect serves to ... the repetition of students across the dataset. However, the addition of random effects resulted in a significant increase in runtime. Due to my data access and time constraints, I opted to persist with the variables selected prior. However, I still had difficulty with runtime due to the large number of observations. Based on ..... I experimented with performing a stratified sample of my observations to be used in the training and test sets. I chose stratified sampling over .... because... This also had the added benefit of reducing class imbalance....
+
+## Model Evaluation
+
+My final model was \[Insert latex formula\]...
+
+insert eval metric words...
 
 # Results
 
-## Exploratory Data Analysis
+## Exploratory Data Analysis (uncertain about placement)
 
 Before fitting my model, I created several exploratory plots. In these plots, I use a more complete dataset than I do for my model by including mandatory S/U courses, non-traditional students, ....
 
@@ -473,3 +492,13 @@ Before fitting my model, I created several exploratory plots. In these plots, I 
 \[time periods –\> increase S/U decrease in W, 2014 vs 2019 vs 2024\]
 
 \[student majors/divisions by AY\]
+
+# Discussion
+
+## Limitations
+
+Imputation of student majors -\> https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1224/reports/custom_116659439.pdf
+
+# Conclusion
+
+## Future Work
