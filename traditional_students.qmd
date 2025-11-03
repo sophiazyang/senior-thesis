@@ -15,18 +15,48 @@ library(pROC)
 library(tidymodels)
 library(rsample)
 library(themis)
+library(caret)
 ```
 
 ```{r}
 #| label: load-data
 df <- readRDS("data/model_df.rds")
-df <- df |>
-  mutate(is_SU = factor(is_SU, levels = c(0, 1)))
+
 ```
+
+```{r}
+#| label: class-imbalance
+imbalance_by_group <- df |>
+  group_by(student_group) |>
+  summarise(
+    n_total = n(),
+    n_true  = sum(is_SU, na.rm = TRUE),
+    n_false = sum(!is_SU, na.rm = TRUE),
+    prop_true = mean(is_SU, na.rm = TRUE)
+  ) |>
+  arrange(desc(prop_true))
+
+# --- overall imbalance (across all groups) ---
+overall_imbalance <- df |>
+  summarise(
+    n_total = n(),
+    n_true  = sum(is_SU, na.rm = TRUE),
+    n_false = sum(!is_SU, na.rm = TRUE),
+    prop_true = mean(is_SU, na.rm = TRUE)
+  )
+
+print(imbalance_by_group)
+print(overall_imbalance)
+```
+
 
 ```{r}
 #| label: train-test-split
 set.seed(123)
+df <- df |>
+  mutate(is_SU = factor(is_SU, levels = c(0, 1))) |>
+  filter(term_enrolled > "Summer 2 2015")
+
 split <- group_initial_split(df, group = masked_student_ID, prop = 0.8)
 train_df <- training(split)
 test_df  <- testing(split)
@@ -40,16 +70,13 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       student_group + timeperiod + academic_level_bot +
-                      catalog_level + semester_num + division +
-                      max_units + num_students + did_indep_study +
+                      catalog_level + division +
+                      max_units + num_students +
                       num_overloads,
                     data = train_df) |>
   step_mutate(
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-    unknown      = is.na(is_art_humanity),
-    did_indep_study = factor(did_indep_study),
-    unknown = factor(unknown)
   ) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
   step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
@@ -103,25 +130,25 @@ selected_vars
 
 ```{r}
 # Determining best threshold for classifying true
-cv_preds <- lasso_tuned$.predictions[[1]]
+#cv_preds <- lasso_tuned$.predictions[[1]]
 
-thresholds <- seq(0, 1, by = 0.01)
+#thresholds <- seq(0, 1, by = 0.01)
 
-f1_by_thresh <- sapply(thresholds, function(t){
-  cv_preds_thresh <- cv_preds |>
-    mutate(pred_class_thresh = factor(
-      ifelse(.pred_1 >= t, 1, 0), 
-      levels = levels(is_SU)  # match outcome levels
-    ))
-  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
-})
+#f1_by_thresh <- sapply(thresholds, function(t){
+#  cv_preds_thresh <- cv_preds |>
+#    mutate(pred_class_thresh = factor(
+#      ifelse(.pred_1 >= t, 1, 0), 
+#      levels = levels(is_SU)  # match outcome levels
+#    ))
+#  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
+#})
 
-best_thresh <- thresholds[which.max(f1_by_thresh)]
-best_thresh
+#best_thresh <- thresholds[which.max(f1_by_thresh)]
+#best_thresh
 
-plot(thresholds, f1_by_thresh, type = "b", xlab = "Threshold", ylab = "F1 Score")
-abline(v = thresholds[which.max(f1_by_thresh)], col = "red", lty = 2)  # best threshold
-
+#plot(thresholds, f1_by_thresh, type = "b", xlab = "Threshold", ylab = "F1 Score")
+#abline(v = thresholds[which.max(f1_by_thresh)], col = "red", lty = 2)  # best threshold
+best_thresh = 0.5
 ```
 
 ```{r}
@@ -167,17 +194,14 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       student_group + timeperiod + academic_level_bot +
-                      catalog_level + semester_num + division +
-                      max_units + num_students + did_indep_study +
+                      catalog_level + division +
+                      max_units + num_students +
                       num_overloads + weight,
                     data = train_df_weighted) |>
   update_role(weight, new_role = "case_weight") |>
   step_mutate(
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-    unknown      = is.na(is_art_humanity),
-    did_indep_study = factor(did_indep_study),
-    unknown = factor(unknown)
   ) |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
@@ -204,25 +228,25 @@ weighted_res <- fit_resamples(
 )
 
 # Collect all predictions from CV folds
-cv_preds <- collect_predictions(weighted_res)
+#cv_preds <- collect_predictions(weighted_res)
 
 # Try multiple thresholds and compute F1
-thresholds <- seq(0.05, 0.95, by = 0.05)
-f1_by_thresh <- sapply(thresholds, function(t) {
-  cv_preds_thresh <- cv_preds |>
-    mutate(pred_class_thresh = factor(ifelse(.pred_1 >= t, 1, 0),
-                                      levels = levels(is_SU)))
-  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
-})
+#thresholds <- seq(0.05, 0.95, by = 0.05)
+#f1_by_thresh <- sapply(thresholds, function(t) {
+#  cv_preds_thresh <- cv_preds |>
+#    mutate(pred_class_thresh = factor(ifelse(.pred_1 >= t, 1, 0),
+#                                      levels = levels(is_SU)))
+#  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
+#})
 
-best_thresh <- thresholds[which.max(f1_by_thresh)]
-best_thresh
-
-tibble(thresholds, f1 = f1_by_thresh) |>
-  ggplot(aes(thresholds, f1)) +
-  geom_line() + geom_point() +
-  geom_vline(xintercept = best_thresh, linetype = "dashed", color = "red") +
-  labs(title = "F1 vs Threshold (Training CV)", y = "F1 Score")
+#best_thresh <- thresholds[which.max(f1_by_thresh)]
+#best_thresh
+best_thresh = 0.5
+#tibble(thresholds, f1 = f1_by_thresh) |>
+#  ggplot(aes(thresholds, f1)) +
+#  geom_line() + geom_point() +
+#  geom_vline(xintercept = best_thresh, linetype = "dashed", color = "red") +
+#  labs(title = "F1 vs Threshold (Training CV)", y = "F1 Score")
 
 # Resulting model
 final_weighted_fit <- fit(weighted_workflow, data = train_df_weighted)
@@ -242,7 +266,7 @@ test_results <- test_df_weighted |>
   mutate(
     pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
     pred_class = factor(pred_class, levels = c(0, 1))
-        )
+  )
 
 # ROC / AUC
 roc_auc(test_results, truth = is_SU, .pred_1)
@@ -252,8 +276,110 @@ conf_mat(test_results, truth = is_SU, estimate = pred_class)
 ```
 
 ```{r}
-#glmm_model <- glmer(is_SU ~ term_units_c + prev_semGPA_c + early_grad + studied_away +
-#        took_summer_courses + is_art_humanity + is_social_sci + unknown +
-#        semester_num + timeperiod + (1 | masked_student_ID),
-#      data = train_df, family = binomial)
+train_df <- train_df |>
+  mutate(final_grade = recode(final_grade,
+    "A+" = "A_plus",
+    "A"  = "A",
+    "A-" = "A_minus",
+    "B+" = "B_plus",
+    "B"  = "B",
+    "B-" = "B_minus",
+    "C+" = "C_plus",
+    "C"  = "C",
+    "C-" = "C_minus",
+    "D+" = "D_plus",
+    "D"  = "D",
+    "D-" = "D_minus",
+    "F"  = "F"
+  ))
+
+test_df <- test_df |>
+  mutate(final_grade = recode(final_grade,
+    "A+" = "A_plus",
+    "A"  = "A",
+    "A-" = "A_minus",
+    "B+" = "B_plus",
+    "B"  = "B",
+    "B-" = "B_minus",
+    "C+" = "C_plus",
+    "C"  = "C",
+    "C-" = "C_minus",
+    "D+" = "D_plus",
+    "D"  = "D",
+    "D-" = "D_minus",
+    "F"  = "F"
+  ))
+
+# Train set
+train_df |> count(is_SU)
+
+# Test set
+test_df |> count(is_SU)
+
+#train_idx <- createDataPartition(train_df$is_SU, p = 1000 / nrow(train_df), list = FALSE)
+#train_df_small <- train_df[train_idx, ]
+
+#test_idx <- createDataPartition(test_df_weighted$is_SU, p = 1000 / nrow(test_df), list = FALSE)
+#test_df_small <- test_df[test_idx, ]
+
+train_df_small <- train_df |>
+  group_by(is_SU) |>
+  slice_sample(n = 5000) |>  # 3000 rows per class
+  ungroup()
+
+test_df_small <- test_df |>
+  group_by(is_SU) |>
+  slice_sample(n = 1000) |>  # 1000 rows per class
+  ungroup()
+
+glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
+  update_role(masked_student_ID, new_role = "id") |>
+  step_mutate(
+    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
+  ) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors())  # remove zero-variance predictors
+
+# 2. Prep and bake
+train_baked <- prep(glmer_recipe) |> bake(new_data = NULL)
+
+# 3. Keep only LASSO-selected columns + masked_student_ID + outcome
+glmer_data <- train_baked |>
+  select(all_of(selected_vars), masked_student_ID, is_SU)
+
+# 4. Build formula dynamically
+glm_formula <- as.formula(
+  paste0("is_SU ~ ", paste(selected_vars, collapse = " + "), " + (1 | masked_student_ID)")
+)
+
+# 5. Fit glmer
+glmer_fit <- glmer(
+  glm_formula,
+  data = glmer_data,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
+)
+summary(glmer_fit)
+
+# Evaluate performance on test
+best_thesh = 0.5
+test_probs <- predict(lasso_fit, new_data = test_df_small, type = "prob")
+test_results <- test_df_small |>
+  select(is_SU) |>
+  bind_cols(test_probs) |>
+  mutate(
+    pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
+    pred_class = factor(pred_class, levels = c(0, 1))
+  )
+
+# ROC / AUC
+roc_auc(test_results, truth = is_SU, .pred_1)
+
+# Confusion matrix
+conf_mat(test_results, truth = is_SU, estimate = pred_class)
+
 ```
