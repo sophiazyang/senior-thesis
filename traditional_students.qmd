@@ -7,6 +7,7 @@ editor_options:
 
 ```{r}
 #| label: load-libraries
+#| message: false
 library(tidyverse)
 library(viridis)
 library(lme4)
@@ -21,41 +22,77 @@ library(caret)
 ```{r}
 #| label: load-data
 df <- readRDS("data/model_df.rds")
-
+df <- df |>
+  mutate(
+    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
+  )
 ```
 
 ```{r}
 #| label: class-imbalance
-imbalance_by_group <- df |>
+
+# Imbalance of S/U vs A-F
+df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+# Imbalance by student group
+df |>
   group_by(student_group) |>
   summarise(
-    n_total = n(),
-    n_true  = sum(is_SU, na.rm = TRUE),
-    n_false = sum(!is_SU, na.rm = TRUE),
-    prop_true = mean(is_SU, na.rm = TRUE)
+    n_total   = n(),
+    n_true    = sum(is_SU == "1", na.rm = TRUE),
+    n_false   = sum(is_SU == "0", na.rm = TRUE),
+    prop_true = mean(is_SU == "1", na.rm = TRUE)
   ) |>
   arrange(desc(prop_true))
 
-# --- overall imbalance (across all groups) ---
-overall_imbalance <- df |>
-  summarise(
-    n_total = n(),
-    n_true  = sum(is_SU, na.rm = TRUE),
-    n_false = sum(!is_SU, na.rm = TRUE),
-    prop_true = mean(is_SU, na.rm = TRUE)
-  )
+# Chose to drop data prior to Fall 2015
+df <- df |>
+  mutate(is_SU = factor(is_SU, levels = c(0, 1))) |>
+  filter(term_enrolled > "Summer 2 2015")
 
-print(imbalance_by_group)
-print(overall_imbalance)
+# Slightly improved imbalance of S/U A-F
+df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
 ```
 
+```{r}
+#| label: feature-imbalance
+
+# Most courses are 1.0 credits
+df |>
+  count(max_units) |>
+  mutate(prop = n / sum(n))
+
+# A lot of uncommon term_units
+df |>
+  count(term_units) |>
+  mutate(prop = n / sum(n)) |>
+  print(n = Inf)
+
+df <- df |>
+  mutate(
+    load_status = case_when(
+      term_units < 4    ~ "underload",
+      term_units == 4   ~ "normal",
+      term_units > 4    ~ "overload",
+      TRUE              ~ NA_character_   # handles any missing cases
+    )
+  )
+
+# Relatively balanced when using categories instead of units
+df |>
+  count(load_status) |>
+  mutate(prop = n / sum(n))
+```
 
 ```{r}
 #| label: train-test-split
 set.seed(123)
-df <- df |>
-  mutate(is_SU = factor(is_SU, levels = c(0, 1))) |>
-  filter(term_enrolled > "Summer 2 2015")
 
 split <- group_initial_split(df, group = masked_student_ID, prop = 0.8)
 train_df <- training(split)
@@ -66,18 +103,14 @@ test_df  <- testing(split)
 
 ```{r}
 #| label: preprocess
-su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+su_recipe_lasso <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
-                      student_group + timeperiod + academic_level_bot +
+                      timeperiod + academic_level_bot +
                       catalog_level + division +
                       max_units + num_students +
                       num_overloads,
                     data = train_df) |>
-  step_mutate(
-    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
-    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-  ) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
   step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
   step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
@@ -87,7 +120,10 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
 
 ```
 
+## LASSO 
+
 ```{r}
+#| message: false
 lasso_spec <- logistic_reg(
   mode = "classification",
   penalty = tune(),  # lambda
@@ -97,7 +133,7 @@ lasso_spec <- logistic_reg(
 
 lasso_workflow <- workflow() |>
   add_model(lasso_spec) |>
-  add_recipe(su_recipe)
+  add_recipe(su_recipe_lasso)
 
 folds <- group_vfold_cv(train_df, group = masked_student_ID, v = 5)
 lambda_grid <- grid_regular(penalty(range = c(-4, 1)), levels = 20)
@@ -126,7 +162,15 @@ selected_vars <- coef_df |>
   pull(term)
 
 selected_vars
+
+dropped_vars <- coef_df |>
+  filter(estimate == 0, term != "(Intercept)") |>
+  pull(term)
+
+dropped_vars
 ```
+
+## SMOTE
 
 ```{r}
 # Determining best threshold for classifying true
@@ -152,14 +196,17 @@ best_thresh = 0.5
 ```
 
 ```{r}
-glm_formula <- as.formula(paste("is_SU ~", paste(selected_vars, collapse = " + ")))
-glm_fit <- glm(glm_formula, data = juice(prep(su_recipe)), family = binomial)
+glm_formula <- as.formula(
+    paste("is_SU ~", paste(selected_vars, collapse = " + "))
+  )
+glm_fit <- glm(
+  glm_formula,
+  data = bake(prep(su_recipe_lasso), new_data = NULL),
+  family = binomial
+)
 summary(glm_fit)
-```
-
-```{r}
-exp(coef(glm_fit))
-exp(confint(glm_fit))
+#exp(coef(glm_fit))
+#exp(confint(glm_fit))
 ```
 
 ```{r}
@@ -171,7 +218,7 @@ test_results <- test_df |>
   mutate(
     pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
     pred_class = factor(pred_class, levels = c(0, 1))
-        )
+  )
 
 # ROC / AUC
 roc_auc(test_results, truth = is_SU, .pred_1)
@@ -180,6 +227,204 @@ roc_auc(test_results, truth = is_SU, .pred_1)
 conf_mat(test_results, truth = is_SU, estimate = pred_class)
 
 ```
+
+### Testing studied_away
+
+```{r}
+# Model without studied_away
+
+su_recipe_nostudaway <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+                      took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      max_units + num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
+  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
+  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
+  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_zv(all_predictors()) |>
+  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+
+vars_nostudaway <- setdiff(selected_vars, "studied_away")
+glm_formula_nostudaway <- as.formula(
+    paste("is_SU ~", paste(vars_nostudaway, collapse = " + "))
+  )
+glm_fit_nostudaway <- glm(
+  glm_formula_nostudaway,
+  data = bake(prep(su_recipe_nostudaway), new_data = NULL),
+  family = binomial
+)
+
+# ANOVA
+anova(glm_fit, glm_fit_nostudaway)
+```
+
+### Testing took_summer_courses
+
+```{r}
+# Model without took_summer_courses
+
+su_recipe_nosumm <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+                      studied_away +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      max_units + num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
+  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
+  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
+  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_zv(all_predictors()) |>
+  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+
+vars_nosumm <- setdiff(selected_vars, "took_summer_courses")
+glm_formula_nosumm <- as.formula(
+    paste("is_SU ~", paste(vars_nosumm, collapse = " + "))
+  )
+glm_fit_nosumm <- glm(
+  glm_formula_nosumm,
+  data = bake(prep(su_recipe_nosumm), new_data = NULL),
+  family = binomial
+)
+
+# ANOVA
+anova(glm_fit, glm_fit_nosumm)
+```
+
+### Testing num_plans
+
+```{r}
+# Model without num_plans
+
+su_recipe_noplans <- recipe(is_SU ~ term_units + prev_semGPA +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      max_units + num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
+  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
+  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
+  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_zv(all_predictors()) |>
+  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+
+vars_noplans <- setdiff(selected_vars, "num_plans")
+glm_formula_noplans <- as.formula(
+    paste("is_SU ~", paste(vars_noplans, collapse = " + "))
+  )
+glm_fit_noplans <- glm(
+  glm_formula_noplans,
+  data = bake(prep(su_recipe_noplans), new_data = NULL),
+  family = binomial
+)
+
+# ANOVA
+anova(glm_fit, glm_fit_noplans)
+```
+
+### Testing max_units
+
+```{r}
+# Model without max_units
+
+su_recipe_nomaxu <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
+  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
+  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
+  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_zv(all_predictors()) |>
+  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+
+vars_nomaxu <- setdiff(selected_vars, "max_units")
+glm_formula_nomaxu <- as.formula(
+    paste("is_SU ~", paste(vars_nomaxu, collapse = " + "))
+  )
+glm_fit_nomaxu <- glm(
+  glm_formula_nomaxu,
+  data = bake(prep(su_recipe_nomaxu), new_data = NULL),
+  family = binomial
+)
+
+# ANOVA
+anova(glm_fit, glm_fit_nomaxu)
+```
+
+### Testing term_units vs load_status
+
+```{r}
+# Model swapping term_units for load_status
+
+su_recipe_load <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      max_units + num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
+  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
+  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
+  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_zv(all_predictors()) |>
+  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+
+vars_load <- setdiff(selected_vars, "term_units")
+glm_formula_load <- as.formula(
+    paste("is_SU ~", paste(vars_load, collapse = " + "))
+  )
+glm_fit_load <- glm(
+  glm_formula_load,
+  data = bake(prep(su_recipe_load), new_data = NULL),
+  family = binomial
+)
+```
+
+### AIC and BICs
+
+```{r}
+# Put all models in a named list
+models <- list(
+  Full = glm_fit,
+  No_studied_away = glm_fit_nostudaway,
+  No_took_summer_courses = glm_fit_nosumm,
+  No_num_plans = glm_fit_noplans,
+  No_max_units = glm_fit_nomaxu,
+  Load_status_instead_of_term_units = glm_fit_load
+)
+
+# Compute AIC and BIC for each model
+model_table <- tibble(
+  Model = names(models),
+  AIC = sapply(models, AIC),
+  BIC = sapply(models, BIC)
+) |>
+  arrange(AIC) |>
+  mutate(
+    delta_AIC = AIC - min(AIC),
+    delta_BIC = BIC - min(BIC)
+  )
+
+model_table
+
+```
+
+## Weighted 
 
 ```{r}
 # Weighted version
@@ -199,10 +444,6 @@ su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       num_overloads + weight,
                     data = train_df_weighted) |>
   update_role(weight, new_role = "case_weight") |>
-  step_mutate(
-    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
-    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-  ) |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
   step_dummy(all_nominal_predictors()) |>
@@ -252,7 +493,7 @@ best_thresh = 0.5
 final_weighted_fit <- fit(weighted_workflow, data = train_df_weighted)
 final_model <- pull_workflow_fit(final_weighted_fit)
 summary(final_model$fit)
-exp(coef(final_model$fit))
+#exp(coef(final_model$fit))
 
 # Add a dummy weight column to test data
 test_df_weighted <- test_df |>
@@ -274,6 +515,8 @@ roc_auc(test_results, truth = is_SU, .pred_1)
 # Confusion matrix
 conf_mat(test_results, truth = is_SU, estimate = pred_class)
 ```
+
+## With Random Effect
 
 ```{r}
 train_df <- train_df |>
@@ -334,10 +577,6 @@ test_df_small <- test_df |>
 
 glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
   update_role(masked_student_ID, new_role = "id") |>
-  step_mutate(
-    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
-    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
-  ) |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
   step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
