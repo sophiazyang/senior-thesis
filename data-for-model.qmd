@@ -887,7 +887,7 @@ accuracy_by_group <- student_flags_estimated |>
   ) |>
   arrange(division, student_group)
 
-# --- Step 10: Plots results ---
+# --- Step 10: Plot results ---
 ggplot(accuracy_by_group, aes(x = student_group, y = best_p, color = division)) +
   geom_point(size = 3) +
   geom_line(aes(group = division), linewidth = 1) +

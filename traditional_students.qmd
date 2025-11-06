@@ -17,6 +17,7 @@ library(tidymodels)
 library(rsample)
 library(themis)
 library(caret)
+library(DHARMa)
 ```
 
 ```{r}
@@ -88,6 +89,9 @@ df <- df |>
 df |>
   count(load_status) |>
   mutate(prop = n / sum(n))
+
+df <- df |>
+  select(-c("term_enrolled", "course_ID", "estimated", "total_overloads", "student_group", "year_enrolled"))
 ```
 
 ```{r}
@@ -98,12 +102,12 @@ split <- group_initial_split(df, group = masked_student_ID, prop = 0.8)
 train_df <- training(split)
 test_df  <- testing(split)
 
-# want to predict on new students (no data leakage about students)
+# want to test on students (no data leakage about students)
 ```
 
 ```{r}
 #| label: preprocess
-su_recipe_lasso <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -149,7 +153,7 @@ best_lambda <- select_best(lasso_tuned, metric = "roc_auc")
 
 final_lasso <- finalize_workflow(lasso_workflow, best_lambda)
 lasso_fit <- fit(final_lasso, data = train_df)
-glmnet_fit <- pull_workflow_fit(lasso_fit)$fit
+glmnet_fit <- extract_fit_parsnip(lasso_fit)$fit
 
 coef_mat <- coef(glmnet_fit, s = best_lambda$penalty)  # best_lambda is a tibble
 coef_df <- as.data.frame(as.matrix(coef_mat))
@@ -168,32 +172,12 @@ dropped_vars <- coef_df |>
   pull(term)
 
 dropped_vars
+
+# use default threshold of 0.5
+best_thresh = 0.5
 ```
 
 ## SMOTE
-
-```{r}
-# Determining best threshold for classifying true
-#cv_preds <- lasso_tuned$.predictions[[1]]
-
-#thresholds <- seq(0, 1, by = 0.01)
-
-#f1_by_thresh <- sapply(thresholds, function(t){
-#  cv_preds_thresh <- cv_preds |>
-#    mutate(pred_class_thresh = factor(
-#      ifelse(.pred_1 >= t, 1, 0), 
-#      levels = levels(is_SU)  # match outcome levels
-#    ))
-#  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
-#})
-
-#best_thresh <- thresholds[which.max(f1_by_thresh)]
-#best_thresh
-
-#plot(thresholds, f1_by_thresh, type = "b", xlab = "Threshold", ylab = "F1 Score")
-#abline(v = thresholds[which.max(f1_by_thresh)], col = "red", lty = 2)  # best threshold
-best_thresh = 0.5
-```
 
 ```{r}
 glm_formula <- as.formula(
@@ -221,7 +205,7 @@ test_results <- test_df |>
   )
 
 # ROC / AUC
-roc_auc(test_results, truth = is_SU, .pred_1)
+roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
 
 # Confusion matrix
 conf_mat(test_results, truth = is_SU, estimate = pred_class)
@@ -232,8 +216,7 @@ conf_mat(test_results, truth = is_SU, estimate = pred_class)
 
 ```{r}
 # Model without studied_away
-
-su_recipe_nostudaway <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+su_recipe_nostudaway <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -266,8 +249,7 @@ anova(glm_fit, glm_fit_nostudaway)
 
 ```{r}
 # Model without took_summer_courses
-
-su_recipe_nosumm <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+su_recipe_nosumm <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       studied_away +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -300,8 +282,7 @@ anova(glm_fit, glm_fit_nosumm)
 
 ```{r}
 # Model without num_plans
-
-su_recipe_noplans <- recipe(is_SU ~ term_units + prev_semGPA +
+su_recipe_noplans <- recipe(is_SU ~ load_status + prev_semGPA +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -334,8 +315,7 @@ anova(glm_fit, glm_fit_noplans)
 
 ```{r}
 # Model without max_units
-
-su_recipe_nomaxu <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+su_recipe_nomaxu <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -367,9 +347,8 @@ anova(glm_fit, glm_fit_nomaxu)
 ### Testing term_units vs load_status
 
 ```{r}
-# Model swapping term_units for load_status
-
-su_recipe_load <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
+# Model swapping load_status for term_units
+su_recipe_units <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -384,13 +363,13 @@ su_recipe_load <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
   step_zv(all_predictors()) |>
   step_smote(is_SU) # only 2% of data is S/U, correct imbalance
 
-vars_load <- setdiff(selected_vars, "term_units")
-glm_formula_load <- as.formula(
-    paste("is_SU ~", paste(vars_load, collapse = " + "))
+vars_units <- selected_vars[!str_detect(selected_vars, "load_status")]
+glm_formula_units <- as.formula(
+    paste("is_SU ~", paste(vars_units, collapse = " + "))
   )
-glm_fit_load <- glm(
-  glm_formula_load,
-  data = bake(prep(su_recipe_load), new_data = NULL),
+glm_fit_units <- glm(
+  glm_formula_units,
+  data = bake(prep(su_recipe_units), new_data = NULL),
   family = binomial
 )
 ```
@@ -405,7 +384,7 @@ models <- list(
   No_took_summer_courses = glm_fit_nosumm,
   No_num_plans = glm_fit_noplans,
   No_max_units = glm_fit_nomaxu,
-  Load_status_instead_of_term_units = glm_fit_load
+  Load_status_instead_of_term_units = glm_fit_units
 )
 
 # Compute AIC and BIC for each model
@@ -438,7 +417,7 @@ train_df_weighted <- train_df |>
 su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
-                      student_group + timeperiod + academic_level_bot +
+                      timeperiod + academic_level_bot +
                       catalog_level + division +
                       max_units + num_students +
                       num_overloads + weight,
@@ -468,30 +447,9 @@ weighted_res <- fit_resamples(
   control = control_resamples(save_pred = TRUE)
 )
 
-# Collect all predictions from CV folds
-#cv_preds <- collect_predictions(weighted_res)
-
-# Try multiple thresholds and compute F1
-#thresholds <- seq(0.05, 0.95, by = 0.05)
-#f1_by_thresh <- sapply(thresholds, function(t) {
-#  cv_preds_thresh <- cv_preds |>
-#    mutate(pred_class_thresh = factor(ifelse(.pred_1 >= t, 1, 0),
-#                                      levels = levels(is_SU)))
-#  f_meas(cv_preds_thresh, truth = is_SU, estimate = pred_class_thresh)$.estimate
-#})
-
-#best_thresh <- thresholds[which.max(f1_by_thresh)]
-#best_thresh
-best_thresh = 0.5
-#tibble(thresholds, f1 = f1_by_thresh) |>
-#  ggplot(aes(thresholds, f1)) +
-#  geom_line() + geom_point() +
-#  geom_vline(xintercept = best_thresh, linetype = "dashed", color = "red") +
-#  labs(title = "F1 vs Threshold (Training CV)", y = "F1 Score")
-
 # Resulting model
 final_weighted_fit <- fit(weighted_workflow, data = train_df_weighted)
-final_model <- pull_workflow_fit(final_weighted_fit)
+final_model <- extract_fit_parsnip(final_weighted_fit)
 summary(final_model$fit)
 #exp(coef(final_model$fit))
 
@@ -510,7 +468,7 @@ test_results <- test_df_weighted |>
   )
 
 # ROC / AUC
-roc_auc(test_results, truth = is_SU, .pred_1)
+roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
 
 # Confusion matrix
 conf_mat(test_results, truth = is_SU, estimate = pred_class)
@@ -559,29 +517,23 @@ train_df |> count(is_SU)
 # Test set
 test_df |> count(is_SU)
 
-#train_idx <- createDataPartition(train_df$is_SU, p = 1000 / nrow(train_df), list = FALSE)
-#train_df_small <- train_df[train_idx, ]
-
-#test_idx <- createDataPartition(test_df_weighted$is_SU, p = 1000 / nrow(test_df), list = FALSE)
-#test_df_small <- test_df[test_idx, ]
-
 train_df_small <- train_df |>
-  group_by(is_SU) |>
-  slice_sample(n = 5000) |>  # 3000 rows per class
+  slice_sample(n = 20000) |> 
   ungroup()
 
 test_df_small <- test_df |>
-  group_by(is_SU) |>
-  slice_sample(n = 1000) |>  # 1000 rows per class
+  slice_sample(n = 4000) |>
   ungroup()
 
 glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
   update_role(masked_student_ID, new_role = "id") |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
+  step_mutate(across(where(is.logical), as.factor)) |>  # convert logicals to factors vs glm wanted binary(?)
   step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
   step_normalize(all_numeric_predictors()) |>
-  step_zv(all_predictors())  # remove zero-variance predictors
+  step_zv(all_predictors()) |>  # remove zero-variance predictors
+  step_smote(is_SU)
 
 # 2. Prep and bake
 train_baked <- prep(glmer_recipe) |> bake(new_data = NULL)
@@ -605,7 +557,6 @@ glmer_fit <- glmer(
 summary(glmer_fit)
 
 # Evaluate performance on test
-best_thesh = 0.5
 test_probs <- predict(lasso_fit, new_data = test_df_small, type = "prob")
 test_results <- test_df_small |>
   select(is_SU) |>
@@ -615,10 +566,145 @@ test_results <- test_df_small |>
     pred_class = factor(pred_class, levels = c(0, 1))
   )
 
+```
+
+```{r}
 # ROC / AUC
-roc_auc(test_results, truth = is_SU, .pred_1)
+roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+
+# PR-AUC
+pr_auc_val <- pr_auc(
+  test_results, truth = is_SU, .pred_1,
+  event_level = "second"
+)
+pr_auc_val
+
+# PR curve plot
+pr_curve_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+ggplot(pr_curve_df, aes(x = recall, y = precision)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Precision-Recall Curve")
 
 # Confusion matrix
-conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm
+
+# Extract Precision, Recall, F1
+cm_metrics <- cm |> 
+  summary() |> 
+  filter(.metric %in% c("precision", "recall", "f_meas"))
+cm_metrics
+
+# ---- Calibration plot ----
+# Bin predicted probabilities into deciles
+calibration_df <- test_results |>
+  mutate(prob_bin = ntile(.pred_1, 10)) |>
+  group_by(prob_bin) |>
+  summarise(
+    mean_pred = mean(.pred_1),
+    obs_rate = mean(as.numeric(is_SU)),
+    .groups = "drop"
+  )
+
+ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  # Add the "perfect calibration" line
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    x = "Mean Predicted Probability",
+    y = "Observed Event Rate",
+    title = "Calibration Plot"
+  )
+```
+
+```{r}
+
+# ---- 1. Extract fitted values and Pearson residuals ----
+fitted_vals <- fitted(glmer_fit)               # predicted probabilities
+pearson_res <- residuals(glmer_fit, type = "pearson")
+
+# ---- 2. Binned residuals: bin predicted probabilities into deciles ----
+binned_df <- tibble(
+  fitted = fitted_vals,
+  resid = pearson_res,
+  obs = as.numeric(glmer_fit@resp$y)
+) %>%
+  mutate(bin = ntile(fitted, 10)) %>%
+  group_by(bin) %>%
+  summarise(
+    mean_fitted = mean(fitted),
+    mean_resid = mean(resid),
+    obs_rate = mean(obs),
+    .groups = "drop"
+  )
+
+# ---- 3. Plot: mean residual vs mean predicted probability per bin ----
+p1 <- ggplot(binned_df, aes(x = mean_fitted, y = mean_resid)) +
+  geom_point(size = 3, color = "blue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    x = "Mean Predicted Probability (bin)",
+    y = "Mean Pearson Residual",
+    title = "Binned Residuals vs Predicted Probability"
+  )
+
+# ---- 4. Plot: predicted vs observed probability per bin ----
+p2 <- ggplot(binned_df, aes(x = mean_fitted, y = obs_rate)) +
+  geom_point(size = 3, color = "darkgreen") +
+  geom_line(color = "darkgreen") +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(
+    x = "Mean Predicted Probability (bin)",
+    y = "Observed Event Rate",
+    title = "Predicted vs Observed Probability"
+  )
+
+# ---- 5. Random intercepts Q-Q plot ----
+ranef_df <- ranef(glmer_fit)$masked_student_ID %>%
+  rownames_to_column("student_ID") %>%
+  rename(intercept = `(Intercept)`)
+
+p3 <- ggplot(ranef_df, aes(sample = intercept)) +
+  stat_qq() +
+  stat_qq_line(color = "blue") +
+  labs(title = "Q-Q Plot of Random Intercepts (masked_student_ID)")
+
+# ---- 6. Arrange plots together ----
+library(gridExtra)
+grid.arrange(p1, p2, p3, nrow = 2)
 
 ```
+
+```{r}
+# Simulate new residuals from the fitted model
+# n = 250 is a good default number of simulations
+simulationOutput <- simulateResiduals(fittedModel = glmer_fit, n = 250)
+
+# 8a. Main Diagnostic Plot
+print("--- Overdispersion Check (DHARMa Method) ---")
+print("Generating DHARMa plot...")
+
+# This will create a plot in your plot pane.
+# LEFT: A Q-Q plot. The red line should be straight and on the diagonal.
+#       The p-value is for the KS-test (you want p > 0.05).
+# RIGHT: Residuals vs. Predicted. You want no pattern.
+# DHARMa also runs tests for dispersion and outliers.
+plot(simulationOutput)
+
+# 8b. Explicit Test for Overdispersion
+# This test is more reliable than the quick method.
+print("Running DHARMa overdispersion test:")
+testOverdispersion(simulationOutput)
+
+# 8c. You can also test for zero-inflation (often related to overdispersion)
+print("Running DHARMa zero-inflation test:")
+testZeroInflation(simulationOutput)
+```
+
