@@ -18,6 +18,7 @@ library(rsample)
 library(themis)
 library(caret)
 library(DHARMa)
+library(performance)
 ```
 
 ```{r}
@@ -124,7 +125,7 @@ su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
 
 ```
 
-## LASSO 
+## LASSO
 
 ```{r}
 #| message: false
@@ -195,10 +196,7 @@ summary(glm_fit)
 
 ```{r}
 # Evaluate performance on test
-test_probs <- predict(lasso_fit, new_data = test_df, type = "prob")
-test_results <- test_df |>
-  select(is_SU) |>
-  bind_cols(test_probs) |>
+test_results <- augment(lasso_fit, new_data = test_df) |>
   mutate(
     pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
     pred_class = factor(pred_class, levels = c(0, 1))
@@ -384,7 +382,7 @@ models <- list(
   No_took_summer_courses = glm_fit_nosumm,
   No_num_plans = glm_fit_noplans,
   No_max_units = glm_fit_nomaxu,
-  Load_status_instead_of_term_units = glm_fit_units
+  Term_units_instead_of_load_status = glm_fit_units
 )
 
 # Compute AIC and BIC for each model
@@ -401,77 +399,6 @@ model_table <- tibble(
 
 model_table
 
-```
-
-## Weighted 
-
-```{r}
-# Weighted version
-# Compute class weights
-w_pos <- nrow(train_df) / sum(train_df$is_SU == 1)
-w_neg <- nrow(train_df) / sum(train_df$is_SU == 0)
-
-train_df_weighted <- train_df |>
-  mutate(weight = ifelse(is_SU == 1, w_pos, w_neg))
-
-su_recipe <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
-                      studied_away + took_summer_courses +
-                      is_art_humanity + is_social_sci + is_natural_sci +
-                      timeperiod + academic_level_bot +
-                      catalog_level + division +
-                      max_units + num_students +
-                      num_overloads + weight,
-                    data = train_df_weighted) |>
-  update_role(weight, new_role = "case_weight") |>
-  step_impute_median(all_numeric_predictors()) |>
-  step_impute_mode(all_nominal_predictors()) |>
-  step_dummy(all_nominal_predictors()) |>
-  step_normalize(all_numeric_predictors()) |>
-  step_zv(all_predictors())
-
-weighted_spec <- logistic_reg(mode = "classification") |>
-  set_engine("glm")
-
-weighted_workflow <- workflow() |>
-  add_model(weighted_spec) |>
-  add_recipe(su_recipe)
-
-# Grouped cross-validation
-folds <- group_vfold_cv(train_df_weighted, group = masked_student_ID, v = 5)
-
-# Fit with resampling
-weighted_res <- fit_resamples(
-  weighted_workflow,
-  resamples = folds,
-  metrics = metric_set(roc_auc, accuracy),
-  control = control_resamples(save_pred = TRUE)
-)
-
-# Resulting model
-final_weighted_fit <- fit(weighted_workflow, data = train_df_weighted)
-final_model <- extract_fit_parsnip(final_weighted_fit)
-summary(final_model$fit)
-#exp(coef(final_model$fit))
-
-# Add a dummy weight column to test data
-test_df_weighted <- test_df |>
-  mutate(weight = 1)  # all equal weights for prediction
-
-# Evaluate performance on test
-test_probs <- predict(lasso_fit, new_data = test_df_weighted, type = "prob")
-test_results <- test_df_weighted |>
-  select(is_SU) |>
-  bind_cols(test_probs) |>
-  mutate(
-    pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
-    pred_class = factor(pred_class, levels = c(0, 1))
-  )
-
-# ROC / AUC
-roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
-
-# Confusion matrix
-conf_mat(test_results, truth = is_SU, estimate = pred_class)
 ```
 
 ## With Random Effect
@@ -557,10 +484,7 @@ glmer_fit <- glmer(
 summary(glmer_fit)
 
 # Evaluate performance on test
-test_probs <- predict(lasso_fit, new_data = test_df_small, type = "prob")
-test_results <- test_df_small |>
-  select(is_SU) |>
-  bind_cols(test_probs) |>
+test_results <- augment(lasso_fit, new_data = test_df_small) |>
   mutate(
     pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
     pred_class = factor(pred_class, levels = c(0, 1))
@@ -569,8 +493,49 @@ test_results <- test_df_small |>
 ```
 
 ```{r}
+# AIC
+AIC(glmer_fit)
+
+# BIC
+BIC(glmer_fit)
+
+# ICC
+vc <- as.data.frame(VarCorr(glmer_fit))
+vc
+var_student <- vc$vcov[vc$grp == "masked_student_ID"]
+var_resid <- pi^2 / 3
+var_student / (var_student + var_resid)
+
+# RMSE
+test_results_num <- test_results |>
+  mutate(is_SU_num = as.numeric(as.character(is_SU)))
+rmse_tbl <- rmse(test_results_num, truth = is_SU_num, estimate = .pred_1)
+if (is.data.frame(rmse_tbl)) {
+  model_rmse <- rmse_tbl$.estimate[1]
+} else {
+  model_rmse <- as.numeric(rmse_tbl)
+}
+mean_prob <- mean(test_results_num$is_SU_num)
+null_rmse <- sqrt(mean((test_results_num$is_SU_num - mean_prob)^2))
+tibble(
+  Model = c("Lasso Model", "Null Model"),
+  RMSE = c(model_rmse, null_rmse)
+)
+
 # ROC / AUC
 roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+
+# Plot ROC
+roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(color = "blue", size = 1.2) +
+  geom_abline(linetype = "dashed", color = "gray") + # diagonal line
+  labs(
+    title = "ROC Curve",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
 
 # PR-AUC
 pr_auc_val <- pr_auc(
@@ -579,20 +544,33 @@ pr_auc_val <- pr_auc(
 )
 pr_auc_val
 
-# PR curve plot
-pr_curve_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
-ggplot(pr_curve_df, aes(x = recall, y = precision)) +
-  geom_line(color = "blue", size = 1) +
-  labs(title = "Precision-Recall Curve")
+# Plot PR
+pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+ggplot(pr_df, aes(x = recall, y = precision)) +
+  geom_line(color = "darkgreen", size = 1.2) +
+  labs(
+    title = "Precision-Recall Curve",
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
 
 # Confusion matrix
 cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
 cm
 
-# Extract Precision, Recall, F1
+# Extract Precision, Recall, Specificity F1
 cm_metrics <- cm |> 
-  summary() |> 
-  filter(.metric %in% c("precision", "recall", "f_meas"))
+  summary() |>
+  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |>
+  mutate(
+    Metric = recode(.metric,
+      "precision" = "Precision/Positive Predictive Value",
+      "recall"    = "Recall/Sensitivity (True Positive Rate)",
+      "spec"      = "Specificity (True Negative Rate)",
+      "f_meas"    = "F1 Score",
+    )
+  )
 cm_metrics
 
 # ---- Calibration plot ----
@@ -602,7 +580,7 @@ calibration_df <- test_results |>
   group_by(prob_bin) |>
   summarise(
     mean_pred = mean(.pred_1),
-    obs_rate = mean(as.numeric(is_SU)),
+    obs_rate = mean(as.numeric(as.character(is_SU))),
     .groups = "drop"
   )
 
@@ -625,64 +603,8 @@ ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
 ```
 
 ```{r}
+check_overdispersion(glmer_fit)
 
-# ---- 1. Extract fitted values and Pearson residuals ----
-fitted_vals <- fitted(glmer_fit)               # predicted probabilities
-pearson_res <- residuals(glmer_fit, type = "pearson")
-
-# ---- 2. Binned residuals: bin predicted probabilities into deciles ----
-binned_df <- tibble(
-  fitted = fitted_vals,
-  resid = pearson_res,
-  obs = as.numeric(glmer_fit@resp$y)
-) %>%
-  mutate(bin = ntile(fitted, 10)) %>%
-  group_by(bin) %>%
-  summarise(
-    mean_fitted = mean(fitted),
-    mean_resid = mean(resid),
-    obs_rate = mean(obs),
-    .groups = "drop"
-  )
-
-# ---- 3. Plot: mean residual vs mean predicted probability per bin ----
-p1 <- ggplot(binned_df, aes(x = mean_fitted, y = mean_resid)) +
-  geom_point(size = 3, color = "blue") +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  labs(
-    x = "Mean Predicted Probability (bin)",
-    y = "Mean Pearson Residual",
-    title = "Binned Residuals vs Predicted Probability"
-  )
-
-# ---- 4. Plot: predicted vs observed probability per bin ----
-p2 <- ggplot(binned_df, aes(x = mean_fitted, y = obs_rate)) +
-  geom_point(size = 3, color = "darkgreen") +
-  geom_line(color = "darkgreen") +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
-  labs(
-    x = "Mean Predicted Probability (bin)",
-    y = "Observed Event Rate",
-    title = "Predicted vs Observed Probability"
-  )
-
-# ---- 5. Random intercepts Q-Q plot ----
-ranef_df <- ranef(glmer_fit)$masked_student_ID %>%
-  rownames_to_column("student_ID") %>%
-  rename(intercept = `(Intercept)`)
-
-p3 <- ggplot(ranef_df, aes(sample = intercept)) +
-  stat_qq() +
-  stat_qq_line(color = "blue") +
-  labs(title = "Q-Q Plot of Random Intercepts (masked_student_ID)")
-
-# ---- 6. Arrange plots together ----
-library(gridExtra)
-grid.arrange(p1, p2, p3, nrow = 2)
-
-```
-
-```{r}
 # Simulate new residuals from the fitted model
 # n = 250 is a good default number of simulations
 simulationOutput <- simulateResiduals(fittedModel = glmer_fit, n = 250)
@@ -703,8 +625,4 @@ plot(simulationOutput)
 print("Running DHARMa overdispersion test:")
 testOverdispersion(simulationOutput)
 
-# 8c. You can also test for zero-inflation (often related to overdispersion)
-print("Running DHARMa zero-inflation test:")
-testZeroInflation(simulationOutput)
 ```
-
