@@ -390,7 +390,7 @@ While these data come from official records, there are some aspects that I remai
 
 Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution.
 
-In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all half-credit courses due to the existence of courses such as the half-credit STA 211 which was required for the major in Statistical Science. All full-credit courses in Arts & Humanities, Social Sciences, or Natural Sciences still remain in the dataset.
+In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all less than full credit courses from GPA and course load calculations due to the existence of courses which give credit to labs and other mandatory courses such as the half-credit STA 211 which was required for the major in Statistical Science. All full-credit and above (i.e. accelerated language courses count for 2.0 credits) courses in Arts & Humanities, Social Sciences, or Natural Sciences still remain in the dataset.
 
 For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program.
 
@@ -420,50 +420,59 @@ In addition to constructing variables for major divisions and time period relati
 
 -   `term_units` is the number of academic credits a student is taking in a semester, excludes "Other" courses, P.E., etc
 
--   something about overloads (total or so far....)
+-   `load_status` is a categorical factor with levels underload (term_units \< 4.0, normal (term_units = 4.0), and overload (term_units \> 4.0)
 
-## Model Choice
+-   `num_overloads` is the number of overloads a student has taken so far
 
-I create a logistic regression where the response variable is whether or not the course was taken S/U by a particular student. In order to test my model, I began by splitting my data into training (80%) and test (20%) sets. Since my goal is to .... I made sure to split on student IDs to prevent data leakage...
+# Methodology
 
-An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to drop data from ... This marginally helped with an improved imbalance of X to Y, but this is not nearly enough.
+To model S/U choice, I create a logistic regression where the response variable is whether or not the course was taken S/U by a particular student. In order to test my model, I began by splitting my data into training (80%) and test (20%) sets. I split on student IDs to prevent data leakage. Due to the large number of observations, I had some difficulty fitting random effects on students. Assume the following sections are do not include this random effect unless specified.
+
+## Class Imbalance
+
+An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to narrow my dataset to Fall 2015-Spring 2025. This marginally helped with an improved imbalance to 2.3%, but this is not nearly enough.
 
 Class imbalance is not an unique problem. The literature suggests methods such as the use of weights (source), oversampling of the minority class (source), SMOTE (source), adjusting decision thresholds, and usage of more robust methods such as support vector machines (source). I experimented with several of these techniques and my results are shown below in Table ....
 
-| Technique(s) | True Positive | True Negative | False Positive | False Negative |
-|--------------|---------------|---------------|----------------|----------------|
-|              |               |               |                |                |
-|              |               |               |                |                |
-|              |               |               |                |                |
+| Technique(s)       | True Positive | True Negative | False Positive | False Negative |
+|------------------|---------------|---------------|---------------|---------------|
+| SMOTE              | 1104          | 36350         | 17238          | 232            |
+| Weights            | 1104          | 36350         | 17238          | 232            |
+| Decision Threshold |               |               |                |                |
 
-While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes. Techniques used for variable selection include ... I used LASSO for variable selection because ...(source). The final variables used in my modeling are shown below:
+## Variable Selection
 
-| Variable            | Data Type   | Reason for Interest                                                                                                                                               | Use in Final Model?                     |
-|---------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|
-| term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                            |                                         |
-| prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA. |                                         |
-| num_plans           | numerical   |                                                                                                                                                                   |                                         |
-| studied_away        | binary      |                                                                                                                                                                   |                                         |
-| took_summer_courses | numerical   |                                                                                                                                                                   |                                         |
-| is_art_humanity     | binary      |                                                                                                                                                                   |                                         |
-| is_social_sci       | binary      |                                                                                                                                                                   |                                         |
-| is_natural_sci      | binary      |                                                                                                                                                                   |                                         |
-| student_group       | ordinal     |                                                                                                                                                                   |                                         |
-| timeperiod          | ordinal     |                                                                                                                                                                   |                                         |
-| academic_level_bot  | ordinal     |                                                                                                                                                                   |                                         |
-| catalog_level       | ordinal     |                                                                                                                                                                   |                                         |
-| division            | categorical |                                                                                                                                                                   |                                         |
-| max_units           | numerical   |                                                                                                                                                                   |                                         |
-| num_students        | numerical   |                                                                                                                                                                   |                                         |
-| num_overloads??     |             |                                                                                                                                                                   |                                         |
-| num_semesters       | numerical   |                                                                                                                                                                   | No, colinearity with academic_level_bot |
-| term_enrolled       | ordinal     |                                                                                                                                                                   | No, colinearity with timeperiod         |
+While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes. Techniques used for variable selection include ridge regression, step-wise AIC, step-wise BIC, grid search, ... I used LASSO for variable selection because ...(source).
 
-After initial model selection I also opted to add a random effect on student ID. The random effect serves to ... the repetition of students across the dataset. However, the addition of random effects resulted in a significant increase in runtime. Due to my data access and time constraints, I opted to persist with the variables selected prior. However, I still had difficulty with runtime due to the large number of observations. Based on ..... I experimented with performing a stratified sample of my observations to be used in the training and test sets. I chose stratified sampling over .... because... This also had the added benefit of reducing class imbalance....
+A summary of all variables considered for modeling are shown below:
+
+| Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                         | Use in Final Model?                     |
+|-------------|---------------|----------------------------------------------------|-----------------|
+| term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                      | No                                      |
+| term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                           | Yes, better AIC/BIC than term_units     |
+| prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                           | Yes                                     |
+| num_plans           | numerical   | Students seeking to satisfy more academic plans could have a greater workload. Alternatively, their additional plans could include courses that satisfy graduation requirements such that they would elect to take more courses graded A-F. |                                         |
+| studied_away        | binary      | Courses taken as part of Duke Administered programs do count towards student GPA, while Duke Approved programs do not count towards student GPA. In this sense, Duke Approved programs somewhat act as S/U grading.                         | Yes                                     |
+| took_summer_courses | numerical   |                                                                                                                                                                                                                                             |                                         |
+| is_art_humanity     | binary      |                                                                                                                                                                                                                                             |                                         |
+| is_social_sci       | binary      |                                                                                                                                                                                                                                             |                                         |
+| is_natural_sci      | binary      |                                                                                                                                                                                                                                             |                                         |
+| student_group       | ordinal     |                                                                                                                                                                                                                                             |                                         |
+| timeperiod          | ordinal     |                                                                                                                                                                                                                                             |                                         |
+| academic_level_bot  | ordinal     |                                                                                                                                                                                                                                             |                                         |
+| catalog_level       | ordinal     |                                                                                                                                                                                                                                             |                                         |
+| division            | categorical |                                                                                                                                                                                                                                             |                                         |
+| max_units           | numerical   |                                                                                                                                                                                                                                             |                                         |
+| num_students        | numerical   |                                                                                                                                                                                                                                             |                                         |
+| num_overloads       | numerical   |                                                                                                                                                                                                                                             |                                         |
+| num_semesters       | numerical   |                                                                                                                                                                                                                                             | No, colinearity with academic_level_bot |
+| term_enrolled       | ordinal     |                                                                                                                                                                                                                                             | No, colinearity with timeperiod         |
+
+## Final Model
+
+After addressing major modeling hurdles, I added the random effect on student ID. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course. However, the addition of random effects resulted in a significant increase in run time, so I performed a random sample of my observations to be used in the training and test sets.
 
 ## Model Evaluation
-
-My final model was \[Insert latex formula\]...
 
 insert eval metric words...
 
@@ -499,6 +508,24 @@ Before fitting my model, I created several exploratory plots. In these plots, I 
 
 Imputation of student majors -\> https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1224/reports/custom_116659439.pdf
 
+course ID
+
+students who's culture/beliefs/etc cause them to never want to S/U
+
+lack of data post pandemic
+
+changes in acad policy not captured in the bulletins
+
+divisions vs departments
+
 # Conclusion
 
+Based on my model, there is clear evidence that students were more likely to ... Factors such as .... also impact students' decisions to chose S/U grading... There does not seem to be sufficient evidence that students' major divisions ...
+
 ## Future Work
+
+Policy continue to change would be interesting to compare S/U in just post covid till Spring 2025 vs new policy change
+
+Get more data on majors of ppl
+
+Internal investigation on departments
