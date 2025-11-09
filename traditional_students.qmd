@@ -69,6 +69,9 @@ df |>
 df |>
   count(max_units) |>
   mutate(prop = n / sum(n))
+# Can only S/U 1.0 credit courses(?)
+df <- df |>
+  filter(max_units == 1.0)
 
 # A lot of uncommon term_units
 df |>
@@ -93,7 +96,14 @@ df |>
 
 df <- df |>
   select(-c("term_enrolled", "course_ID", "estimated", "total_overloads", "student_group", "year_enrolled"))
+
+# Final class imbalance
+df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
 ```
+
+##Train Test Split 
 
 ```{r}
 #| label: train-test-split
@@ -106,14 +116,17 @@ test_df  <- testing(split)
 # want to test on students (no data leakage about students)
 ```
 
+## Hyperparameter (lambda for LASSO, over ratio for SMOTE, decision threshold) Tuning
+
 ```{r}
 #| label: preprocess
+#| eval: false
 su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
                       catalog_level + division +
-                      max_units + num_students +
+                      num_students +
                       num_overloads,
                     data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
@@ -121,18 +134,16 @@ su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
   step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
   step_normalize(all_numeric_predictors()) |>      # center + scale automatically
   step_zv(all_predictors()) |>
-  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
-
+  step_smote(is_SU, over_ratio = tune()) # correct imbalance
 ```
-
-## LASSO
 
 ```{r}
 #| message: false
+#| eval: false
 lasso_spec <- logistic_reg(
   mode = "classification",
   penalty = tune(),  # lambda
-  mixture = 1        # pure LASSO
+  mixture = tune()
 ) |>
   set_engine("glmnet")
 
@@ -140,23 +151,35 @@ lasso_workflow <- workflow() |>
   add_model(lasso_spec) |>
   add_recipe(su_recipe_lasso)
 
+# tune and estimate simultaneously (ok since exploratory)
 folds <- group_vfold_cv(train_df, group = masked_student_ID, v = 5)
-lambda_grid <- grid_regular(penalty(range = c(-4, 1)), levels = 20)
+grid <- grid_regular(
+  over_ratio(range = c(0.2, 1)),
+  penalty(range = c(-4, 1)),
+  mixture(range = c(0, 1)),
+  levels = 5
+)
 lasso_tuned <- tune_grid(
   lasso_workflow,
   resamples = folds,
-  grid = lambda_grid,
-  metrics = metric_set(roc_auc, accuracy),
+  grid = grid,
+  metrics = metric_set(roc_auc, accuracy, f_meas),
   control = control_grid(save_pred = TRUE, verbose = TRUE)
 )
 
-best_lambda <- select_best(lasso_tuned, metric = "roc_auc")
+best_hyperparam <- select_best(lasso_tuned, metric = "roc_auc")
+best_hyperparam
+saveRDS(best_hyperparam, "data/best_hyperparam.rds")
 
-final_lasso <- finalize_workflow(lasso_workflow, best_lambda)
-lasso_fit <- fit(final_lasso, data = train_df)
-glmnet_fit <- extract_fit_parsnip(lasso_fit)$fit
+final_lasso <- finalize_workflow(lasso_workflow, best_combo)
+final_fit <- fit(final_lasso, data = train_df)
 
-coef_mat <- coef(glmnet_fit, s = best_lambda$penalty)  # best_lambda is a tibble
+test_results <- predict(final_fit, new_data = test_df, type = "prob") |>
+  bind_cols(test_df) |>
+  roc_auc(truth = is_SU, .pred_1)
+glmnet_fit <- extract_fit_parsnip(final_fit)$fit
+
+coef_mat <- coef(glmnet_fit, s = best_combo$penalty)
 coef_df <- as.data.frame(as.matrix(coef_mat))
 coef_df$term <- rownames(coef_df)
 colnames(coef_df)[1] <- "estimate"
@@ -167,26 +190,53 @@ selected_vars <- coef_df |>
   pull(term)
 
 selected_vars
+saveRDS(selected_vars, "data/selected_vars.rds")
 
 dropped_vars <- coef_df |>
   filter(estimate == 0, term != "(Intercept)") |>
   pull(term)
 
 dropped_vars
-
-# use default threshold of 0.5
-best_thresh = 0.5
+saveRDS(dropped_vars, "data/dropped_vars.rds")
 ```
 
-## SMOTE
+```{r}
+#| eval: false
+# Suppose you have CV predictions from tune_grid()
+preds <- lasso_tuned$.predictions[[1]]
+
+# Evaluate a range of thresholds
+thresholds <- seq(0.01, 0.5, by = 0.01)  # explore lower since positive class is rare
+
+results <- map_dfr(thresholds, ~{
+  preds <- preds |>
+    mutate(.pred_class = factor(ifelse(.pred_1 >= .x, 1, 0), levels = c(0,1)))
+  
+  metric <- f_meas(preds, truth = is_SU, estimate = .pred_class)
+  tibble(threshold = .x, F1 = metric$.estimate)
+})
+
+# Find best threshold
+best_thresh <- results |> filter(F1 == max(F1)) |> pull(threshold)
+best_thresh
+saveRDS(best_thresh, "data/best_thresh.rds")
+```
 
 ```{r}
+su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_smote(is_SU, over_ratio = best_combo$over_ratio)  # plug in tuned value
+
 glm_formula <- as.formula(
     paste("is_SU ~", paste(selected_vars, collapse = " + "))
   )
 glm_fit <- glm(
   glm_formula,
-  data = bake(prep(su_recipe_lasso), new_data = NULL),
+  data = bake(prep(su_recipe_fixed), new_data = NULL),
   family = binomial
 )
 summary(glm_fit)
@@ -210,6 +260,8 @@ conf_mat(test_results, truth = is_SU, estimate = pred_class)
 
 ```
 
+## Explicit Variable Checks
+
 ### Testing studied_away
 
 ```{r}
@@ -219,7 +271,7 @@ su_recipe_nostudaway <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
                       catalog_level + division +
-                      max_units + num_students +
+                      num_students +
                       num_overloads,
                     data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
@@ -252,7 +304,7 @@ su_recipe_nosumm <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
                       catalog_level + division +
-                      max_units + num_students +
+                      num_students +
                       num_overloads,
                     data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
@@ -285,7 +337,7 @@ su_recipe_noplans <- recipe(is_SU ~ load_status + prev_semGPA +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
                       catalog_level + division +
-                      max_units + num_students +
+                      num_students +
                       num_overloads,
                     data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
@@ -309,39 +361,6 @@ glm_fit_noplans <- glm(
 anova(glm_fit, glm_fit_noplans)
 ```
 
-### Testing max_units
-
-```{r}
-# Model without max_units
-su_recipe_nomaxu <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
-                      studied_away + took_summer_courses +
-                      is_art_humanity + is_social_sci + is_natural_sci +
-                      timeperiod + academic_level_bot +
-                      catalog_level + division +
-                      num_students +
-                      num_overloads,
-                    data = train_df) |>
-  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
-  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
-  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
-  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
-  step_zv(all_predictors()) |>
-  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
-
-vars_nomaxu <- setdiff(selected_vars, "max_units")
-glm_formula_nomaxu <- as.formula(
-    paste("is_SU ~", paste(vars_nomaxu, collapse = " + "))
-  )
-glm_fit_nomaxu <- glm(
-  glm_formula_nomaxu,
-  data = bake(prep(su_recipe_nomaxu), new_data = NULL),
-  family = binomial
-)
-
-# ANOVA
-anova(glm_fit, glm_fit_nomaxu)
-```
-
 ### Testing term_units vs load_status
 
 ```{r}
@@ -351,7 +370,7 @@ su_recipe_units <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
                       catalog_level + division +
-                      max_units + num_students +
+                      num_students +
                       num_overloads,
                     data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
@@ -381,7 +400,6 @@ models <- list(
   No_studied_away = glm_fit_nostudaway,
   No_took_summer_courses = glm_fit_nosumm,
   No_num_plans = glm_fit_noplans,
-  No_max_units = glm_fit_nomaxu,
   Term_units_instead_of_load_status = glm_fit_units
 )
 
