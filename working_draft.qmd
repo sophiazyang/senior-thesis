@@ -9,7 +9,7 @@ author: Sophia Yang
 
 In the wake of the COVID-19 pandemic, the Trinity College of Arts and Sciences at Duke University introduced academic policy changes. During the Spring 2020 semester, all courses were switched to Satisfactory/Unsatisfactory (S/U) grading as opposed to the traditional graded (A- F) scale. While this was the only semester where all courses were allowed to be S/U and count for all requirements, other policy changes during the pandemic regarding S/U still remain.
 
-Referencing Duke University Undergraduate Bulletins[^1], prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements. Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of many changes has been a switch in defaults so instructors have to opt-in for allowing S/U rather than having to specifically opt-out of allowing S/U[^2]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
+Referencing Duke University Undergraduate Bulletins[^1], prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements. Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of several proposed changes has been the approval of a proposal to switch in policy defaults such that instructors have to opt-in for allowing S/U, rather than having to specifically opt-out of allowing S/U[^2]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
 
 [^1]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
 
@@ -378,27 +378,23 @@ As students during the pandemic have begun and continue to graduate and enter th
 
 ## Institution of Study
 
-Duke is a private, non-profit, prestigious (insert rank), located in Durham, NC...
+Duke is a private, non-profit university located in Durham, NC. It is a highly prestigious and selective with an overall acceptance rate of 4.8% for the most recent Class of 2029[^119]. Duke University has roots beginning in the 19th century, but was officially established in 1924[^120]. Over the past 100 years, grading policies have shifted with the times. I am uncertain when letter grades began usage at Duke University, but the language referring to each letter fluctuated in the Undergraduate Instruction Bulletins in the mid-1950s to the late 1960s. For instance, in the 1955-1956 academic year, a C was described as "medium" and a D as "passing". Yet in the following year, Cs were "average" and Ds were "inferior". Throughout the 1960s, Ds denoted "low pass".
 
-Founded in ... then became Duke University in ...
+[^119]: <https://today.duke.edu/2025/03/duke-welcomes-newest-members-class-2029#:~:text=All%20totaled%2C%20Duke%20has%20offered%20admission%20to,Class%20of%202029%2C%E2%80%9D%20Duke%20Provost%20Alec%20D.>
 
-Throughout 1960s, language refering to letter grades changed
+[^120]: <https://library.duke.edu/rubenstein/uarchives/history/articles/narrative-history>
 
--   1955 C=medium, D=passing
+In addition to adjustments in association of letter grades to adjectives, more fundamental policy changes began to take root. In 1960, the first mentions of auditing can be found in the undergraduate bulletins. When a student audits a course, it shows up on their transcript but no grade or credit is given. They have the option to complete assignments and take exams. In 1966, + and - grades were introduced and associated with numeric "quality points" (equivalent to GPA thresholds). In the same academic year, historical bulletins show the introduction of pass-fail grading. Since then, grading policies have remained relatively consistent except for a shift from pass-fail to satisfactory-unsatisfactory which allows students to S/U before major declaration (P/F and S/U thresholds are identical).
 
--   1956 C=average, D=inferior
+In Spring 2020, COVID-19 cases and concerns prevented a return to the classroom after spring break. In an email to faculty on March 18, the university announced a shift of all courses to S/U grading with the option of students opting back in to receiving a letter grade[^121]. For Fall 2020, departments were allowed to convert any of its 199 or below level courses to a mandatory S/U grading basis. Throughout the 2021-2022 academic year, periods where in-person classes were prohibited persisted along with routine COVID-19 testing policies. Fall 2022 was the first full semester where classes were not interrupted by periods of remote learning. Masking, gathering, and other pandemic-era policies had been systematically loosened. In light of this historical context, I characterize the pandemic as ranging from Spring 2020 through Spring 2022. The periods before and after will be referred to as pre-pandemic and post-pandemic, respectively.
 
--   1957…1969(?) C=average, D=low pass
+[^121]: <https://coronavirus.duke.edu/updates/page/24/>
 
-In 1960 audits began, 1966 pass fail began along with use of +/- and quality points (match today's GPA)
+All students in my dataset fall under the Trinity College's Curriculum 2000. To provide a brief overview, the general education requirement mandates that students take a minimum of two courses that fall under each of several categories. For instance, the five Areas of Knowledge (AOK) are: Arts, Literatures, and Performance (ALP), Civilizations (CZ), Natural Sciences (NS), Quantitative Studies (QS), and Social Sciences (SS)[^122]. Undergraduate students matriculating in Fall 2025 and onward (outside the scope of my analysis) follow a new Arts & Sciences Curriculum[^123].
 
-Entering the 21st century, curriculum 2000. Does not require specific classes but rather fulfillment of AoK and MoI... 2010 P/F rebranded into S/U with changes...
+[^122]: <https://trinity.duke.edu/undergraduate/academic-policies/curriculum>
 
-On \[date\] pandemic shutdown. Duke response was ... In Spring 2020 classes... in fall 2020...
-
-I classify Spring 2020 through Summer 2022 as during the pandemic... Fall 2022 onward as post-pandemic because...
-
-Duke celebrated 100 years and new curriculum that's why i think this is important moment of reflection...
+[^123]: <https://trinity.duke.edu/undergraduate/academic-policies/curriculum-students-enrolling-fall-2025>
 
 ## Note on Ethics and Data Inaccuracies
 
@@ -416,9 +412,9 @@ In addition to dropping the small fraction of courses that were unable to be mat
 
 For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program. For courses where location was not recorded (17.6% of student-course pairs), I assume they were taken at Durham. This may result in an underestimate of students who study away.
 
-My goal is to model student choice of S/U over A-F grading. Hence, I drop all withdrawals, audits, and other non-credit courses. Additionally, Trinity College states that students "must be in a normal course load (at least 4 x 1.0 credit classes) to request to change a class to S/U" and that "you may only request a Voluntary S/U for a single 1.0 credit course"[^119]. Hence, while I consider all "academic" courses in GPA and course load calculations, only single full credit courses are eligible to be included in my model. I use actual course loads to drop semester-student pairs that have less than 4.0 credits. I did not verify that students have at least four full credit courses.
+My goal is to model student choice of S/U over A-F grading. Hence, I drop all withdrawals, audits, and other non-credit courses. Additionally, Trinity College states that students "must be in a normal course load (at least 4 x 1.0 credit classes) to request to change a class to S/U" and that "you may only request a Voluntary S/U for a single 1.0 credit course"[^124]. Hence, while I consider all "academic" courses in GPA and course load calculations, only single full credit courses are eligible to be included in my model. I use actual course loads to drop semester-student pairs that have less than 4.0 credits. I did not verify that students have at least four full credit courses.
 
-[^119]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
+[^124]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
 
 A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal, etc) I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive A-F (or withdrawal, etc), I choose not to assume the course is graded only. My belief is that in the majority of cases students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
 
@@ -482,10 +478,10 @@ In addition to elastic–net, I also tested nested models on predictors I felt u
 
 For co-linear variables, I opted to compare AIC and BIC.
 
-A summary of all variables considered for modeling and my verdicts are shown below:
+A summary of all variables considered for modeling and my verdicts are provided in Table TODO in the Appendix.
 
 | Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                         | Use in Final Model?                     |
-|---------------|---------------|---------------------------|---------------|
+|-----------------|-----------------|---------------------|-----------------|
 | term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                      | No                                      |
 | term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                           | Yes, better AIC/BIC than term_units     |
 | prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                           | Yes                                     |
@@ -540,7 +536,7 @@ AIC, BIC, ICC, ROC_AUC, ROC curve, PR_AUC, PR curve, confusion matrix, precision
 
 Before fitting my model, I created several exploratory plots. In these plots, I use a more complete dataset than I do for my model by including mandatory S/U courses, non-traditional students, ....
 
-\*mention enrollement at Duke stable across years
+\*mention enrollment at Duke stable across years
 
 \[prop of grades given out A, B, etc by AY/term + GPAs\]
 
@@ -564,6 +560,8 @@ Before fitting my model, I created several exploratory plots. In these plots, I 
 
 \[report F1, roc_auc, roc curve, etc\]
 
+According to the score of ....
+
 ## Model Summary
 
 \[insert table of exponentiated coefficients and signif\]
@@ -586,11 +584,11 @@ Beyond the variables I was provided, it is likely that ROTC, pre-med, athlete, a
 
 Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is cross-listed across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset, only one of these divisions can be displayed.
 
-Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins[^120] or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year[^121].
+Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins[^125] or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year[^126].
 
-[^120]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
+[^125]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
 
-[^121]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
+[^126]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
 
 Some areas of this thesis are rather arbitrary for sake of simplicity. For instance, the labeling of "traditional" students and "academic" courses are based on personal beliefs. Perhaps I have unconscious biases against Arts & Humanities by removing half-credit music courses. However, I also believe there are systematic biases through the classification of departments into divisions. As mentioned in my methodology, the classification of African & African American Studies as a social science but the classification of Asian & Middle Eastern Studies as an arts & humanities department seems to neglect the interdisciplinary nature of many fields.
 
@@ -604,18 +602,18 @@ Based on my model, there is clear evidence that students were more likely to ...
 
 For the improvement of the work carried out in this thesis, a couple items come into mind. First, it may be worth exploring a hierarchical structure where-in there is some level of variation in student behavior expected at the the division level, the department level, and at the individual level. Other nitpicks include the potential benefit of capturing specific course ID level effects and the use of overall cumulative GPA instead merely looking at previous semester GPAs. One of the major obstacles in this thesis was the lack of post-pandemic data. I believe that future studies using actual student majors and using longer term data may be able to provide a more accurate framework for evaluating factors influencing student behavior towards voluntary S/U. Moving even further forward, a retrospective analysis of how the shift to opt-in S/U grading on the instructor side and its utilization may also be worth noting. Similarly, the shift to the newest Duke undergraduate curriculum beginning in Fall 2025 should also be evaluated for its intersection with student behaviors.
 
-In my thesis, I briefly explored the problem of major prediction based on prior course history. This is a problem that has been explored more in depth by others such as Lang et al. (2022).[^122] It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. Similarly, past work has examined differences in grading standards across departments. My thesis was only able to operate on the level of divisions, but a fine-grained internal investigation at the departmental level could be fruitful. An evaluation of how various departments at Duke compare to each other could increase enrollment in less popular departments through calibrating grading scales and workloads to match more attractive courses, or by modifying courses deemed to have disproportionately relaxed standards for their catalog level. A related problem is the inconsistent categorization of majors into divisions. It is understandably hard to categorize all of human knowledge into distinct, disjoint departments. I am curious as to how associated each major, department or institute is interconnected and which are more similar with others in their division and which are more interdisciplinary. One way doing so, I would propose, may be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes[^123].
+In my thesis, I briefly explored the problem of major prediction based on prior course history. This is a problem that has been explored more in depth by others such as Lang et al. (2022).[^127] It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. Similarly, past work has examined differences in grading standards across departments. My thesis was only able to operate on the level of divisions, but a fine-grained internal investigation at the departmental level could be fruitful. An evaluation of how various departments at Duke compare to each other could increase enrollment in less popular departments through calibrating grading scales and workloads to match more attractive courses, or by modifying courses deemed to have disproportionately relaxed standards for their catalog level. A related problem is the inconsistent categorization of majors into divisions. It is understandably hard to categorize all of human knowledge into distinct, disjoint departments. I am curious as to how associated each major, department or institute is interconnected and which are more similar with others in their division and which are more interdisciplinary. One way doing so, I would propose, may be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes[^128].
 
-[^122]: <https://files.eric.ed.gov/fulltext/EJ1360550.pdf>
+[^127]: <https://files.eric.ed.gov/fulltext/EJ1360550.pdf>
 
-[^123]: <https://www.sciencedirect.com/topics/computer-science/cosine-similarity>
+[^128]: <https://www.sciencedirect.com/topics/computer-science/cosine-similarity>
 
-Many factors were inaccessible for my analysis such as student demographics, extracurricular, scholarships, and health conditions. Future work could examine correlation between these factors and grading policies to contribute the the growing body of literature on whether or not S/U improves student well-being or increases the amount of time students have for extracurricular commitments. A more specific feature of interest, would be course attributes associated with individual classes. These attributes directly correspond to graduation requirements under Curriculum 2000[^124]. At the root, the reason why I was interested in specific academic programs (majors, minors, certificates) was that some programs lack courses that satisfy certain requirements. For instance, I do not believe there has been a course listed in the statistical science department that has had the code for Arts, Literature, and Performance (ALP), at least not for the past several years. Yet, I believe it would be quite feasible to have an applied statistics course on something such as learning natural language processing techniques and applying them to literature. Even with the retirement of Curriculum 2000, a summary of the proportion of courses and their associated Areas of Knowledge or Modes of Inquiry listed in each department could help identify interdisciplinary gaps to be filled–a similar initiative could also be done using the new latest curriculum's codes[^125].
+Many factors were inaccessible for my analysis such as student demographics, extracurricular, scholarships, and health conditions. Future work could examine correlation between these factors and grading policies to contribute the the growing body of literature on whether or not S/U improves student well-being or increases the amount of time students have for extracurricular commitments. A more specific feature of interest, would be course attributes associated with individual classes. These attributes directly correspond to graduation requirements under Curriculum 2000[^129]. At the root, the reason why I was interested in specific academic programs (majors, minors, certificates) was that some programs lack courses that satisfy certain requirements. For instance, I do not believe there has been a course listed in the statistical science department that has had the code for Arts, Literature, and Performance (ALP), at least not for the past several years. Yet, I believe it would be quite feasible to have an applied statistics course on something such as learning natural language processing techniques and applying them to literature. Even with the retirement of Curriculum 2000, a summary of the proportion of courses and their associated Areas of Knowledge or Modes of Inquiry listed in each department could help identify interdisciplinary gaps to be filled–a similar initiative could also be done using the new latest curriculum's codes[^130].
 
-[^124]: <https://trinity.duke.edu/undergraduate/academic-policies/curriculum>
+[^129]: <https://trinity.duke.edu/undergraduate/academic-policies/curriculum>
 
-[^125]: <https://trinity.duke.edu/curriculum>
+[^130]: <https://trinity.duke.edu/curriculum>
 
-Beyond flexible grading policies, another common method used to promote academic exploration is the option of auditing courses. From what I could find in the historic Duke bulletins, the Trinity College of Arts and Sciences has been allowing audits in 1960 and then introduced flexible grading with the pass-fail system in 1966[^126]. For administrators it may be worth weighing the trade offs and use-cases for flexible grading versus audits. Audits are known for ....pros.... cons...
+Beyond flexible grading policies, another common method used to promote academic exploration is the option of auditing courses. From what I could find in the historic Duke bulletins, the Trinity College of Arts and Sciences has been allowing audits in 1960 and then introduced flexible grading with the pass-fail system in 1966[^131]. For administrators it may be worth weighing the trade offs and use-cases for flexible grading versus audits. Audits are known for ....pros.... cons...
 
-[^126]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
+[^131]: <https://registrar.duke.edu/bulletins/bulletin-archives/>

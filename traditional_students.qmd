@@ -223,13 +223,17 @@ saveRDS(best_thresh, "data/best_thresh.rds")
 ```
 
 ```{r}
+best_hyperparam <- readRDS("data/best_hyperparam.rds")
+best_thresh <- readRDS("data/best_thresh.rds")
+selected_vars <- readRDS("data/selected_vars.rds")
+
 su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_smote(is_SU, over_ratio = best_combo$over_ratio)  # plug in tuned value
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)  # plug in tuned value
 
 glm_formula <- as.formula(
     paste("is_SU ~", paste(selected_vars, collapse = " + "))
