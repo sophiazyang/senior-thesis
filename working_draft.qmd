@@ -456,7 +456,7 @@ In addition to constructing variables for major divisions and time period relati
 
 # Methodology
 
-To model S/U choice, I create a logistic regression where the response variable is whether or not the course was taken S/U by a particular student. In order to test my model, I began by splitting my data into training (80%) and test (20%) sets. I split on student IDs to prevent data leakage. Any tuning of hyperparameters is done with 5-fold cross-validation. Due to the large number of observations, I had some difficulty fitting random effects on students. Assume the following sections are do not include this random effect unless specified.
+Before fitting any models, I split my data into training (80%) and test (20%) sets. I split on student IDs to prevent data leakage. For modeling, I prepare my data with assistance of the `tidymodels` package. To model S/U choice, I create a logistic regression using `glm()` where the response variable is whether or not the course was taken S/U by a particular student. Any tuning of hyperparameters is done with 5-fold cross-validation. Due to the large number of observations, I had some difficulty fitting random effects. Hence, please assume the following sections are do not include this random effect unless specified.
 
 ## Class Imbalance
 
@@ -474,51 +474,31 @@ Class imbalance is not an unique problem. The literature suggests methods such a
 
 While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes or not generalize well. Techniques used for variable selection include all-subset selection, step-wise AIC/BIC, LASSO, ridge regression, and elastic search. For this thesis, I did not explore all-subset selection or step-wise methods. The problem with all-subset selection is its need for high computational resources to compare each combination of features (2^p^). Step-wise methods are flawed due to their greedy approach being dependent on starting values and the lack of guarantee of an optimal solution. Hence, here I focus on elastic-net regression, a combination of LASSO and ridge regression.
 
-In addition to elastic–net, I also tested nested models on predictors I felt uncertain of. These included ....
+In addition to elastic–net, I also tested nested models on predictors I did not believe would have a significant effect. These included study away status (significant number of NAs), summer course status, and number of academic plans (due to flaws in imputation for post-pandemic students). The likelihood ratio tests I performed supported the inclusion of these variables in my final model.
 
 For co-linear variables, I opted to compare AIC and BIC.
 
 A summary of all variables considered for modeling and my verdicts are provided in Table TODO in the Appendix.
 
-| Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                         | Use in Final Model?                     |
-|-----------------|-----------------|---------------------|-----------------|
-| term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                      | No                                      |
-| term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                           | Yes, better AIC/BIC than term_units     |
-| prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                           | Yes                                     |
-| num_plans           | numerical   | Students seeking to satisfy more academic plans could have a greater workload. Alternatively, their additional plans could include courses that satisfy graduation requirements such that they would elect to take more courses graded A-F. |                                         |
-| studied_away        | binary      | Courses taken as part of Duke Administered programs do count towards student GPA, while Duke Approved programs do not count towards student GPA. In this sense, Duke Approved programs somewhat act as S/U grading.                         | Yes                                     |
-| took_summer_courses | numerical   |                                                                                                                                                                                                                                             |                                         |
-| is_art_humanity     | binary      |                                                                                                                                                                                                                                             |                                         |
-| is_social_sci       | binary      |                                                                                                                                                                                                                                             |                                         |
-| is_natural_sci      | binary      |                                                                                                                                                                                                                                             |                                         |
-| student_group       | ordinal     |                                                                                                                                                                                                                                             |                                         |
-| timeperiod          | ordinal     |                                                                                                                                                                                                                                             |                                         |
-| academic_level_bot  | ordinal     |                                                                                                                                                                                                                                             |                                         |
-| catalog_level       | ordinal     |                                                                                                                                                                                                                                             |                                         |
-| division            | categorical |                                                                                                                                                                                                                                             |                                         |
-| max_units           | numerical   |                                                                                                                                                                                                                                             |                                         |
-| num_students        | numerical   |                                                                                                                                                                                                                                             |                                         |
-| num_overloads       | numerical   |                                                                                                                                                                                                                                             |                                         |
-| num_semesters       | numerical   |                                                                                                                                                                                                                                             | No, colinearity with academic_level_bot |
-| term_enrolled       | ordinal     |                                                                                                                                                                                                                                             | No, colinearity with timeperiod         |
-
 ## Final Model
 
 From my preliminary models, the best hyper-parameters I got were a light penalty of 0.0001 on pure LASSO (mixture =1), SMOTE oversampling of the minority class to reach a 1 to 5 ratio of S/U and non-S/U respectively, and the default decision threshold of 0.5. All parameters were testing in combination with each other, except the decision threshold.
 
-After addressing major modeling hurdles, I added the random effect on student ID. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course. However, the addition of random effects resulted in a significant increase in run time, so I used a random sample of my observations to be used in the training and test sets.
+After addressing major modeling hurdles, I added a random effect on student ID using `lme4::lmer()`. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course. However, the addition of random effects resulted in a significant increase in run time, so I used a random sample of my observations to be used in the training and test sets.
 
 ## Model Evaluation
 
-To evaluate model fit I use a variety of metrics including:
+To evaluate model fit I use a variety of metrics including but not limited to:
 
--   Akaike Information Criterion: $AIC = 2k - 2 \ln(L)$, where $k$ is the number of estimated parameters and $L$ is the maximum value of the likelihood function
+-   Akaike Information Criterion: $AIC = 2k - 2 \ln(L)$, metric of the predictive accuracy of a model
 
--   Bayesian Information Criterion: $BIC = -2 \ln(L)+k \ln(n)$
+-   Bayesian Information Criterion: $BIC = -2 \ln(L)+k \ln(n)$, metric of the model most likely to be the "true" model given observed data
 
 -   Intraclass Correlation Coefficient: $ICC = \frac{\text{random effect variance}}{\text{total variance}}$ , how much variation can be explained by random effect
 
--   Precision $= \frac{\text{TP}}{(\text{TP}+\text{FP})}$,
+-   Dispersion (for general linear mixed model) $= \frac{\chi^2}{df_{residual}}$, measure of the degree of variability in the dataset relative to what is expected by the theoretical model
+
+-   Precision $= \frac{\text{TP}}{(\text{TP}+\text{FP})}$, how many of the observations predicted as positive are positive
 
 -   Recall (aka Sensitivity) $= \frac{\text{TP}}{(\text{TP}+\text{FN})}$, true positive rate
 
@@ -526,9 +506,11 @@ To evaluate model fit I use a variety of metrics including:
 
 -   F1 $= \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision}+{\text{Recall}}}$
 
--   
+    \*$k$ is the number of estimated parameters and $L$ is the maximum value of the likelihood function
 
-AIC, BIC, ICC, ROC_AUC, ROC curve, PR_AUC, PR curve, confusion matrix, precision, specificity, recall, F1, calibration plot, dispersion
+    \*$\text{TP}$, $\text{TN}$, $\text{FP}$, $\text{FN}$: True Positive, True Negative, False Positive, and False Negative, respectively
+
+    \*$\chi^2$ is the Pearson chi-square statistic, $df_{residual}$ are the residual degrees of freedom
 
 # Results
 
@@ -561,6 +543,8 @@ Before fitting my model, I created several exploratory plots. In these plots, I 
 \[report F1, roc_auc, roc curve, etc\]
 
 According to the score of ....
+
+ROC_AUC, ROC curve, PR_AUC, PR curve, confusion matrix, precision, calibration plot, dispersion
 
 ## Model Summary
 
@@ -617,3 +601,34 @@ Many factors were inaccessible for my analysis such as student demographics, ext
 Beyond flexible grading policies, another common method used to promote academic exploration is the option of auditing courses. From what I could find in the historic Duke bulletins, the Trinity College of Arts and Sciences has been allowing audits in 1960 and then introduced flexible grading with the pass-fail system in 1966[^131]. For administrators it may be worth weighing the trade offs and use-cases for flexible grading versus audits. Audits are known for ....pros.... cons...
 
 [^131]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
+
+# Code Availability
+
+Code used for this thesis can be found at <https://github.com/sophiazyang/senior-thesis>.
+
+\newpage
+
+# References
+
+# Appendix
+
+| Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                                                          | Use in Final Model?                                         |
+|------------------|-----------------|--------------------|------------------|
+| term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                                                       | No                                                          |
+| term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                                                            | Yes, better AIC/BIC than term_units                         |
+| prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                                                            | Yes                                                         |
+| num_plans           | numerical   | Students seeking to satisfy more academic plans could have a greater workload. Alternatively, their additional plans could include courses that satisfy graduation requirements such that they would elect to take more courses graded A-F.                                  | Yes                                                         |
+| studied_away        | binary      | Courses taken as part of Duke Administered programs do count towards student GPA, while Duke Approved programs do not count towards student GPA. In this sense, Duke Approved programs somewhat act as S/U grading.                                                          | Yes                                                         |
+| took_summer_courses | numerical   | The pacing, environment, number of courses, and other factors are different during summer terms. Some students may wait to take more challenging classes for during the summer. Summer courses may also be taken to make up for withdrawals.                                 | Yes                                                         |
+| is_art_humanity     | binary      | A student who majors in arts and humanities may be more incentivized to take such courses on a graded basis to count towards major requirements.                                                                                                                             | Yes                                                         |
+| is_social_sci       | binary      | A student who majors in social sciences may be more incentivized to take such courses on a graded basis to count towards major requirements.                                                                                                                                 | Yes                                                         |
+| is_natural_sci      | binary      | A student who majors in natural sciences may be more incentivized to take such courses on a graded basis to count towards major requirements.                                                                                                                                | Yes                                                         |
+| student_group       | ordinal     | When a student matriculates may say something about peer pressures and the policies they experienced.                                                                                                                                                                        | No, multicolinearity with timeperiod and academic_level_bot |
+| timeperiod          | ordinal     | Policies were different across timeperiods, so student behaviors may have changed.                                                                                                                                                                                           | Yes                                                         |
+| term_enrolled       | ordinal     | Same rationale as timeperiod.                                                                                                                                                                                                                                                | No, colinearity with timeperiod                             |
+| academic_level_bot  | ordinal     | The amount of importance and effort students have for their courses varies across their academic career. Perhaps "senioritis" results in more S/Us, maybe first-years chose to S/U as they adapt to a new environment, etc.                                                  | Yes                                                         |
+| num_semesters       | numerical   | Same rationale as academic_level_bot.                                                                                                                                                                                                                                        | No, colinearity with academic_level_bot                     |
+| catalog_level       | ordinal     | It is possible that a greater proportion of higher level courses do not allow S/U or that lower level courses are typically chosen to fulfill general education requirements.                                                                                                | Yes                                                         |
+| division            | categorical | The academic rigor, requirements, quality of instruction, and other factors placed by different divisions on their courses may vary and influence student decisions.                                                                                                         | Yes                                                         |
+| num_students        | numerical   | A larger class size might disincentivize participation and engagement with course materials, resulting in a loss of effort.                                                                                                                                                  |                                                             |
+| num_overloads       | numerical   | Similar rationale as term_load but at a student behavior level. If a student has overloaded often in the past, they may be more likely to overload in the future. Alternatively, students may get burnt out or realize later in their careers that they are missing credits. |                                                             |

@@ -17,7 +17,6 @@ library(tidymodels)
 library(rsample)
 library(themis)
 library(caret)
-library(DHARMa)
 library(performance)
 ```
 
@@ -103,7 +102,7 @@ df |>
   mutate(prop = n / sum(n))
 ```
 
-##Train Test Split 
+## Train Test Split
 
 ```{r}
 #| label: train-test-split
@@ -527,6 +526,7 @@ vc
 var_student <- vc$vcov[vc$grp == "masked_student_ID"]
 var_resid <- pi^2 / 3
 var_student / (var_student + var_resid)
+icc(glmer_fit)
 
 # RMSE
 test_results_num <- test_results |>
@@ -627,24 +627,16 @@ ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
 ```{r}
 check_overdispersion(glmer_fit)
 
-# Simulate new residuals from the fitted model
-# n = 250 is a good default number of simulations
-simulationOutput <- simulateResiduals(fittedModel = glmer_fit, n = 250)
+plot(residuals(glmer_fit) ~ factor(group_variable))
 
-# 8a. Main Diagnostic Plot
-print("--- Overdispersion Check (DHARMa Method) ---")
-print("Generating DHARMa plot...")
+pear <- residuals(glmer_fit, type = "pearson")
+df$pear <- pear
+student_resid <- df %>%
+  group_by(masked_student_ID) %>%
+  summarize(n = n(), mean_pear = mean(pear), sd_pear = sd(pear), mean_obs = mean(is_SU))
 
-# This will create a plot in your plot pane.
-# LEFT: A Q-Q plot. The red line should be straight and on the diagonal.
-#       The p-value is for the KS-test (you want p > 0.05).
-# RIGHT: Residuals vs. Predicted. You want no pattern.
-# DHARMa also runs tests for dispersion and outliers.
-plot(simulationOutput)
-
-# 8b. Explicit Test for Overdispersion
-# This test is more reliable than the quick method.
-print("Running DHARMa overdispersion test:")
-testOverdispersion(simulationOutput)
+hist(student_resid$mean_pear, main="Mean Pearson residual per student")
+plot(student_resid$n, student_resid$sd_pear,
+     xlab="Observations per student", ylab="SD of Pearson residuals per student")
 
 ```
