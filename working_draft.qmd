@@ -388,11 +388,11 @@ While these data come from official records, there are some aspects that I remai
 
 ## Data Cleaning
 
-Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution.
+Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution. Additionally, my focus is on the "typical" student of which I define as a student who graduates in exactly eight Fall/Spring semesters. For students who matriculated in 2022 and onwards and hence have not had the opportunity to enroll in eight semesters, I assume all students will graduate in eight semesters (although this is not the case).
 
-In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all less than full credit courses from GPA and course load calculations due to the existence of courses which give credit to labs and other mandatory courses such as the half-credit STA 211 which was required for the major in Statistical Science. A comparison of actual loads and my perceived loads can be found in TODO (try using actual loads in model maybe it's better than acad?).
+In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all less than full credit courses from GPA and course load calculations due to the existence of courses which give credit to labs and other mandatory courses such as the half-credit STA 211 which was required for the major in Statistical Science.
 
-For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program.
+For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program. For courses where location was not recorded (17.6% of student-course pairs), I assume they were taken at Durham. This may result in an underestimate of students who study away.
 
 My goal is to model student choice of S/U over A-F grading. Hence, I drop all withdrawals, audits, and other non-credit courses. Additionally, Trinity College states that students "must be in a normal course load (at least 4 x 1.0 credit classes) to request to change a class to S/U" and that "you may only request a Voluntary S/U for a single 1.0 credit course"[^118]. Hence, while I consider all "academic" courses in GPA and course load calculations, only single full credit courses are eligible to be included in my model. I use actual course loads to drop semester-student pairs that have less than 4.0 credits. I did not verify that students have at least four full credit courses.
 
@@ -400,25 +400,25 @@ My goal is to model student choice of S/U over A-F grading. Hence, I drop all wi
 
 A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal, etc) I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive A-F (or withdrawal, etc), I choose not to assume the course is graded only. My belief is that in the majority of cases students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
 
-## Missing Data
+## Data Imputation
 
-Flexible grading policy has become more flexible in the aftermath of COVID-19, so I hypothesize that student utilization of flexible grading will be higher after the policy change when compared to the years prior. Specifically, students are now allowed to use S/U for general education requirements so I believe that any change in S/U will likely be reflected in general education courses. Curriculum 2000, under which all students in my data fall, general education requirements mandate that Trinity students to take two credits in each of five Areas of Knowledge as well as two credits in each of five Modes of Inquiry. Unfortunately, I was unable to obtain these course codes as part of my dataset.
+Since post-pandemic policy allows students to use S/U for general education requirements, I believe that changes in S/U will likely be reflected in general education courses. Curriculum 2000, under which all students in my data fall, general education requirements mandate that Trinity students to take two credits in each of five Areas of Knowledge as well as two credits in each of five Modes of Inquiry. Unfortunately, I was unable to obtain these course codes as part of my dataset.
 
-As a proxy for determining general education courses, I attempt to classify students by their academic plans under the assumption that most of the courses taken outside of the division(s) of their major(s) are taken for general education requirements. Trinity students are permitted to have up to three academic plans (majors, minors, and certificates) of which only two can be majors. Since minors and certificates tend to only require 5 or 6 courses and tend to be added towards the end, I do not classify students as belonging to divisions based on their minors and certificates. Due to privacy concerns and the potential to identify individuals given full records, course names, numbers, and departments were omitted. Instead, I was given catalog level (i.e. 100-199, 200-299, etc) and course division (Engineering, Arts & Humanities, Social Sciences, Natural Sciences, and Writing). In order to match majors with course divisions, I manually assigned each major with the appropriate division based on classifications at <https://trinity.duke.edu/>. While most majors were relatively straight-forward, I was unable to classify Program II and unlabeled interdepartmental (IDM) majors. These students are excluded from my model. The spreadsheet I used for classification of majors can be found in my GitHub repo.
+As a proxy for determining general education courses, I attempt to classify students by their academic plans under the assumption that most of the courses taken outside of the division(s) of their major(s) are taken for general education requirements. Trinity students are permitted to have up to three academic plans (majors, minors, and certificates) of which only two can be majors. Since minors and certificates tend to only require 5 or 6 courses and tend to be added towards the end, I do not classify students as belonging to divisions based on their minors and certificates.
 
-In addition to unclear majors, there are also a significant number of unknown majors in my data. Student academic plans in my dataset come from post-graduation records. While some NAs are expected for the small percentage of students that do not graduate, there is a more substantial problem: I lack any graduated students for the Class of 2026 (matriculated in Fall 2022) onward. Note that this is precisely the classes of students who fall after my pandemic time period (Spring 2020 – Summer 2 2022). I cannot afford to systematically have data loss during this period. To address this problem, I recognize potential bias but resorted to data imputation.
+Due to privacy concerns and the potential to identify individuals given full records, course names, numbers, and departments were omitted. Instead, I was given catalog level (i.e. 100-199, 200-299, etc) and course division (Engineering, Arts & Humanities, Social Sciences, Natural Sciences, and Writing). In order to match majors with course divisions, I manually assigned each major with the appropriate division based on classifications at <https://trinity.duke.edu/>. While most majors were relatively straight-forward, I was unable to classify Program II and unlabeled interdepartmental (IDM) majors. These students are excluded from my model. The spreadsheet I used for classification of majors can be found in my GitHub repo.
 
-I used labeled data to inform my imputation, assuming that there has been no significant change in the distribution of courses a student takes in their major(s). Initial attempts included experimentation to determine the best threshold for number of courses and major divisions. However, using a number of courses does not extend well to students who have not completed a full eight semesters. In fact, it is plausible that some students remain undecided in their first several semesters, some students space out their requirements across all four years, and some students focus on their major and only later are reminded of general education requirements.
+In addition to ambiguous majors, there are also a significant number of unknown majors in my data. Student academic plans in my dataset come from post-graduation records. While some NAs are expected for the small percentage of students that do not graduate (dropped from my model), there is a more substantial problem: I lack any graduated students for the Class of 2026 (matriculated in Fall 2022) onward. Note that this is precisely the classes of students who fall after my pandemic time period (Spring 2020 – Summer 2 2022). Since Duke undergraduates are required to declare their major(s) by end of sophomore year and due to how little data there will be for freshman, I cannot possibly extract majors from current freshman and juniors (Class of 2028 and 2029). However, I do attempt to impute major(s) for the Class of 2026 and 2027.
+
+I used labeled data to inform my imputation, assuming that there has been no significant change in the distribution of courses a student takes in their major(s). Initial attempts included experimentation to determine the best threshold for number of courses and major divisions. However, using number of courses taken does not extend well to students who have not completed a full eight semesters. In fact, it is plausible that some students remain undecided in their first several semesters, some students space out their requirements across all four years, and some students focus on their major and only later are reminded of general education requirements.
 
 My current approach is to use proportion of 200 and above levels courses a student has taken per division to assign major divisions. With a 0.93%, 0.87%, and 0.87% accuracy for major divisions, the data suggested a threshold of 0.5, 0.4, 0.3 for Arts & Humanities, Natural Sciences, and Social Sciences respectively. The high threshold for Arts & Humanities logically makes sense, the more classes more likely to be majoring. However, the threshold for Social Sciences seems abnormally low as it insinuates a student who has a major in Social Sciences only takes roughly a third of their courses in Social Sciences. However, it should also be taken into consideration that 1) many students end up double majoring, 2) students might have minors or certificates in other divisions, 3) students could have other academic interests, 4) courses could be cross-listed across divisions, and 5) categorization of majors is somewhat debatable. To provide as example of 5, as defined by Trinity, African & African American Studies is classified as a Social Science while Asian & Middle Eastern Studies is a Arts & Humanities. Looking at the confusion metrics for each proportion threshold in Figure TODO, it becomes evident that the increase in false positives with higher thresholds offsets the increase in true positives.
-
-oihohohoihjnlkb For simplicity, courses where location was not recorded, I assume they were taken at Durham. This could result in an underestimate of students who study away (put my estimate of \# study away TODO).
 
 ## Data Engineering
 
 In addition to constructing variables for major divisions and time period relative to COVID-19, I also engineered several other variables as I describe below:
 
--   `prev_semGPA` is the weighted GPA from the semester prior or NA if this is the first semester, only A-F grades count towards GPA
+-   `prev_semGPA` is the weighted GPA from the semester prior or 4.0 if this is their first semester, only A-F grades count towards GPA
 
 -   `num_plans` is the number of majors, minors, and certificates a student holds
 
@@ -458,12 +458,12 @@ While I believe all variables included have some relevance to student behavior, 
 
 In addition to elastic–net, I also tested nested models on predictors I felt uncertain of. These included ....
 
-For colinear variables, I opted to compare AIC and BIC results between the colinear variables.
+For co-linear variables, I opted to compare AIC and BIC.
 
 A summary of all variables considered for modeling and my verdicts are shown below:
 
 | Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                         | Use in Final Model?                     |
-|----------|----------|--------------------------------------------|----------|
+|--------------|--------------|-------------------------------|--------------|
 | term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                      | No                                      |
 | term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                           | Yes, better AIC/BIC than term_units     |
 | prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                           | Yes                                     |
@@ -486,19 +486,35 @@ A summary of all variables considered for modeling and my verdicts are shown bel
 
 ## Final Model
 
-From my preliminary models, the best hyperparameters I got were a light penalty of 0.0001 on pure LASSO (mixture =1), SMOTE oversampling of the minority class to reach a 1 to 5 ratio of S/U and non-S/U respectively, and the default decision threshold of 0.5. All parameters were testing in combination with each other, except the decision threshold.
+From my preliminary models, the best hyper-parameters I got were a light penalty of 0.0001 on pure LASSO (mixture =1), SMOTE oversampling of the minority class to reach a 1 to 5 ratio of S/U and non-S/U respectively, and the default decision threshold of 0.5. All parameters were testing in combination with each other, except the decision threshold.
 
 After addressing major modeling hurdles, I added the random effect on student ID. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course. However, the addition of random effects resulted in a significant increase in run time, so I used a random sample of my observations to be used in the training and test sets.
 
 ## Model Evaluation
 
-insert eval metric words...
+To evaluate model fit I use a variety of metrics including:
+
+-   Akaike Information Criterion: $AIC = 2k - 2 \ln(L)$, where $k$ is the number of estimated parameters and $L$ is the maximum value of the likelihood function
+
+-   Bayesian Information Criterion: $BIC = -2 \ln(L)+k \ln(n)$
+
+-   Intraclass Correlation Coefficient: $ICC = \frac{\text{random effect variance}}{\text{total variance}}$ , how much variation can be explained by random effect
+
+-   Precision $= \frac{\text{TP}}{(\text{TP}+\text{FP})}$,
+
+-   Recall (aka Sensitivity) $= \frac{\text{TP}}{(\text{TP}+\text{FN})}$, true positive rate
+
+-   Specificity $= \frac{\text{TN}}{(\text{TP}+\text{FN})}$, true negative rate
+
+-   F1 $= \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision}+{\text{Recall}}}$
+
+-   
 
 AIC, BIC, ICC, ROC_AUC, ROC curve, PR_AUC, PR curve, confusion matrix, precision, specificity, recall, F1, calibration plot, dispersion
 
 # Results
 
-## Exploratory Data Analysis (uncertain about placement)
+## Exploratory Data Analysis
 
 Before fitting my model, I created several exploratory plots. In these plots, I use a more complete dataset than I do for my model by including mandatory S/U courses, non-traditional students, ....
 
@@ -522,29 +538,35 @@ Before fitting my model, I created several exploratory plots. In these plots, I 
 
 \[student majors/divisions by AY\]
 
-## Logistic Regression
+## Model Fit
+
+\[report F1, roc_auc, roc curve, etc\]
+
+\[insert table of exponentiated coefficients and signif\]
 
 # Discussion
 
+Based on model time period really matters...but not much else
+
+Bc of the high ICC seems like Student level beliefs and stances for and against flexible grading based on cultural beliefs or personal values and whatever else plays a large role in...
+
+S/U was supposed to help with mental health things -\> comparing with data from DUCkI it says... so i think ...
+
 ## Limitations
 
-missing data (assumed NA are at Durham) -\> prev GPA thing for first sem also reduces the predictive power associated with the variable
+As with most studies, there are numerous limitations with this thesis. To begin, there is systematically missing data with the lack data satisfying my classification of post-pandemic (Fall 2022-Spring 2025). There are certainly errors in my imputation of student major divisions as well as a systematic underestimate in the number of academic plans students graduate with. In many cases, students realize later in their academic careers that they have the time to explore other interests. Additionally, I do not attempt to impute student's minors. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
 
-did not check that students have 4 1.0 credits things...
+Missing data is not exclusive to after the pandemic. There was also missing data from the courses for which location was NA as well as no data on previous semesters for first semester students. The choice to systematically give all students a 4.0 as the baseline previous semester GPA for their first semester decreases the perceived significance of prior GPA in my model. There is no good solution to this as there is a the lack of knowledge of a student's prior academic performance in earlier education. This is exacerbated by the loss of the standardized test score application requirement for Duke University and would result in only the usage of high school GPAs which likely vary in rigor across schools. It is also worth emphasizing that while my engineered previous semester GPA does consider courses taken away from Durham, it ignores summer terms which do contribute to a student's overall GPA. My major imputation approach currently ignores both summer and study away courses.
 
-Imputation of student majors -\> https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1224/reports/custom_116659439.pdf
+Beyond the variables I was provided, it is likely that ROTC, pre-med, athlete, and other statuses may have an impact on student behaviors. For instance, it makes sense to believe that ROTC and athlete students may be taking a disproportionate number of "Other" credits to fulfill program requirements. Students intending to apply for medical school have to take a significant number of courses in the natural sciences, but may not necessarily be majoring in the natural science division. Related to these unknowns is my systematic ignorance of student minors and certificates. It is certainly possible that minors in a separate division will fully account for all remaining graduation requirements.
 
-course ID (maybe people like to S/U a specific course)
+Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is crosslisted across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset, only one of these divisions can be displayed.
 
-students who's culture/beliefs/etc cause them to never want to S/U
+Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year.
 
-lack of data post pandemic
+Some areas of this thesis are rather arbitrary for sake of simplicity. For instance, the labeling of "traditional" students and "academic" courses are based on personal beliefs. Perhaps I have unconscious biases against Arts & Humanities by removing half-credit music courses. However, I also believe there are systematic biases through the classification of departments into divisions. As mentioned in my methodology, the classification of African & African American Studies as a social science but the classification of Asian & Middle Eastern Studies as an arts & humanities department seems to neglect the interdisciplinary nature of many fields.
 
-changes in acad policy not captured in the bulletins
-
-divisions vs departments
-
-labeling of "academic" courses kinda handwavy
+Finally, my model seeks to determine student-level behavior rather than course-level behavior. I do not include course IDs in my model and hence do not take into consideration the potential for some courses to be known within the student population as a popular course for graduation requirements. For instance, ECS 101 is known as "Rocks for Jocks" among the student community and could therefore have a disproportionate proportion of S/Us when compared to ENVIRON 101, a course which would likely have identical values in my dataset (excluding total enrollment). Similarly, it is plausible that a specific instructor and/or a specific course has a different stance towards requirements for S/U and grade cutoffs than their peers.
 
 # Conclusion
 
@@ -552,8 +574,18 @@ Based on my model, there is clear evidence that students were more likely to ...
 
 ## Future Work
 
-Policy continue to change would be interesting to compare S/U in just post covid till Spring 2025 vs new policy change
+Policy continue to change would be interesting to compare S/U in just post covid till Spring 2025 vs new policy change + how new curriculum constellations works out
 
 Get more data on majors of ppl
 
 Internal investigation on departments
+
+Imputation of student majors -\> https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1224/reports/custom_116659439.pdf
+
+NLP cool things for majors :0?
+
+ALP, CZ, etc things
+
+overall cumGPA instead of just prev sem gpa cuz i lazy
+
+how has auditing changed
