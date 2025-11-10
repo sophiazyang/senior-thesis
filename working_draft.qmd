@@ -9,9 +9,11 @@ author: Sophia Yang
 
 In the wake of the COVID-19 pandemic, the Trinity College of Arts and Sciences at Duke University introduced academic policy changes. During the Spring 2020 semester, all courses were switched to Satisfactory/Unsatisfactory (S/U) grading as opposed to the traditional graded (A- F) scale. While this was the only semester where all courses were allowed to be S/U and count for all requirements, other policy changes during the pandemic regarding S/U still remain.
 
-Referencing Duke University Undergraduate Bulletins, prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements. Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of many changes has been a switch in defaults so instructors have to opt-in for allowing S/U rather than having to specifically opt-out of allowing S/U[^1]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
+Referencing Duke University Undergraduate Bulletins[^1], prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements. Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of many changes has been a switch in defaults so instructors have to opt-in for allowing S/U rather than having to specifically opt-out of allowing S/U[^2]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
 
-[^1]: <https://dukechronicle.com/article/duke-university-arts-and-sciences-council-changes-satisfactory-unsatisfactory-grading-system-duke-athletics-changing-landscape-20250503>
+[^1]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
+
+[^2]: <https://dukechronicle.com/article/duke-university-arts-and-sciences-council-changes-satisfactory-unsatisfactory-grading-system-duke-athletics-changing-landscape-20250503>
 
 A growing body of literature has examined the impact of the pandemic on student learning and a plethora of studies have been done on pass/fail grading in post-secondary education (although primarily in medical school). Rather than exploring impacts on student outcomes, this thesis seeks to determine how the changes in flexible grading policy have impacted student behaviors with the goal of better informing educators and administrators.
 
@@ -19,115 +21,115 @@ A growing body of literature has examined the impact of the pandemic on student 
 
 ## **Birth of Traditional A-F Grading**
 
-Education is notably missing from the US Constitution, but in the period between 1852 to 1918 all states had passed legislation requiring compulsory education (Diorio 2023)[^2]. As a result, K-12 enrollments nearly tripled from 1870 to 1910 (Goldin 2006)[^3]. Simultaneously, the Morrill Acts of 1862 and 1890 provided federal land for the establishment of public colleges, opening the doors for access to higher education. Historically, students were evaluated by descriptions and evaluations given by individual teachers. Even entrance exams for college were made by individuals and occurred at individual schools, making results unreliable (Schudson 1972; Wechsler 1977)[^4][^5]. The massive increase in the number of students required a revolutionary new approach to education that could scale with the increasing demand for education. A standard grading system was needed.
+Education is notably missing from the US Constitution, but in the period between 1852 to 1918 all states had passed legislation requiring compulsory education (Diorio 2023)[^3]. As a result, K-12 enrollments nearly tripled from 1870 to 1910 (Goldin 2006)[^4]. Simultaneously, the Morrill Acts of 1862 and 1890 provided federal land for the establishment of public colleges, opening the doors for access to higher education. Historically, students were evaluated by descriptions and evaluations given by individual teachers. Even entrance exams for college were made by individuals and occurred at individual schools, making results unreliable (Schudson 1972; Wechsler 1977)[^5][^6]. The massive increase in the number of students required a revolutionary new approach to education that could scale with the increasing demand for education. A standard grading system was needed.
 
-[^2]: <https://www.ebsco.com/research-starters/history/history-public-education-us>
+[^3]: <https://www.ebsco.com/research-starters/history/history-public-education-us>
 
-[^3]: Goldin, Claudia , “School enrollment and pupil–teacher ratios, by grades K–8 and 9–12 and by public–private control: 1869–1996.” Table Bc7-18 in Historical Statistics of the United States, Earliest Times to the Present: Millennial Edition, edited by Susan B. Carter, Scott Sigmund Gartner, Michael R. Haines, Alan L. Olmstead, Richard Sutch, and Gavin Wright. New York: Cambridge University Press, 2006. <http://dx.doi.org/10.1017/ISBN-9780511132971.Bc1-509>
+[^4]: Goldin, Claudia , “School enrollment and pupil–teacher ratios, by grades K–8 and 9–12 and by public–private control: 1869–1996.” Table Bc7-18 in Historical Statistics of the United States, Earliest Times to the Present: Millennial Edition, edited by Susan B. Carter, Scott Sigmund Gartner, Michael R. Haines, Alan L. Olmstead, Richard Sutch, and Gavin Wright. New York: Cambridge University Press, 2006. <http://dx.doi.org/10.1017/ISBN-9780511132971.Bc1-509>
 
-[^4]: Schudson, M. S. (1972) Organizing the meritocracy. Harvard Educational Review, 42(1), 34-69.
+[^5]: Schudson, M. S. (1972) Organizing the meritocracy. Harvard Educational Review, 42(1), 34-69.
 
     <https://eric.ed.gov/?id=EJ056906>
 
-[^5]: Wechsler, H. S. (1977) The Qualified Student: A History of Selective College Admission in America, 1870-1970 (New York, NY: Wiley-Interscience).
+[^6]: Wechsler, H. S. (1977) The Qualified Student: A History of Selective College Admission in America, 1870-1970 (New York, NY: Wiley-Interscience).
 
     <https://eric.ed.gov/?id=ED150933>
 
-The movement towards the usage of report cards and grades as a success indicator became widespread. Instead, the rise of national examinations such as those by the College Board arose (Valentine 1987)[^6]. Now, the shift was towards more consistent report cards across a school or district as a success indicator. Additionally, universities began using academic “credits” to quantify the amount of work and subsequently the amount of effort a student took on during a given period. Combined with grades, one could compare a student not just within their class but also with students in other classes in the same school. However, grading systems remained variable across the country in regards to what to measure and their frequency (Ashbaugh and Chapman 1925)[^7]. Many debates arose ranging from the potential misinterpretation of grades (Bixler 1936)[^8] to the discrepancy between standardized tests and teacher’s grades (Hadley 1954)[^9] to the balance of extrinsic and intrinsic motivation (Sumner 1935)[^10]. Yet despite the multitude of flaws grading had, the rapidly growing demand of education necessitated a solution.
+The movement towards the usage of report cards and grades as a success indicator became widespread. Instead, the rise of national examinations such as those by the College Board arose (Valentine 1987)[^7]. Now, the shift was towards more consistent report cards across a school or district as a success indicator. Additionally, universities began using academic “credits” to quantify the amount of work and subsequently the amount of effort a student took on during a given period. Combined with grades, one could compare a student not just within their class but also with students in other classes in the same school. However, grading systems remained variable across the country in regards to what to measure and their frequency (Ashbaugh and Chapman 1925)[^8]. Many debates arose ranging from the potential misinterpretation of grades (Bixler 1936)[^9] to the discrepancy between standardized tests and teacher’s grades (Hadley 1954)[^10] to the balance of extrinsic and intrinsic motivation (Sumner 1935)[^11]. Yet despite the multitude of flaws grading had, the rapidly growing demand of education necessitated a solution.
 
-[^6]: The College Board and the School Curriculum. A History of the College Board's Influence on the Substance and Standards of American Education, 1900-1980.
+[^7]: The College Board and the School Curriculum. A History of the College Board's Influence on the Substance and Standards of American Education, 1900-1980.
 
     <https://eric.ed.gov/?id=ED285443>
 
-[^7]: Ashbaugh, E. J. and Chapman, H. B. (1925) Report cards in American cities. Educational Research Bulletin, 4(14), 289-293.
+[^8]: Ashbaugh, E. J. and Chapman, H. B. (1925) Report cards in American cities. Educational Research Bulletin, 4(14), 289-293.
 
-[^8]: Bixler, H. H. (1936) School marks. Review of Educational Research, 6(2), 169-173.
+[^9]: Bixler, H. H. (1936) School marks. Review of Educational Research, 6(2), 169-173.
 
-[^9]: Hadley, S. Trevor (1954) A school mark-fact or fancy. Educational Administration and upervision, 40, 305-312.
+[^10]: Hadley, S. Trevor (1954) A school mark-fact or fancy. Educational Administration and upervision, 40, 305-312.
 
-[^10]: Sumner, R. G. (1935) What price marks?. Funior-Senior High School Clearing House, 9(6), 340-344.
+[^11]: Sumner, R. G. (1935) What price marks?. Funior-Senior High School Clearing House, 9(6), 340-344.
 
     <https://www.jstor.org/stable/30174436>
 
-During the early 1900s, research was conducted to determine the best way to assign grades. Studies such as that by (Starch 1913)[^11] found that using a 100 percent scale was highly inconsistent across teachers. In response, some suggested a categorical system of “diagnostic letters” to reduce the impact of inconsistency on reported grades (Finkelstein 1913)[^12]. By the 1940s, the A-F grading system was adopted by over 80% of U.S. schools, rising in popularity along with the 4.0 scale (Schneider and Hutt 2013)[^13].
+During the early 1900s, research was conducted to determine the best way to assign grades. Studies such as that by (Starch 1913)[^12] found that using a 100 percent scale was highly inconsistent across teachers. In response, some suggested a categorical system of “diagnostic letters” to reduce the impact of inconsistency on reported grades (Finkelstein 1913)[^13]. By the 1940s, the A-F grading system was adopted by over 80% of U.S. schools, rising in popularity along with the 4.0 scale (Schneider and Hutt 2013)[^14].
 
-[^11]: Starch D (1913). Reliability and distribution of grades. Science 38, 630-636. Medline, Google Scholar
+[^12]: Starch D (1913). Reliability and distribution of grades. Science 38, 630-636. Medline, Google Scholar
 
     <https://doi.org/10.1126/science.38.983.630>
 
-[^12]: Finkelstein IE (1913). The Marking System in Theory and Practice, Baltimore: Warwick & York.
+[^13]: Finkelstein IE (1913). The Marking System in Theory and Practice, Baltimore: Warwick & York.
 
     <https://books.google.com/books?id=4wsRAAAAMAAJ&lr=&source=gbs_navlinks_s>
 
-[^13]: Schneider, J., & Hutt, E. (2013). Making the grade: a history of the A–F marking scheme. *Journal of Curriculum Studies*, *46*(2), 201–224. https://doi.org/10.1080/00220272.2013.790480
+[^14]: Schneider, J., & Hutt, E. (2013). Making the grade: a history of the A–F marking scheme. *Journal of Curriculum Studies*, *46*(2), 201–224. https://doi.org/10.1080/00220272.2013.790480
 
 ## **Rise of Pass/Fail**
 
-While A-F grading rose to prominence, its core problems remained. Grades were still inaccurate, being assigned differently across instructors, departments, and institutions. Additional studies found poor correlations between college grades and post-educational success (Hoyt 1966)[^14]. Concerns about student learning under A-F grading were also raised. As put by Stallings and Leslie,
+While A-F grading rose to prominence, its core problems remained. Grades were still inaccurate, being assigned differently across instructors, departments, and institutions. Additional studies found poor correlations between college grades and post-educational success (Hoyt 1966)[^15]. Concerns about student learning under A-F grading were also raised. As put by Stallings and Leslie,
 
-[^14]: Hoyt, D. P. (1966). College grades and adult accomplishment: A review of research. *The Educational Record*, 47, 70-75.
+[^15]: Hoyt, D. P. (1966). College grades and adult accomplishment: A review of research. *The Educational Record*, 47, 70-75.
 
-> The undergraduate perceives grades as that proverbial sword hanging over his head which forces him to study content he otherwise might not study. The power of 'the grade' is strong enough to restrict his studying to material which he anticipates will be on tests... (Stallings and Leslie 1970)[^15].
+> The undergraduate perceives grades as that proverbial sword hanging over his head which forces him to study content he otherwise might not study. The power of 'the grade' is strong enough to restrict his studying to material which he anticipates will be on tests... (Stallings and Leslie 1970)[^16].
 
-[^15]: Stallings, W. M., & Leslie, E. K. (1970). Student attitudes towards grades and grading. Improving College and University Teaching, 18(1), 66-68
+[^16]: Stallings, W. M., & Leslie, E. K. (1970). Student attitudes towards grades and grading. Improving College and University Teaching, 18(1), 66-68
 
     <https://files.eric.ed.gov/fulltext/ED060054.pdf>
 
-Criticism of traditional A-F grading led to an era of educational innovation. Many schools began experimenting with alternate forms of grading, the most prominent of which was the pass/fail system. Pass fail grading was not a new idea, with records in American higher education from as early as 1851 (Smallwood 1935)[^16]. However, it remained obscure until the 1960s and 1970s. Proponents of pass fail grading argued that it would foster an intrinsic interest in learning and greater exploration of academic courses. As put by Weller, it was hoped to “free the instructor and the student to communicate on a colleague to colleague basis” (1983)[^17]. By the early 1970s, no penalty grading was present in some capacity in over two-thirds of a sampled 2500 American colleges and universities (Elsner and Brydon 1974)[^18].
+Criticism of traditional A-F grading led to an era of educational innovation. Many schools began experimenting with alternate forms of grading, the most prominent of which was the pass/fail system. Pass fail grading was not a new idea, with records in American higher education from as early as 1851 (Smallwood 1935)[^17]. However, it remained obscure until the 1960s and 1970s. Proponents of pass fail grading argued that it would foster an intrinsic interest in learning and greater exploration of academic courses. As put by Weller, it was hoped to “free the instructor and the student to communicate on a colleague to colleague basis” (1983)[^18]. By the early 1970s, no penalty grading was present in some capacity in over two-thirds of a sampled 2500 American colleges and universities (Elsner and Brydon 1974)[^19].
 
-[^16]: <https://books.google.com/books/about/An_Historical_Study_of_Examinations_and.html?id=OMgjAAAAMAAJ>
+[^17]: <https://books.google.com/books/about/An_Historical_Study_of_Examinations_and.html?id=OMgjAAAAMAAJ>
 
-[^17]: <https://eric.ed.gov/?id=EJ288937>
+[^18]: <https://eric.ed.gov/?id=EJ288937>
 
-[^18]: <https://eric.ed.gov/?id=ED088549>
+[^19]: <https://eric.ed.gov/?id=ED088549>
 
-Pass fail grading was not without faults. Multiple studies of the time found that pass/fail grading was often used to concentrate more effort in graded classes to boost or maintain grade point averages (Quann 1971; Collins and Nickel 1975)[^19][^20]. Whether this encouraged exploration outside the major is unclear with both positive (Sgan 1969)[^21] and negative (Johnson 1970; Weems et al. 1971)[^22][^23] reports. What was apparent was that students using pass/fail were less engaged in course material than their graded counterparts. In a study by Karlins et al, traditionally graded students reported completion of 80% of readings and 85% attendance as opposed to pass/fail students completion of 61% of readings and 74% attendance (Karlins et al. 1969)[^24]. Critics also argued against the binary extremes of pass/fail as well as highlighting administrative challenges regarding dean’s list, calculation of grade point averages, and transfer students. Schools thought that they needed traditional grades to motivate students and that grades convey important information about a student to future employers or higher level educational institutions. Regarding the intent to create bonds between instructors and students, Weller (1983)[^25] found that pass/fail grading did not increase faculty evaluation time and institutions were divided on if it had a positive impact on faculty evaluation of students. Nearly 2 to 1 of the pass/fail institutions surveyed believed pass/fail grading did not result in a more positive student perception of grading.
+Pass fail grading was not without faults. Multiple studies of the time found that pass/fail grading was often used to concentrate more effort in graded classes to boost or maintain grade point averages (Quann 1971; Collins and Nickel 1975)[^20][^21]. Whether this encouraged exploration outside the major is unclear with both positive (Sgan 1969)[^22] and negative (Johnson 1970; Weems et al. 1971)[^23][^24] reports. What was apparent was that students using pass/fail were less engaged in course material than their graded counterparts. In a study by Karlins et al, traditionally graded students reported completion of 80% of readings and 85% attendance as opposed to pass/fail students completion of 61% of readings and 74% attendance (Karlins et al. 1969)[^25]. Critics also argued against the binary extremes of pass/fail as well as highlighting administrative challenges regarding dean’s list, calculation of grade point averages, and transfer students. Schools thought that they needed traditional grades to motivate students and that grades convey important information about a student to future employers or higher level educational institutions. Regarding the intent to create bonds between instructors and students, Weller (1983)[^26] found that pass/fail grading did not increase faculty evaluation time and institutions were divided on if it had a positive impact on faculty evaluation of students. Nearly 2 to 1 of the pass/fail institutions surveyed believed pass/fail grading did not result in a more positive student perception of grading.
 
-[^19]: https://files.eric.ed.gov/fulltext/ED051737.pdf
+[^20]: https://files.eric.ed.gov/fulltext/ED051737.pdf
 
-[^20]: Collins, J. R., & Nickel, K. N. (1975). Grading policies in higher education: the Kansas Study/ the National survey. University Studies, 103, Wichita.
+[^21]: Collins, J. R., & Nickel, K. N. (1975). Grading policies in higher education: the Kansas Study/ the National survey. University Studies, 103, Wichita.
 
-[^21]: <https://doi.org/10.2307/1979547>
+[^22]: <https://doi.org/10.2307/1979547>
 
-[^22]: Johnson, Jack T. Evaluate program, not grading. College and University Business, 49(3), 1970, 77-78.
+[^23]: Johnson, Jack T. Evaluate program, not grading. College and University Business, 49(3), 1970, 77-78.
 
-[^23]: Weems, John E., Clements, William H., Quann, Charles J., Smith, K., and Schefelbein, Barbara E. Pass -fail; Were the hypotheses valid? College and University, 46, 1971, 535 -556.
+[^24]: Weems, John E., Clements, William H., Quann, Charles J., Smith, K., and Schefelbein, Barbara E. Pass -fail; Were the hypotheses valid? College and University, 46, 1971, 535 -556.
 
-[^24]: Karlins, Marvin, Kaplan, Martin, and Stuart, William. Academic attitudes and performance as a function of differential grading systems: An evaluation of Princeton's pass-fail system. Journal of Experimental Education, 37(3), 1969, 33-50.
+[^25]: Karlins, Marvin, Kaplan, Martin, and Stuart, William. Academic attitudes and performance as a function of differential grading systems: An evaluation of Princeton's pass-fail system. Journal of Experimental Education, 37(3), 1969, 33-50.
 
     Available online at <https://www.tandfonline.com/doi/permissions/10.1080/00220973.1969.11011129?scroll=top>
 
-[^25]: <https://eric.ed.gov/?id=EJ288937>
+[^26]: <https://eric.ed.gov/?id=EJ288937>
 
 ## **Decline of Pass/Fail**
 
-While research had been conducted on education, the issue of education had largely remained out of the public eye until the 1980s. It was common belief that schools did not matter, and this was given scientific backing by the 1966 Coleman report which found that family background was more influential to student achievement than schools themselves (Coleman et al. 1966)[^26]. As a result, a relaxed attitude towards academics was commonplace and had provided the backdrop for introducing pass/fail. 
+While research had been conducted on education, the issue of education had largely remained out of the public eye until the 1980s. It was common belief that schools did not matter, and this was given scientific backing by the 1966 Coleman report which found that family background was more influential to student achievement than schools themselves (Coleman et al. 1966)[^27]. As a result, a relaxed attitude towards academics was commonplace and had provided the backdrop for introducing pass/fail. 
 
-[^26]: <https://eric.ed.gov/?id=ED012275>
+[^27]: <https://eric.ed.gov/?id=ED012275>
 
-However, newly emerging research was beginning to suggest that schools did matter. In response to Coleman, the effective schools movement sought to analyze characteristics of schools that correlate with higher academic achievement. Edmonds (1979) expanded upon prior studies such as that of Weber (1971)[^27] to analyze practices used by schools with high performing students and outlined characteristics of effective schools[^28]. As Edmonds put it, “We can, whenever and wherever we choose, successfully teach all children whose schooling is of interest to us. We already know more than we need to do that. Whether or not we do it must finally depend on how we feel about the fact that we haven’t so far”[^29]. His work was later expanded upon with additional and refined correlates of effective schools by others including Lezotte (1991)[^30]. Independent research from the UK by Rutter et al. (1982)[^31] further strengthened the case for better schools. 
+However, newly emerging research was beginning to suggest that schools did matter. In response to Coleman, the effective schools movement sought to analyze characteristics of schools that correlate with higher academic achievement. Edmonds (1979) expanded upon prior studies such as that of Weber (1971)[^28] to analyze practices used by schools with high performing students and outlined characteristics of effective schools[^29]. As Edmonds put it, “We can, whenever and wherever we choose, successfully teach all children whose schooling is of interest to us. We already know more than we need to do that. Whether or not we do it must finally depend on how we feel about the fact that we haven’t so far”[^30]. His work was later expanded upon with additional and refined correlates of effective schools by others including Lezotte (1991)[^31]. Independent research from the UK by Rutter et al. (1982)[^32] further strengthened the case for better schools. 
 
-[^27]: <https://eric.ed.gov/?id=ED057125>
-
-[^28]: <https://files.ascd.org/staticfiles/ascd/pdf/journals/ed_lead/el_197910_edmonds.pdf>
+[^28]: <https://eric.ed.gov/?id=ED057125>
 
 [^29]: <https://files.ascd.org/staticfiles/ascd/pdf/journals/ed_lead/el_197910_edmonds.pdf>
 
-[^30]: Lezotte, L. W., Correlates of Effective Schools: The First and Second Generation [https://www.effectiveschools.com/Correlates.pdf](extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.effectiveschools.com/Correlates.pdf)
+[^30]: <https://files.ascd.org/staticfiles/ascd/pdf/journals/ed_lead/el_197910_edmonds.pdf>
 
-[^31]: Fifteen Thousand Hours; Rutter, et al, Harvard University Press, Cambridge, MA
+[^31]: Lezotte, L. W., Correlates of Effective Schools: The First and Second Generation [https://www.effectiveschools.com/Correlates.pdf](extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.effectiveschools.com/Correlates.pdf)
+
+[^32]: Fifteen Thousand Hours; Rutter, et al, Harvard University Press, Cambridge, MA
 
     ISBN 9780674300262 <https://www.hup.harvard.edu/books/9780674300262>
 
-In 1983, the National Commission on Excellence in Education published A Nation at Risk. In this monumental report, researchers found consistent declines in high school and college student achievement scores and recommended high school graduation requirements (Gardner et al. 1983)[^32]. The report describes the state of American education as “unilateral educational disarmament” and warns of a “rising tide of mediocrity”, capturing media attention across the country. Overnight, education became a nonpartisan issue. Pamphlets from the Department of Education made research more accessible to the public (1986)[^33], the National Board for Professional Teaching Standards was established, exams began to shift away from multiple choice questions, and the first education summit of the nation’s governors was held (Ravitch 1990)[^34]. As a result of the growing importance of education to the general public, schools largely returned to a system of traditional A-F grading. The binary nature of pass/fail grading obscured the student data necessary to measure student achievement and improvement of the education system.
+In 1983, the National Commission on Excellence in Education published A Nation at Risk. In this monumental report, researchers found consistent declines in high school and college student achievement scores and recommended high school graduation requirements (Gardner et al. 1983)[^33]. The report describes the state of American education as “unilateral educational disarmament” and warns of a “rising tide of mediocrity”, capturing media attention across the country. Overnight, education became a nonpartisan issue. Pamphlets from the Department of Education made research more accessible to the public (1986)[^34], the National Board for Professional Teaching Standards was established, exams began to shift away from multiple choice questions, and the first education summit of the nation’s governors was held (Ravitch 1990)[^35]. As a result of the growing importance of education to the general public, schools largely returned to a system of traditional A-F grading. The binary nature of pass/fail grading obscured the student data necessary to measure student achievement and improvement of the education system.
 
-[^32]: <https://eric.ed.gov/?id=ED226006>
+[^33]: <https://eric.ed.gov/?id=ED226006>
 
-[^33]: What Works. Research about Teaching and Learning. Department of Education, Washington, DC.; Office of Educational Research and Improvement (ED)
+[^34]: What Works. Research about Teaching and Learning. Department of Education, Washington, DC.; Office of Educational Research and Improvement (ED)
 
     <https://files.eric.ed.gov/fulltext/ED263299.pdf>
 
-[^34]: Education in the 1980’s: A Concern for ‘Quality’
+[^35]: Education in the 1980’s: A Concern for ‘Quality’
 
     Diane Ravitch — January 10, 1990
 
@@ -135,236 +137,236 @@ In 1983, the National Commission on Excellence in Education published A Nation a
 
 ## **Rising Educational Attainment**
 
-Educational attainment in America rose sharply in the mid to late 1980s as college degrees became increasingly important. Papers from economists found that education was a way to signal and screen for high-ability workers (Stiglitz 1975)[^35]. Enticed by the promise of employment, more Americans obtained post-secondary degrees. According to data from the US Department of Education National Center for Education Statistics, the percentage of American adults aged 25 or older who held at least a Bachelor’s degree continuously rose from 6.2% in 1950 to 25.6% in 2000 to 37.5% in 2020 (2025)[^36]. A significant source of this increase was the rise of for-profit “diploma mills”. Fueled by the exploitation of financial aid and the political climate of deregulation and privatization, education became an industry. In 1990, there was only a single publicly traded for-profit university but by 2000 there were 40 publicly traded for-profit universities (Beaver 2017)[^37]. The Senate Committee on Health Education, Labor and Pensions found that “Between 1998 and 2008, enrollment at for-profit colleges increased 225 percent, compared to 31 percent growth in higher education” (2012)[^38].
+Educational attainment in America rose sharply in the mid to late 1980s as college degrees became increasingly important. Papers from economists found that education was a way to signal and screen for high-ability workers (Stiglitz 1975)[^36]. Enticed by the promise of employment, more Americans obtained post-secondary degrees. According to data from the US Department of Education National Center for Education Statistics, the percentage of American adults aged 25 or older who held at least a Bachelor’s degree continuously rose from 6.2% in 1950 to 25.6% in 2000 to 37.5% in 2020 (2025)[^37]. A significant source of this increase was the rise of for-profit “diploma mills”. Fueled by the exploitation of financial aid and the political climate of deregulation and privatization, education became an industry. In 1990, there was only a single publicly traded for-profit university but by 2000 there were 40 publicly traded for-profit universities (Beaver 2017)[^38]. The Senate Committee on Health Education, Labor and Pensions found that “Between 1998 and 2008, enrollment at for-profit colleges increased 225 percent, compared to 31 percent growth in higher education” (2012)[^39].
 
-[^35]: Stiglitz, J. E. (1975). The Theory of “Screening,” Education, and the Distribution of Income. The American Economic Review, 65(3), 283–300. <http://www.jstor.org/stable/1804834>
+[^36]: Stiglitz, J. E. (1975). The Theory of “Screening,” Education, and the Distribution of Income. The American Economic Review, 65(3), 283–300. <http://www.jstor.org/stable/1804834>
 
-[^36]: Hanson, Melanie. “Education Attainment Statistics” EducationData.org, 2025-01-14,\
+[^37]: Hanson, Melanie. “Education Attainment Statistics” EducationData.org, 2025-01-14,\
     https://educationdata.org/education-attainment-statistics
 
-[^37]: Academe, Vol. 103, Number 1, in the January-February 2017
+[^38]: Academe, Vol. 103, Number 1, in the January-February 2017
 
     <https://www.aaup.org/academe/issues/103-0/rise-and-fall-profit-higher-education>
 
-[^38]: <https://www.help.senate.gov/imo/media/for_profit_report/PartI.pdf>
+[^39]: <https://www.help.senate.gov/imo/media/for_profit_report/PartI.pdf>
 
-The goal of these for-profit institutions is to cut costs and grow profits. To do so, these institutions prioritized enrollment over teaching. They employed 10 times the recruiters for every career-service employee and hired mostly part-time staff (Senate Committee on Health, Education, Labor, and Pensions 2011)[^39]. As a result, the outcomes of students at these institutions has been subpar. Data from the Department of Education suggests that most for-profit career programs fail to benefit students with 72% of programs having graduates earning less than high school dropouts, compared to 32% at public institutions (2012)[^40].
+The goal of these for-profit institutions is to cut costs and grow profits. To do so, these institutions prioritized enrollment over teaching. They employed 10 times the recruiters for every career-service employee and hired mostly part-time staff (Senate Committee on Health, Education, Labor, and Pensions 2011)[^40]. As a result, the outcomes of students at these institutions has been subpar. Data from the Department of Education suggests that most for-profit career programs fail to benefit students with 72% of programs having graduates earning less than high school dropouts, compared to 32% at public institutions (2012)[^41].
 
-[^39]: <https://www.help.senate.gov/imo/media/for_profit_report/ExecutiveSummary.pdf>
+[^40]: <https://www.help.senate.gov/imo/media/for_profit_report/ExecutiveSummary.pdf>
 
-[^40]: <https://www.ed.gov/sites/ed/files/policy/highered/reg/hearulemaking/2012/notice-proposed-rulemaking-march-14-2014.pdf>
+[^41]: <https://www.ed.gov/sites/ed/files/policy/highered/reg/hearulemaking/2012/notice-proposed-rulemaking-march-14-2014.pdf>
 
 ## **The Price of Education**
 
-In the emerging “credential society” social classes were distinguished by the degree which one held and the prestige associated with that school (Collins 1979)[^41]. Degrees from elite schools acted as insurance for the future against rising the “fear of falling” of the middle class as household wealth inequalities rose (Ehrenreich 1989)[^42]. Backed by impressive scholars and research contributions, admission into these elite colleges has always been challenging. Now, with the over saturation of degree holders, many would pay whatever price necessary for prestige to ensure financial stability.
+In the emerging “credential society” social classes were distinguished by the degree which one held and the prestige associated with that school (Collins 1979)[^42]. Degrees from elite schools acted as insurance for the future against rising the “fear of falling” of the middle class as household wealth inequalities rose (Ehrenreich 1989)[^43]. Backed by impressive scholars and research contributions, admission into these elite colleges has always been challenging. Now, with the over saturation of degree holders, many would pay whatever price necessary for prestige to ensure financial stability.
 
-[^41]: <https://archive.org/details/credentialsociet0000coll/page/n5/mode/2up>
+[^42]: <https://archive.org/details/credentialsociet0000coll/page/n5/mode/2up>
 
-[^42]: <https://archive.org/details/fearoffalling00barb>
+[^43]: <https://archive.org/details/fearoffalling00barb>
 
-At first, institutional rankings originated from athletic college affiliation (Ivy League) and regional primacy (e.g. Duke in the South, USC and Stanford in the West). By the end of the 20th century, third-party ranking systems like that from U.S. News beginning in 1983[^43]. A dominant emergent strategy in the battle for the best students has been raising tuition and offering lucrative scholarships to high-achievers.
+At first, institutional rankings originated from athletic college affiliation (Ivy League) and regional primacy (e.g. Duke in the South, USC and Stanford in the West). By the end of the 20th century, third-party ranking systems like that from U.S. News beginning in 1983[^44]. A dominant emergent strategy in the battle for the best students has been raising tuition and offering lucrative scholarships to high-achievers.
 
-[^43]: <https://www.usnews.com/rankings>
+[^44]: <https://www.usnews.com/rankings>
 
-States have cut funding for public universities since the 1980s. This only accelerated in the 21st century. In response to the Great Recession (2007-2009) and mandatory spending programs like Medicaid, between 2008 and 2013 appropriation for the median public university declined by over 20% per full-time student[^44]. As a result, many public institutions were forced to increase tuition. A decade after the recession, state funding for higher education has not rebounded in most states[^45].
+States have cut funding for public universities since the 1980s. This only accelerated in the 21st century. In response to the Great Recession (2007-2009) and mandatory spending programs like Medicaid, between 2008 and 2013 appropriation for the median public university declined by over 20% per full-time student[^45]. As a result, many public institutions were forced to increase tuition. A decade after the recession, state funding for higher education has not rebounded in most states[^46].
 
-[^44]: https://www.amacad.org/sites/default/files/academy/multimedia/pdfs/publications/researchpapersmonographs/PublicResearchUniv_ChangesInStateFunding.pdf
+[^45]: https://www.amacad.org/sites/default/files/academy/multimedia/pdfs/publications/researchpapersmonographs/PublicResearchUniv_ChangesInStateFunding.pdf
 
-[^45]: <https://www.cbpp.org/research/state-budget-and-tax/unkept-promises-state-cuts-to-higher-education-threaten-access-and>
+[^46]: <https://www.cbpp.org/research/state-budget-and-tax/unkept-promises-state-cuts-to-higher-education-threaten-access-and>
 
-According to analyses by Banks et al. (2024)[^46], annual tuition and fees at private 4-year institutions during the 1979-1980 academic year was \$11,357 (adjusted for inflation), compared to the \$2,599 (adjusted for inflation) at public institutions. Over time this gap has widened to a difference of over \$20,000 by 2019-2020. By the 2019-2020 academic year, average annual tuition and fees at both public and private 4-year institutions had risen nearly 3 times the cost in 1979-1980, adjusted for inflation. Without adjusting for inflation, the cost of higher education has jumped 10-fold.
+According to analyses by Banks et al. (2024)[^47], annual tuition and fees at private 4-year institutions during the 1979-1980 academic year was \$11,357 (adjusted for inflation), compared to the \$2,599 (adjusted for inflation) at public institutions. Over time this gap has widened to a difference of over \$20,000 by 2019-2020. By the 2019-2020 academic year, average annual tuition and fees at both public and private 4-year institutions had risen nearly 3 times the cost in 1979-1980, adjusted for inflation. Without adjusting for inflation, the cost of higher education has jumped 10-fold.
 
-[^46]: https://law.stanford.edu/stanford-center-for-racial-justice/projects/private-universities-in-the-public-interest/private-universities-in-the-public-interest-white-paper/
+[^47]: https://law.stanford.edu/stanford-center-for-racial-justice/projects/private-universities-in-the-public-interest/private-universities-in-the-public-interest-white-paper/
 
 ## **Grade Inflation**
 
-As the institutions changed, so did the students. Seeking to distinguish themselves from the increasing number of degree holders and limited by rising tuition, students sought to maximize their grade point averages (GPA) for future profit rather than of pure educational interest. The “entrepreneurial student” shopped “for bargain courses, encouraged by a faculty whose jobs are defined by “course load”, administrators who deal in credit hours as if they were coin, \[and\] institutions whose corpus evolves steadily into the corporate” (Haswell 1999)[^47]. Yet, not all gains in GPA necessarily match skill.
+As the institutions changed, so did the students. Seeking to distinguish themselves from the increasing number of degree holders and limited by rising tuition, students sought to maximize their grade point averages (GPA) for future profit rather than of pure educational interest. The “entrepreneurial student” shopped “for bargain courses, encouraged by a faculty whose jobs are defined by “course load”, administrators who deal in credit hours as if they were coin, \[and\] institutions whose corpus evolves steadily into the corporate” (Haswell 1999)[^48]. Yet, not all gains in GPA necessarily match skill.
 
-[^47]: <https://www.jstor.org/stable/359043>
+[^48]: <https://www.jstor.org/stable/359043>
 
-During the Vietnam War (1955–1975), college enrollment was used to avoid the draft. As a result, failing a student could directly result in their conscription. Evidence has shown an increase in grading leniency due to this policy (Bejar and Blew 1981; Birnbaum 1977)[^48][^49]. In a study by Rojstaczer and Healy (2012)[^50] they found, “in 1960, as in the 1940s and 1950s, C was the most common grade nationwide; D’s and F’s accounted for more grades combined than did A”. By the end of the Vietnam War, As and Bs made up half to two thirds of grades in American colleges (Davidson 1975)[^51]. After the conclusion of the Vietnam War, grades remained a measure of more than a student’s academics. Grades were affected by all manner of things from a teacher’s concern about student self-esteem, departmental policy to attract students, and the impact of grades during job search (Schneider and Hutt 2013)[^52].
+During the Vietnam War (1955–1975), college enrollment was used to avoid the draft. As a result, failing a student could directly result in their conscription. Evidence has shown an increase in grading leniency due to this policy (Bejar and Blew 1981; Birnbaum 1977)[^49][^50]. In a study by Rojstaczer and Healy (2012)[^51] they found, “in 1960, as in the 1940s and 1950s, C was the most common grade nationwide; D’s and F’s accounted for more grades combined than did A”. By the end of the Vietnam War, As and Bs made up half to two thirds of grades in American colleges (Davidson 1975)[^52]. After the conclusion of the Vietnam War, grades remained a measure of more than a student’s academics. Grades were affected by all manner of things from a teacher’s concern about student self-esteem, departmental policy to attract students, and the impact of grades during job search (Schneider and Hutt 2013)[^53].
 
-[^48]: Bejar, I. L. and Blew, E. O. (1981) Grade inflation and validity of scholastic aptitude test. *American Educational Research Journal*, 18, 143–156.
+[^49]: Bejar, I. L. and Blew, E. O. (1981) Grade inflation and validity of scholastic aptitude test. *American Educational Research Journal*, 18, 143–156.
 
     <https://doi.org/10.3102/00028312018002143>
 
-[^49]: Birnbaum, R. (1977) Factors related to university grade inflation. Journal of Higher Education, 5, 519–538.
+[^50]: Birnbaum, R. (1977) Factors related to university grade inflation. Journal of Higher Education, 5, 519–538.
 
     <https://doi.org/10.1080/00221546.1977.11776572>
 
-[^50]: <https://journals.sagepub.com/doi/abs/10.1177/016146811211400707>
+[^51]: <https://journals.sagepub.com/doi/abs/10.1177/016146811211400707>
 
-[^51]: Davidson, J. F. (1975) Academic interest rates and grade inflation. Educational Record, 56, 122–125.
+[^52]: Davidson, J. F. (1975) Academic interest rates and grade inflation. Educational Record, 56, 122–125.
 
     <https://eric.ed.gov/?id=EJ122844>
 
-[^52]: Schneider, J., & Hutt, E. (2013). Making the grade: a history of the A–F marking scheme. *Journal of Curriculum Studies*, *46*(2), 201–224. https://doi.org/10.1080/00220272.2013.790480
+[^53]: Schneider, J., & Hutt, E. (2013). Making the grade: a history of the A–F marking scheme. *Journal of Curriculum Studies*, *46*(2), 201–224. https://doi.org/10.1080/00220272.2013.790480
 
-One of the most predominant reasons for grade inflation was the rise of student evaluation of teaching (SET). SET first began to rise in popularity alongside the Civil Rights movement as a way for students to voice their complaints (Valsan and Sproule 2008)[^53]. Under the belief that student evaluations measure teaching effectiveness, administrators realized the opportunity evaluations presented to advertise their programs with some universities going as far as using evaluations as a component of consideration for promotion, tenure, and resource allocation. By 1980s, SET became commonplace in American higher education (Centra 1993; Wachtel 1998)[^54][^55]. Yet, “the typical SET questionnaire treats the student as a customer and measures the satisfaction of the student with his or her professor, and not learning” (Crumbley 2010)[^56]. Multiple studies have found significant, positive correlations between student evaluations and student grades (Langbein 2008; Ellis 2003)[^57][^58]. On the other hand, SET rankings are not significantly correlated with actual student learning (Uttl 2017)[^59]. An article by Neath titled “How to Improve Your Teaching Evaluations Without Improving Your Teaching” even goes so far as to suggest multiple methods such as getting evaluated before exams and grading leniently (Neath 1996)[^60]. Simultaneously, efforts to cut costs and increase profit margins resulted in a rise of nontenured, adjunct faculty (Bettinger and Long 2010)[^61]. These educators’ careers depended significantly on SET rankings. As such, over time, professors became increasingly aware of the implications SET rankings could have on their careers.
+One of the most predominant reasons for grade inflation was the rise of student evaluation of teaching (SET). SET first began to rise in popularity alongside the Civil Rights movement as a way for students to voice their complaints (Valsan and Sproule 2008)[^54]. Under the belief that student evaluations measure teaching effectiveness, administrators realized the opportunity evaluations presented to advertise their programs with some universities going as far as using evaluations as a component of consideration for promotion, tenure, and resource allocation. By 1980s, SET became commonplace in American higher education (Centra 1993; Wachtel 1998)[^55][^56]. Yet, “the typical SET questionnaire treats the student as a customer and measures the satisfaction of the student with his or her professor, and not learning” (Crumbley 2010)[^57]. Multiple studies have found significant, positive correlations between student evaluations and student grades (Langbein 2008; Ellis 2003)[^58][^59]. On the other hand, SET rankings are not significantly correlated with actual student learning (Uttl 2017)[^60]. An article by Neath titled “How to Improve Your Teaching Evaluations Without Improving Your Teaching” even goes so far as to suggest multiple methods such as getting evaluated before exams and grading leniently (Neath 1996)[^61]. Simultaneously, efforts to cut costs and increase profit margins resulted in a rise of nontenured, adjunct faculty (Bettinger and Long 2010)[^62]. These educators’ careers depended significantly on SET rankings. As such, over time, professors became increasingly aware of the implications SET rankings could have on their careers.
 
-[^53]: Valsan, C., & Sproule, R. (2008). The Invisible Hands behind the Student Evaluation of Teaching: The Rise of the New Managerial Elite in the Governance of Higher Education. *Journal of Economic Issues*, *42*(4), 939–958. https://doi.org/10.1080/00213624.2008.11507197
+[^54]: Valsan, C., & Sproule, R. (2008). The Invisible Hands behind the Student Evaluation of Teaching: The Rise of the New Managerial Elite in the Governance of Higher Education. *Journal of Economic Issues*, *42*(4), 939–958. https://doi.org/10.1080/00213624.2008.11507197
 
-[^54]: <https://eric.ed.gov/?id=ED363233>
+[^55]: <https://eric.ed.gov/?id=ED363233>
 
-[^55]: <https://doi.org/10.1080/0260293980230207>
+[^56]: <https://doi.org/10.1080/0260293980230207>
 
-[^56]: <https://link.springer.com/article/10.1007/s10805-010-9117-9>
+[^57]: <https://link.springer.com/article/10.1007/s10805-010-9117-9>
 
-[^57]: <https://doi.org/10.1016/j.econedurev.2006.12.003>
+[^58]: <https://doi.org/10.1016/j.econedurev.2006.12.003>
 
-[^58]: <https://doi.org/10.1080/00220670309596626>
+[^59]: <https://doi.org/10.1080/00220670309596626>
 
-[^59]: <https://doi.org/10.1016/j.stueduc.2016.08.007>
+[^60]: <https://doi.org/10.1016/j.stueduc.2016.08.007>
 
-[^60]: Neath, I. (1996). How to improve your teaching evaluations without improving your teaching. Psychological Reports, 78, 1363-1372. <https://doi.org/10.2466/pr0.1996.78.3c.1363>
+[^61]: Neath, I. (1996). How to improve your teaching evaluations without improving your teaching. Psychological Reports, 78, 1363-1372. <https://doi.org/10.2466/pr0.1996.78.3c.1363>
 
-[^61]: https://scholar.harvard.edu/files/btl/files/bettinger_long_2010_does_cheaper_mean_better\_-\_impact_of_using_adjuncts\_-\_restat.pdf
+[^62]: https://scholar.harvard.edu/files/btl/files/bettinger_long_2010_does_cheaper_mean_better\_-\_impact_of_using_adjuncts\_-\_restat.pdf
 
-Grade inflation is unevenly applied across institutions and subjects. Average student GPAs in private schools have historically been higher than their public counterparts. This is in part due to the selection of higher achieving students, but pre-college performance does not completely explain the difference. A 2010 study by Rojstaczer and Healy analyzed patterns within their database of over 160 colleges and universities from 1920 to 2006[^62]. They found that on average private school students were graded 0.1 to 0.2 higher on a 4.0 scale for a given caliber of student (measured with SAT scores or a selectivity measure). When looking at grading across divisions, they found that on average science departments grade 0.4 lower on a 4.0 scale than humanities departments and 0.2 lower than social science departments. Evidently, both the institution and the division of a student's courses are correlated with a student's GPA.
+Grade inflation is unevenly applied across institutions and subjects. Average student GPAs in private schools have historically been higher than their public counterparts. This is in part due to the selection of higher achieving students, but pre-college performance does not completely explain the difference. A 2010 study by Rojstaczer and Healy analyzed patterns within their database of over 160 colleges and universities from 1920 to 2006[^63]. They found that on average private school students were graded 0.1 to 0.2 higher on a 4.0 scale for a given caliber of student (measured with SAT scores or a selectivity measure). When looking at grading across divisions, they found that on average science departments grade 0.4 lower on a 4.0 scale than humanities departments and 0.2 lower than social science departments. Evidently, both the institution and the division of a student's courses are correlated with a student's GPA.
 
-[^62]: <https://www.gradeinflation.com/tcr2010grading.pdf>
+[^63]: <https://www.gradeinflation.com/tcr2010grading.pdf>
 
-Despite the increase in proportion of A’s, this does not seem to reflect an increasing caliber of student. According to the 2019 National Assessment of Educational Progress High School Transcript Study, the average GPA has increased from 3.00 in 2009 to 3.11 in 2019 while over the same time period Grade 12 assessment scores decreased in mathematics and did not significantly change in the sciences[^63]. Additionally, it is still debated as to how good of a predictor high school GPA is compared to standardized tests like the ACT and SAT. In a study comparing the predictive power of high school GPA against composite ACT scores, Noble and Sawyer (2004) found that across all levels of achievement, ACT scores provide greater differentiation than high school GPAs on success in the first year in college[^64]. In particular, “at 93 percent of the institutions, a student with a 4.00 high school GPA had less than a 0.50 probability of earning a 3.75 or higher first-year GPA” in higher education and “in some cases, HSGPA values less than 3.00 provided little differentiation in terms of students' chances of achieving different first-year GPAs” (Noble and Sawyer 2004)[^65]. On the other hand, some studies show that ACT scores and high school GPA are both valid predictors of first year performance (Westrick et al. 2015)[^66]. Overall, there is insufficient evidence to suggest that the quality of students has risen, despite significant increases in GPA. GPA is no longer an effective tool for differentiating skill.
+Despite the increase in proportion of A’s, this does not seem to reflect an increasing caliber of student. According to the 2019 National Assessment of Educational Progress High School Transcript Study, the average GPA has increased from 3.00 in 2009 to 3.11 in 2019 while over the same time period Grade 12 assessment scores decreased in mathematics and did not significantly change in the sciences[^64]. Additionally, it is still debated as to how good of a predictor high school GPA is compared to standardized tests like the ACT and SAT. In a study comparing the predictive power of high school GPA against composite ACT scores, Noble and Sawyer (2004) found that across all levels of achievement, ACT scores provide greater differentiation than high school GPAs on success in the first year in college[^65]. In particular, “at 93 percent of the institutions, a student with a 4.00 high school GPA had less than a 0.50 probability of earning a 3.75 or higher first-year GPA” in higher education and “in some cases, HSGPA values less than 3.00 provided little differentiation in terms of students' chances of achieving different first-year GPAs” (Noble and Sawyer 2004)[^66]. On the other hand, some studies show that ACT scores and high school GPA are both valid predictors of first year performance (Westrick et al. 2015)[^67]. Overall, there is insufficient evidence to suggest that the quality of students has risen, despite significant increases in GPA. GPA is no longer an effective tool for differentiating skill.
 
-[^63]: <https://www.nationsreportcard.gov/hstsreport/>
+[^64]: <https://www.nationsreportcard.gov/hstsreport/>
 
-[^64]: <https://www.proquest.com/docview/225613390?sourcetype=Scholarly%20Journals>
+[^65]: <https://www.proquest.com/docview/225613390?sourcetype=Scholarly%20Journals>
 
-[^65]: <https://www.proquest.com/scholarly-journals/is-high-school-gpa-better-than-admission-test/docview/225613390/se-2>
+[^66]: <https://www.proquest.com/scholarly-journals/is-high-school-gpa-better-than-admission-test/docview/225613390/se-2>
 
-[^66]: Westrick, P. A., Le, H., Robbins, S. B., Radunzel, J. M. R., & Schmidt, F. L. (2015). College Performance and Retention: A Meta-Analysis of the Predictive Validities of ACT^®^ Scores, High School Grades, and SES. *Educational Assessment*, *20*(1), 23–45. https://doi.org/10.1080/10627197.2015.997614
+[^67]: Westrick, P. A., Le, H., Robbins, S. B., Radunzel, J. M. R., & Schmidt, F. L. (2015). College Performance and Retention: A Meta-Analysis of the Predictive Validities of ACT^®^ Scores, High School Grades, and SES. *Educational Assessment*, *20*(1), 23–45. https://doi.org/10.1080/10627197.2015.997614
 
 ## Falling Confidence in Higher Education
 
-Grade inflation devalues education. The weight of a 4.0 GPA no longer carries the weight it once did. For colleges, participation in grade inflation lessens rigor, lowers quality of education, and degrades reputation (Chan, Hao, & Suen, 2007; Ehlers & Schwager, 2016)[^67][^68]. For students, they are deprived of feedback and left unmotivated by lack of recognition of exceptional effort (O’Halloran & Gordon, 2014)[^69]. For society, grade inflation means graduates are unprepared for the workforce without the skills, dedication, knowledge, and work ethic desired by employers (Franz, 2010; Love & Kotchen, 2010; Yang & Yip, 2003)[^70][^71][^72].
+Grade inflation devalues education. The weight of a 4.0 GPA no longer carries the weight it once did. For colleges, participation in grade inflation lessens rigor, lowers quality of education, and degrades reputation (Chan, Hao, & Suen, 2007; Ehlers & Schwager, 2016)[^68][^69]. For students, they are deprived of feedback and left unmotivated by lack of recognition of exceptional effort (O’Halloran & Gordon, 2014)[^70]. For society, grade inflation means graduates are unprepared for the workforce without the skills, dedication, knowledge, and work ethic desired by employers (Franz, 2010; Love & Kotchen, 2010; Yang & Yip, 2003)[^71][^72][^73].
 
-[^67]: <https://doi.org/10.1111/j.1468-2354.2007.00454.x>
+[^68]: <https://doi.org/10.1111/j.1468-2354.2007.00454.x>
 
-[^68]: <https://econpapers.repec.org/RePEc:oup:cesifo:v:62:y:2016:i:3:p:506-521>
+[^69]: <https://econpapers.repec.org/RePEc:oup:cesifo:v:62:y:2016:i:3:p:506-521>
 
-[^69]: <https://link.springer.com/article/10.1007/s10734-014-9758-5>
+[^70]: <https://link.springer.com/article/10.1007/s10734-014-9758-5>
 
-[^70]: <https://doi.org/10.1016/j.econedurev.2009.10.013>
+[^71]: <https://doi.org/10.1016/j.econedurev.2009.10.013>
 
-[^71]: <https://ideas.repec.org/a/pal/easeco/v36y2010i2p151-163.html>
+[^72]: <https://ideas.repec.org/a/pal/easeco/v36y2010i2p151-163.html>
 
-[^72]: <https://www.asc.ohio-state.edu/yang.1041/grade-inflation.pdf>
+[^73]: <https://www.asc.ohio-state.edu/yang.1041/grade-inflation.pdf>
 
-With more degree holders and higher GPAs, degrees are no longer a sufficient edge over other job seekers to obtain employment. Simultaneously, the rate of tuition increase has outpaced wages. This discrepancy has not gone unnoticed. Multiple news sources have published articles with headlines such as "Price Of College Increasing Almost 8 Times Faster Than Wages"[^73]. This crisis has been expedited by rising housing costs and other costs of living. In order to afford degrees, federal student loan debt increased by over seven-fold between 1995 and 2017 (Durk and Perry 2020)[^74].
+With more degree holders and higher GPAs, degrees are no longer a sufficient edge over other job seekers to obtain employment. Simultaneously, the rate of tuition increase has outpaced wages. This discrepancy has not gone unnoticed. Multiple news sources have published articles with headlines such as "Price Of College Increasing Almost 8 Times Faster Than Wages"[^74]. This crisis has been expedited by rising housing costs and other costs of living. In order to afford degrees, federal student loan debt increased by over seven-fold between 1995 and 2017 (Durk and Perry 2020)[^75].
 
-[^73]: <https://www.forbes.com/sites/camilomaldonado/2018/07/24/price-of-college-increasing-almost-8-times-faster-than-wages/?utm_source=chatgpt.com>
+[^74]: <https://www.forbes.com/sites/camilomaldonado/2018/07/24/price-of-college-increasing-almost-8-times-faster-than-wages/?utm_source=chatgpt.com>
 
-[^74]: <https://eric.ed.gov/?id=ED610721>
+[^75]: <https://eric.ed.gov/?id=ED610721>
 
-Increasingly, the American public has been losing trust in higher education. According to a 2024 Gallup poll, reported confidence in higher education has fallen since 2015 from over 65% down to 36% in 2024[^75]. Meanwhile the percentage of people reporting very little/no confidence has tripled from approximately 10% to 32%. Additionally, the gap in unemployment rates of Americans aged 25 and up by educational attainment has shrunk. What used to be a 5% difference in unemployment rates between those without a high school diploma and bachelor degree holders in 2005 is nearly halved in 2025[^76]. However, the relative difference in median income of high school graduates and bachelor degree holders has stayed roughly the same since 2004, adjusted for inflation[^77].
+Increasingly, the American public has been losing trust in higher education. According to a 2024 Gallup poll, reported confidence in higher education has fallen since 2015 from over 65% down to 36% in 2024[^76]. Meanwhile the percentage of people reporting very little/no confidence has tripled from approximately 10% to 32%. Additionally, the gap in unemployment rates of Americans aged 25 and up by educational attainment has shrunk. What used to be a 5% difference in unemployment rates between those without a high school diploma and bachelor degree holders in 2005 is nearly halved in 2025[^77]. However, the relative difference in median income of high school graduates and bachelor degree holders has stayed roughly the same since 2004, adjusted for inflation[^78].
 
-[^75]: <https://news.gallup.com/poll/646880/confidence-higher-education-closely-divided.aspx>
+[^76]: <https://news.gallup.com/poll/646880/confidence-higher-education-closely-divided.aspx>
 
-[^76]: <https://www.bls.gov/charts/employment-situation/unemployment-rates-for-persons-25-years-and-older-by-educational-attainment.htm>
+[^77]: <https://www.bls.gov/charts/employment-situation/unemployment-rates-for-persons-25-years-and-older-by-educational-attainment.htm>
 
-[^77]: <https://www.census.gov/library/stories/2025/09/education-and-income.html>
+[^78]: <https://www.census.gov/library/stories/2025/09/education-and-income.html>
 
 ## **Flexible Grading in the 21st Century**
 
-In the early 21st century, research and usage of pass fail grading remained largely obscure. The most prominent use of pass fail grading was found in medical schools. Doctors are expected to be lifelong learners, staying up to date with the newest techniques, treatments, and health problems. To do so, the character of a doctor must be taken into account, particularly their intrinsic desire to learn. Additionally, higher than average rates of stress and burnout had been reported in medical students and the negative effects of distress have been well studied[^78][^79]. As a result, a wave of medical reforms were made including resident duty restrictions, self-development groups, and pass/fail grading systems.
+In the early 21st century, research and usage of pass fail grading remained largely obscure. The most prominent use of pass fail grading was found in medical schools. Doctors are expected to be lifelong learners, staying up to date with the newest techniques, treatments, and health problems. To do so, the character of a doctor must be taken into account, particularly their intrinsic desire to learn. Additionally, higher than average rates of stress and burnout had been reported in medical students and the negative effects of distress have been well studied[^79][^80]. As a result, a wave of medical reforms were made including resident duty restrictions, self-development groups, and pass/fail grading systems.
 
-[^78]: <https://pubmed.ncbi.nlm.nih.gov/10926029/>
+[^79]: <https://pubmed.ncbi.nlm.nih.gov/10926029/>
 
-[^79]: <https://www.sciencedirect.com/science/article/pii/S0025619611610574>
+[^80]: <https://www.sciencedirect.com/science/article/pii/S0025619611610574>
 
-In a 2011 review of pass/fail and well-being literature (1980-2010) in medical schools, it was found that all (four) of the papers reported improvement in some measure of well-being (stress, anxiety, depression, self-control, good health, level of satisfaction, group cohesion, and amount of free time) (Spring et. al)[^80]. Student satisfaction was measured and found to have increased in two of the papers[^81][^82]. However, there were discrepancies in the long term effect of pass/fail with some claiming continued effect after the first semester while others found a return to typical levels in later semesters.
+In a 2011 review of pass/fail and well-being literature (1980-2010) in medical schools, it was found that all (four) of the papers reported improvement in some measure of well-being (stress, anxiety, depression, self-control, good health, level of satisfaction, group cohesion, and amount of free time) (Spring et. al)[^81]. Student satisfaction was measured and found to have increased in two of the papers[^82][^83]. However, there were discrepancies in the long term effect of pass/fail with some claiming continued effect after the first semester while others found a return to typical levels in later semesters.
 
-[^80]: <https://doi.org/10.1111/j.1365-2923.2011.03989.x>
+[^81]: <https://doi.org/10.1111/j.1365-2923.2011.03989.x>
 
-[^81]: <https://journals.lww.com/academicmedicine/fulltext/2009/05000/a_change_to_pass_fail_grading_in_the_first_two.28.aspx>
+[^82]: <https://journals.lww.com/academicmedicine/fulltext/2009/05000/a_change_to_pass_fail_grading_in_the_first_two.28.aspx>
 
-[^82]: <https://journals.lww.com/academicmedicine/abstract/1995/04000/the_effect_of_pass_fail_grading_and_weekly_quizzes.19.aspx>
+[^83]: <https://journals.lww.com/academicmedicine/abstract/1995/04000/the_effect_of_pass_fail_grading_and_weekly_quizzes.19.aspx>
 
-Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^83]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^84]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^85]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^86]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying, defying expectations of increased laziness[^87].
+Spring et. al also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in[^84]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools[^85]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency (29, 14). Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation[^86]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group[^87]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying, defying expectations of increased laziness[^88].
 
-[^83]: <https://pubmed.ncbi.nlm.nih.gov/7718068/>
+[^84]: <https://pubmed.ncbi.nlm.nih.gov/7718068/>
 
-[^84]: <https://pubmed.ncbi.nlm.nih.gov/7401142/>
+[^85]: <https://pubmed.ncbi.nlm.nih.gov/7401142/>
 
-[^85]: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0240587>
+[^86]: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0240587>
 
-[^86]: <https://pubmed.ncbi.nlm.nih.gov/10353289/>
+[^87]: <https://pubmed.ncbi.nlm.nih.gov/10353289/>
 
-[^87]: <https://pubmed.ncbi.nlm.nih.gov/5548587/>
+[^88]: <https://pubmed.ncbi.nlm.nih.gov/5548587/>
 
-Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^88]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts[^89]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^90] while others argue pass/fail is a cause of grade inflation[^91].
+Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes (Slavin 2019)[^89]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts[^90]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation (Blum 2017)[^91] while others argue pass/fail is a cause of grade inflation[^92].
 
-[^88]: <https://journals.lww.com/academicmedicine/fulltext/2019/06000/reflections_on_a_decade_leading_a_medical_student.27.aspx>
+[^89]: <https://journals.lww.com/academicmedicine/fulltext/2019/06000/reflections_on_a_decade_leading_a_medical_student.27.aspx>
 
-[^89]: <https://europepmc.org/article/med/30392003>
+[^90]: <https://europepmc.org/article/med/30392003>
 
-[^90]: <https://core.ac.uk/download/pdf/132324597.pdf>
+[^91]: <https://core.ac.uk/download/pdf/132324597.pdf>
 
-[^91]: <https://www.jstor.org/stable/27797025>
+[^92]: <https://www.jstor.org/stable/27797025>
 
-In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^92]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
+In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores (White and Fantone 2009)[^93]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
 
-[^92]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
+[^93]: <https://pubmed.ncbi.nlm.nih.gov/20012686/>
 
 ## Education During the COVID-19 Pandemic
 
-Disaster preparedness, response, and relief is an important role that education fulfills. Schools help educate the public about how to prepare and act during disasters, and the return to school can serve to ease stress with its familiarity[^93]. There is a plenitude of literature on crises such as school shootings[^94], political conflicts[^95][^96], and natural disasters[^97][^98][^99]. However, the COVID-19 pandemic was at an abrupt, unprecedented scale affecting the daily lives of nearly all communities.
+Disaster preparedness, response, and relief is an important role that education fulfills. Schools help educate the public about how to prepare and act during disasters, and the return to school can serve to ease stress with its familiarity[^94]. There is a plenitude of literature on crises such as school shootings[^95], political conflicts[^96][^97], and natural disasters[^98][^99][^100]. However, the COVID-19 pandemic was at an abrupt, unprecedented scale affecting the daily lives of nearly all communities.
 
-[^93]: <https://www.tandfonline.com/doi/abs/10.1080/02643944.2014.880123>
+[^94]: <https://www.tandfonline.com/doi/abs/10.1080/02643944.2014.880123>
 
-[^94]: <https://journals.sagepub.com/doi/full/10.3102/0162373715590683?casa_token=MLQZHaa7CC0AAAAA%3AnmMeAqWwjR5xoLHvw1Pf_HpCYkNPlN0WBcPF6sNBUXuPynJzsv3wYds0Wd4Ca5gFJZCQE66oPWRT>
+[^95]: <https://journals.sagepub.com/doi/full/10.3102/0162373715590683?casa_token=MLQZHaa7CC0AAAAA%3AnmMeAqWwjR5xoLHvw1Pf_HpCYkNPlN0WBcPF6sNBUXuPynJzsv3wYds0Wd4Ca5gFJZCQE66oPWRT>
 
-[^95]: <https://academic.oup.com/jeea/article/17/5/1502/5292664>
+[^96]: <https://academic.oup.com/jeea/article/17/5/1502/5292664>
 
-[^96]: <https://journals.sagepub.com/doi/full/10.3102/0034654315609419?casa_token=S7N8UD6MVlMAAAAA%3AEAJI_7_3siHstlFQfw-laLYSxgUwJUEeVmI_yLS5VGCdTi743zFWVnaTrIhZZwoQfTy7srTJblOF>
+[^97]: <https://journals.sagepub.com/doi/full/10.3102/0034654315609419?casa_token=S7N8UD6MVlMAAAAA%3AEAJI_7_3siHstlFQfw-laLYSxgUwJUEeVmI_yLS5VGCdTi743zFWVnaTrIhZZwoQfTy7srTJblOF>
 
-[^97]: <https://www.sciencedirect.com/science/article/pii/S0890856709634675>
+[^98]: <https://www.sciencedirect.com/science/article/pii/S0890856709634675>
 
-[^98]: <https://www.aeaweb.org/articles?id=10.1257/app.4.1.109>
+[^99]: <https://www.aeaweb.org/articles?id=10.1257/app.4.1.109>
 
-[^99]: <https://www.researchgate.net/profile/Thomas-Devaney/publication/295702490_Impact_of_Hurricane_Katrina_on_the_Educational_System_in_Southeast_Louisiana_One_Year_Follow-Up/links/56cc9d5208ae059e37506abd/Impact-of-Hurricane-Katrina-on-the-Educational-System-in-Southeast-Louisiana-One-Year-Follow-Up.pdf>
+[^100]: <https://www.researchgate.net/profile/Thomas-Devaney/publication/295702490_Impact_of_Hurricane_Katrina_on_the_Educational_System_in_Southeast_Louisiana_One_Year_Follow-Up/links/56cc9d5208ae059e37506abd/Impact-of-Hurricane-Katrina-on-the-Educational-System-in-Southeast-Louisiana-One-Year-Follow-Up.pdf>
 
-On March 11, 2020 the World Health Organization declared a global pandemic. Policies such as travel restrictions, telehealth, social distancing, stay-at-home orders, and screening were implemented. In education, the response included remote learning, flexible deadlines, alternate assessment strategies, and relaxed grading policies. There is a growing body of research on the immediate and long-term effects of the pandemic on education. In the aftermath of widespread school closures in spring 2020 there is evidence of a negative effect of school closures on student achievement[^100]. In the three years spanning the pandemic (2020-2023), test scores were observed to have fallen compared to pre-pandemic levels and achievement gaps were amplified[^101]. Numerous other studies support disproportionate impact of the pandemic on vulnerable groups[^102][^103][^104]. Yet, grade inflation during this period exceeded multiannual trends and still persists in some academic divisions[^105]. In addition to cases of COVID-19, students’ physical well-being trended down as there was less engagement in physical activity[^106]. Similarly, mental well-being also declined with increased world wide prevalence of depression and anxiety[^107]. A plethora of research supports the idea that the pandemic exacerbated the pre-existing youth mental health crisis in facets from eating disorders to peer connectedness to substance use[^108][^109][^110][^111].
+On March 11, 2020 the World Health Organization declared a global pandemic. Policies such as travel restrictions, telehealth, social distancing, stay-at-home orders, and screening were implemented. In education, the response included remote learning, flexible deadlines, alternate assessment strategies, and relaxed grading policies. There is a growing body of research on the immediate and long-term effects of the pandemic on education. In the aftermath of widespread school closures in spring 2020 there is evidence of a negative effect of school closures on student achievement[^101]. In the three years spanning the pandemic (2020-2023), test scores were observed to have fallen compared to pre-pandemic levels and achievement gaps were amplified[^102]. Numerous other studies support disproportionate impact of the pandemic on vulnerable groups[^103][^104][^105]. Yet, grade inflation during this period exceeded multiannual trends and still persists in some academic divisions[^106]. In addition to cases of COVID-19, students’ physical well-being trended down as there was less engagement in physical activity[^107]. Similarly, mental well-being also declined with increased world wide prevalence of depression and anxiety[^108]. A plethora of research supports the idea that the pandemic exacerbated the pre-existing youth mental health crisis in facets from eating disorders to peer connectedness to substance use[^109][^110][^111][^112].
 
-[^100]: <https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.746289/full>
+[^101]: <https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.746289/full>
 
-[^101]: <https://journals.sagepub.com/doi/abs/10.3102/0013189X221109178>
+[^102]: <https://journals.sagepub.com/doi/abs/10.3102/0013189X221109178>
 
-[^102]: <https://www.pnas.org/doi/full/10.1073/pnas.2020685118>
+[^103]: <https://www.pnas.org/doi/full/10.1073/pnas.2020685118>
 
-[^103]: <https://www.tandfonline.com/doi/full/10.1080/21681376.2022.2084447>
+[^104]: <https://www.tandfonline.com/doi/full/10.1080/21681376.2022.2084447>
 
-[^104]: <https://www.sciencedirect.com/science/article/pii/S0272775722000103?via%3Dihub>
+[^105]: <https://www.sciencedirect.com/science/article/pii/S0272775722000103?via%3Dihub>
 
-[^105]: <https://www.tandfonline.com/doi/full/10.1080/03075079.2025.2470297?src=recsys>
+[^106]: <https://www.tandfonline.com/doi/full/10.1080/03075079.2025.2470297?src=recsys>
 
-[^106]: <https://jamanetwork.com/journals/jamapediatrics/fullarticle/2794075>
+[^107]: <https://jamanetwork.com/journals/jamapediatrics/fullarticle/2794075>
 
-[^107]: <https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(21)02143-7/fulltext>
+[^108]: <https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(21)02143-7/fulltext>
 
-[^108]: <https://www.thelancet.com/journals/lanpsy/article/PIIS2215-0366(21)00156-5/fulltext>
+[^109]: <https://www.thelancet.com/journals/lanpsy/article/PIIS2215-0366(21)00156-5/fulltext>
 
-[^109]: <https://www.academicpedsjnl.net/article/S1876-2859(24)00021-4/fulltext>
+[^110]: <https://www.academicpedsjnl.net/article/S1876-2859(24)00021-4/fulltext>
 
-[^110]: <https://www.mdpi.com/1660-4601/19/11/6768>
+[^111]: <https://www.mdpi.com/1660-4601/19/11/6768>
 
-[^111]: <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2786919>
+[^112]: <https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2786919>
 
 ## **Intersection Between Flexible Grading and the Pandemic**
 
-The focus of this thesis is the impact of the pandemic on flexible grading policy. In the wake of school closures and remote learning, state DOE guidance often suggested or even required alternative grading[^112]. A review paper on COVID-19 academic changes in higher education identified binary grading as one of their five key themes[^113]. It’s reported that at least 194 American universities implemented pass-fail policies during the Spring 2020 semester[^114]. However, there is a dearth of research specifically evaluating the impact of COVID-19 induced flexible grading. In one study using data from Queens College suggested flexible grading policies helped reduce negative impacts of the pandemic, particularly for lower income students[^115]. Another study using data during the first three semesters of the pandemic from a historically black college and university in North Carolina found that: utilization of flexible grading varied significantly between subjects, flexible grading was less likely to be used in general education courses, flexible grading use varies across socio-economic groups, freshman students are more likely to choose flexible grading, and STEM students were less likely to use flexible grading[^116]. When looking at some of the most popular course sequences, they noticed a mix between students who benefited and those who were disadvantaged in the subsequent course. Perhaps related to this is a finding that in a study of two Canadian universities from the 2018-2019 to 2022-2023 academic year, in some subject areas GPAs have returned to pre-pandemic levels while in others GPAs remain inflated[^117]. While there is no question flexible grading changed during the pandemic, its long term effects are unknown.
+The focus of this thesis is the impact of the pandemic on flexible grading policy. In the wake of school closures and remote learning, state DOE guidance often suggested or even required alternative grading[^113]. A review paper on COVID-19 academic changes in higher education identified binary grading as one of their five key themes[^114]. It’s reported that at least 194 American universities implemented pass-fail policies during the Spring 2020 semester[^115]. However, there is a dearth of research specifically evaluating the impact of COVID-19 induced flexible grading. In one study using data from Queens College suggested flexible grading policies helped reduce negative impacts of the pandemic, particularly for lower income students[^116]. Another study using data during the first three semesters of the pandemic from a historically black college and university in North Carolina found that: utilization of flexible grading varied significantly between subjects, flexible grading was less likely to be used in general education courses, flexible grading use varies across socio-economic groups, freshman students are more likely to choose flexible grading, and STEM students were less likely to use flexible grading[^117]. When looking at some of the most popular course sequences, they noticed a mix between students who benefited and those who were disadvantaged in the subsequent course. Perhaps related to this is a finding that in a study of two Canadian universities from the 2018-2019 to 2022-2023 academic year, in some subject areas GPAs have returned to pre-pandemic levels while in others GPAs remain inflated[^118]. While there is no question flexible grading changed during the pandemic, its long term effects are unknown.
 
-[^112]: <https://eric.ed.gov/?id=EJ1374189>
+[^113]: <https://eric.ed.gov/?id=EJ1374189>
 
-[^113]: <https://www.tandfonline.com/doi/abs/10.1080/02602938.2022.2140780>
+[^114]: <https://www.tandfonline.com/doi/abs/10.1080/02602938.2022.2140780>
 
-[^114]: <https://oudigitools.blogspot.com/2020/03/feedback-alternate-grading-in-crisis.html>
+[^115]: <https://oudigitools.blogspot.com/2020/03/feedback-alternate-grading-in-crisis.html>
 
-[^115]: <https://www.sciencedirect.com/science/article/pii/S0047272722000081?casa_token=vIy0DAM8D2MAAAAA:6xlm4a-PRCdeIUgQRzhnJWOnl69rgiO1T2vfUg9EdYaYK_2wpHSAdMIoGpbym3qbOVrkjH6Q>
+[^116]: <https://www.sciencedirect.com/science/article/pii/S0047272722000081?casa_token=vIy0DAM8D2MAAAAA:6xlm4a-PRCdeIUgQRzhnJWOnl69rgiO1T2vfUg9EdYaYK_2wpHSAdMIoGpbym3qbOVrkjH6Q>
 
-[^116]: <https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/>
+[^117]: <https://pmc.ncbi.nlm.nih.gov/articles/PMC10199666/>
 
-[^117]: <https://www.tandfonline.com/doi/full/10.1080/03075079.2025.2470297?src=#d1e327>
+[^118]: <https://www.tandfonline.com/doi/full/10.1080/03075079.2025.2470297?src=#d1e327>
 
 While a couple studies do examine the interaction between pandemic policies and flexible grading on student outcomes, their timeframes struggle to capture post-pandemic changes as the pandemic was not officially declared over until May 2023. While changes in behavior occurred in the height of the pandemic, it is unclear whether or not they persisted as education returned to pre-pandemic trends or if they will stabilize at a new norm. Additionally, both Rodríguez-Planas (2022) and Mostafa et. al (2023) used data from only moderately selective, affordable, and large public universities. There is a lack of research on impacts of pandemic policies on flexible grading on highly selective, prestigious, expensive, or private universities.
 
@@ -376,7 +378,27 @@ As students during the pandemic have begun and continue to graduate and enter th
 
 ## Institution of Study
 
-maybe stuff about Duke somewhere?
+Duke is a private, non-profit, prestigious (insert rank), located in Durham, NC...
+
+Founded in ... then became Duke University in ...
+
+Throughout 1960s, language refering to letter grades changed
+
+-   1955 C=medium, D=passing
+
+-   1956 C=average, D=inferior
+
+-   1957…1969(?) C=average, D=low pass
+
+In 1960 audits began, 1966 pass fail began along with use of +/- and quality points (match today's GPA)
+
+Entering the 21st century, curriculum 2000. Does not require specific classes but rather fulfillment of AoK and MoI... 2010 P/F rebranded into S/U with changes...
+
+On \[date\] pandemic shutdown. Duke response was ... In Spring 2020 classes... in fall 2020...
+
+I classify Spring 2020 through Summer 2022 as during the pandemic... Fall 2022 onward as post-pandemic because...
+
+Duke celebrated 100 years and new curriculum that's why i think this is important moment of reflection...
 
 ## Note on Ethics and Data Inaccuracies
 
@@ -394,9 +416,9 @@ In addition to dropping the small fraction of courses that were unable to be mat
 
 For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program. For courses where location was not recorded (17.6% of student-course pairs), I assume they were taken at Durham. This may result in an underestimate of students who study away.
 
-My goal is to model student choice of S/U over A-F grading. Hence, I drop all withdrawals, audits, and other non-credit courses. Additionally, Trinity College states that students "must be in a normal course load (at least 4 x 1.0 credit classes) to request to change a class to S/U" and that "you may only request a Voluntary S/U for a single 1.0 credit course"[^118]. Hence, while I consider all "academic" courses in GPA and course load calculations, only single full credit courses are eligible to be included in my model. I use actual course loads to drop semester-student pairs that have less than 4.0 credits. I did not verify that students have at least four full credit courses.
+My goal is to model student choice of S/U over A-F grading. Hence, I drop all withdrawals, audits, and other non-credit courses. Additionally, Trinity College states that students "must be in a normal course load (at least 4 x 1.0 credit classes) to request to change a class to S/U" and that "you may only request a Voluntary S/U for a single 1.0 credit course"[^119]. Hence, while I consider all "academic" courses in GPA and course load calculations, only single full credit courses are eligible to be included in my model. I use actual course loads to drop semester-student pairs that have less than 4.0 credits. I did not verify that students have at least four full credit courses.
 
-[^118]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
+[^119]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
 
 A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal, etc) I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive A-F (or withdrawal, etc), I choose not to assume the course is graded only. My belief is that in the majority of cases students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
 
@@ -442,7 +464,7 @@ To model S/U choice, I create a logistic regression where the response variable 
 
 ## Class Imbalance
 
-An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to narrow my dataset to Fall 2015 - Spring 2025. This marginally helped with an improved imbalance to 97.7% vs 2.3%, but this is not nearly enough.
+An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to narrow my dataset to Fall 2015-Spring 2025. This marginally helped with an improved imbalance to 97.7% vs 2.3%, but this is not nearly enough.
 
 Class imbalance is not an unique problem. The literature suggests methods such as the use of weights (source), oversampling of the minority class (source), SMOTE (source), adjusting decision thresholds, and usage of more robust methods such as support vector machines (source). I experimented with several of these techniques and my results are shown below in Table ....
 
@@ -463,7 +485,7 @@ For co-linear variables, I opted to compare AIC and BIC.
 A summary of all variables considered for modeling and my verdicts are shown below:
 
 | Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                         | Use in Final Model?                     |
-|--------------|--------------|-------------------------------|--------------|
+|---------------|---------------|---------------------------|---------------|
 | term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                      | No                                      |
 | term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                           | Yes, better AIC/BIC than term_units     |
 | prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                           | Yes                                     |
@@ -556,15 +578,19 @@ S/U was supposed to help with mental health things -\> comparing with data from 
 
 ## Limitations
 
-As with most studies, there are numerous limitations with this thesis. To begin, there is systematically missing data with the lack data satisfying my classification of post-pandemic (Fall 2022 - Spring 2025). There are certainly errors in my imputation of student major divisions as well as a systematic underestimate in the number of academic plans students graduate with. In many cases, students realize later in their academic careers that they have the time to explore other interests. Additionally, I do not attempt to impute student's minors. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
+As with most studies, there are numerous limitations with this thesis. To begin, there is systematically missing data with the lack data satisfying my classification of post-pandemic (Fall 2022-Spring 2025). There are certainly errors in my imputation of student major divisions as well as a systematic underestimate in the number of academic plans students graduate with. In many cases, students realize later in their academic careers that they have the time to explore other interests. Additionally, I do not attempt to impute student's minors. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
 
 Missing data is not exclusive to after the pandemic. There was also missing data from the courses for which location was NA as well as no data on previous semesters for first semester students. The choice to systematically give all students a 4.0 as the baseline previous semester GPA for their first semester decreases the perceived significance of prior GPA in my model. There is no good solution to this as there is a the lack of knowledge of a student's prior academic performance in earlier education. This is exacerbated by the loss of the standardized test score application requirement for Duke University and would result in only the usage of high school GPAs which likely vary in rigor across schools. It is also worth emphasizing that while my engineered previous semester GPA does consider courses taken away from Durham, it ignores summer terms which do contribute to a student's overall GPA. My major imputation approach currently ignores both summer and study away courses.
 
 Beyond the variables I was provided, it is likely that ROTC, pre-med, athlete, and other statuses may have an impact on student behaviors. For instance, it makes sense to believe that ROTC and athlete students may be taking a disproportionate number of "Other" credits to fulfill program requirements. Students intending to apply for medical school have to take a significant number of courses in the natural sciences, but may not necessarily be majoring in the natural science division. Related to these unknowns is my systematic ignorance of student minors and certificates. It is certainly possible that minors in a separate division will fully account for all remaining graduation requirements.
 
-Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is crosslisted across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset, only one of these divisions can be displayed.
+Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is cross-listed across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset, only one of these divisions can be displayed.
 
-Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year.
+Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins[^120] or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year[^121].
+
+[^120]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
+
+[^121]: <https://trinity.duke.edu/undergraduate/academic-policies/unsatisfactory-satisfactory-grading-option>
 
 Some areas of this thesis are rather arbitrary for sake of simplicity. For instance, the labeling of "traditional" students and "academic" courses are based on personal beliefs. Perhaps I have unconscious biases against Arts & Humanities by removing half-credit music courses. However, I also believe there are systematic biases through the classification of departments into divisions. As mentioned in my methodology, the classification of African & African American Studies as a social science but the classification of Asian & Middle Eastern Studies as an arts & humanities department seems to neglect the interdisciplinary nature of many fields.
 
@@ -576,10 +602,20 @@ Based on my model, there is clear evidence that students were more likely to ...
 
 ## Future Work
 
-For the improvement of the work carried out in this thesis, a couple items come into mind. First, it may be worth exploring a hierarchical structure where-in there is some level of variation in student behavior expected at the the division level, the department level, and at the individual level. Other nitpicks include the potential benefit of capturing specific course ID level effects and the use of overall cumulative GPA instead merely looking at previous semester GPAs. One of the major obstacles in this thesis was the lack of post-pandemic data. I believe that future studies using actual student majors and using longer term data may be able to provide a more accurate framework for evaluating factors influencing student behavior towards voluntary S/U. Moving even further forward, a retrospective analysis of how the shift to opt-in S/U grading on the instructor side and its utilization may also be worth noting. Similarly, the shift to the newest Duke undergraduate curriculum beginning in Fall 2025 with Constellations should also be evaluated for its intersection with student behaviors.
+For the improvement of the work carried out in this thesis, a couple items come into mind. First, it may be worth exploring a hierarchical structure where-in there is some level of variation in student behavior expected at the the division level, the department level, and at the individual level. Other nitpicks include the potential benefit of capturing specific course ID level effects and the use of overall cumulative GPA instead merely looking at previous semester GPAs. One of the major obstacles in this thesis was the lack of post-pandemic data. I believe that future studies using actual student majors and using longer term data may be able to provide a more accurate framework for evaluating factors influencing student behavior towards voluntary S/U. Moving even further forward, a retrospective analysis of how the shift to opt-in S/U grading on the instructor side and its utilization may also be worth noting. Similarly, the shift to the newest Duke undergraduate curriculum beginning in Fall 2025 should also be evaluated for its intersection with student behaviors.
 
-In my thesis, I briefly explored the problem of major prediction. Some studies exist at ....https://web.stanford.edu/class/archive/cs/cs224n/cs224n.1224/reports/custom_116659439.pdf It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. Similarly, past work has examined differences in grading standards across departments. My thesis was only able to operate on the level of divisions, but a fine-grained internal investigation at the departmental level could be fruitful. An evaluation of how various departments at Duke compare to each other could increase enrollment in less popular departments through calibrating grading scales and workloads to match more attractive courses, or by modifying courses deemed to have disproportionately relaxed standards for their catalog level. A related problem is the inconsistent categorization of majors into divisions. It is understandably hard to categorize all of human knowledge into distinct, disjoint departments. I am curious as to how associated each major, department or institute is interconnected and which are more similar with others in their division and which are more interdisciplinary. One way doing so, I would propose, may be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes.
+In my thesis, I briefly explored the problem of major prediction based on prior course history. This is a problem that has been explored more in depth by others such as Lang et al. (2022).[^122] It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. Similarly, past work has examined differences in grading standards across departments. My thesis was only able to operate on the level of divisions, but a fine-grained internal investigation at the departmental level could be fruitful. An evaluation of how various departments at Duke compare to each other could increase enrollment in less popular departments through calibrating grading scales and workloads to match more attractive courses, or by modifying courses deemed to have disproportionately relaxed standards for their catalog level. A related problem is the inconsistent categorization of majors into divisions. It is understandably hard to categorize all of human knowledge into distinct, disjoint departments. I am curious as to how associated each major, department or institute is interconnected and which are more similar with others in their division and which are more interdisciplinary. One way doing so, I would propose, may be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes[^123].
 
-Many factors were inaccessible for my analysis such as student demographics, extracurricular, scholarships, and health conditions. Future work could examine correlation between these factors and grading policies to contribute the the growing body of literature on whether or not S/U improves student well-being or increases the amount of time students have for extracurricular commitments. A more specific feature of interest, would be course attributes associated with individual classes. These attributes directly correspond to graduation requirements under Curriculum 2000. At the root, the reason why I was interested in specific academic programs (majors, minors, certificates) was that some programs lack courses that satisfy certain requirements. For instance, I do not believe there has been a course listed in the statistical science department that has had the code for Arts, Literature, and Performance (ALP), at least not for the past several years. Yet, I believe it would be quite feasible to have an applied statistics course on something such as learning natural language processing techniques and applying them to literature. Even with the retirement of Curriculum 2000, a summary of the proportion of courses and their associated Areas of Knowledge or Modes of Inquiry listed in each department could help identify interdisciplinary gaps to be filled–a similar initiative could also be done using the new latest Constellation curriculum codes.
+[^122]: <https://files.eric.ed.gov/fulltext/EJ1360550.pdf>
 
-Beyond flexible grading policies, another common method used to promote academic exploration is the option of auditing courses. The Trinity College of Arts and Sciences first introduced the auditing system in.... For administrators it may be worth weighing the trade offs and use-cases for flexible grading versus audits. Audits are known for ....pros.... cons...
+[^123]: <https://www.sciencedirect.com/topics/computer-science/cosine-similarity>
+
+Many factors were inaccessible for my analysis such as student demographics, extracurricular, scholarships, and health conditions. Future work could examine correlation between these factors and grading policies to contribute the the growing body of literature on whether or not S/U improves student well-being or increases the amount of time students have for extracurricular commitments. A more specific feature of interest, would be course attributes associated with individual classes. These attributes directly correspond to graduation requirements under Curriculum 2000[^124]. At the root, the reason why I was interested in specific academic programs (majors, minors, certificates) was that some programs lack courses that satisfy certain requirements. For instance, I do not believe there has been a course listed in the statistical science department that has had the code for Arts, Literature, and Performance (ALP), at least not for the past several years. Yet, I believe it would be quite feasible to have an applied statistics course on something such as learning natural language processing techniques and applying them to literature. Even with the retirement of Curriculum 2000, a summary of the proportion of courses and their associated Areas of Knowledge or Modes of Inquiry listed in each department could help identify interdisciplinary gaps to be filled–a similar initiative could also be done using the new latest curriculum's codes[^125].
+
+[^124]: <https://trinity.duke.edu/undergraduate/academic-policies/curriculum>
+
+[^125]: <https://trinity.duke.edu/curriculum>
+
+Beyond flexible grading policies, another common method used to promote academic exploration is the option of auditing courses. From what I could find in the historic Duke bulletins, the Trinity College of Arts and Sciences has been allowing audits in 1960 and then introduced flexible grading with the pass-fail system in 1966[^126]. For administrators it may be worth weighing the trade offs and use-cases for flexible grading versus audits. Audits are known for ....pros.... cons...
+
+[^126]: <https://registrar.duke.edu/bulletins/bulletin-archives/>
