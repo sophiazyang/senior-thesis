@@ -28,6 +28,23 @@ df <- df |>
     studied_away = if_else(is.na(studied_away), FALSE, studied_away),
     prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
   )
+
+df <- df |>
+  mutate(final_grade = recode(final_grade,
+    "A+" = "A_plus",
+    "A"  = "A",
+    "A-" = "A_minus",
+    "B+" = "B_plus",
+    "B"  = "B",
+    "B-" = "B_minus",
+    "C+" = "C_plus",
+    "C"  = "C",
+    "C-" = "C_minus",
+    "D+" = "D_plus",
+    "D"  = "D",
+    "D-" = "D_minus",
+    "F"  = "F"
+  ))
 ```
 
 ```{r}
@@ -94,7 +111,7 @@ df |>
   mutate(prop = n / sum(n))
 
 df <- df |>
-  select(-c("term_enrolled", "course_ID", "estimated", "total_overloads", "student_group", "year_enrolled"))
+  select(-c("term_enrolled", "course_ID", "estimated", "did_indep_study", "student_group", "year_enrolled", "max_units", "final_grade"))
 
 # Final class imbalance
 df |>
@@ -128,10 +145,10 @@ su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       num_students +
                       num_overloads,
                     data = train_df) |>
-  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
-  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
-  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
-  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
   step_smote(is_SU, over_ratio = tune()) # correct imbalance
 ```
@@ -227,9 +244,10 @@ best_thresh <- readRDS("data/best_thresh.rds")
 selected_vars <- readRDS("data/selected_vars.rds")
 
 su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
+  update_role(masked_student_ID, new_role = "ID") |>  # exclude ID
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
-  step_dummy(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -has_role("ID"), one_hot = FALSE) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)  # plug in tuned value
@@ -243,8 +261,6 @@ glm_fit <- glm(
   family = binomial
 )
 summary(glm_fit)
-#exp(coef(glm_fit))
-#exp(confint(glm_fit))
 ```
 
 ```{r}
@@ -277,12 +293,13 @@ su_recipe_nostudaway <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       num_students +
                       num_overloads,
                     data = train_df) |>
-  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
-  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
-  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
-  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  update_role(masked_student_ID, new_role = "ID") |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -has_role("ID")) |> 
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_nostudaway <- setdiff(selected_vars, "studied_away")
 glm_formula_nostudaway <- as.formula(
@@ -310,12 +327,13 @@ su_recipe_nosumm <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
                       num_students +
                       num_overloads,
                     data = train_df) |>
-  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
-  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
-  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
-  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  update_role(masked_student_ID, new_role = "ID") |>  # exclude ID
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -has_role("ID")) |>
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_nosumm <- setdiff(selected_vars, "took_summer_courses")
 glm_formula_nosumm <- as.formula(
@@ -343,12 +361,13 @@ su_recipe_noplans <- recipe(is_SU ~ load_status + prev_semGPA +
                       num_students +
                       num_overloads,
                     data = train_df) |>
-  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
-  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
-  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
-  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  update_role(masked_student_ID, new_role = "ID") |>  # exclude ID
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -has_role("ID")) |>
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_noplans <- setdiff(selected_vars, "num_plans")
 glm_formula_noplans <- as.formula(
@@ -376,12 +395,13 @@ su_recipe_units <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
                       num_students +
                       num_overloads,
                     data = train_df) |>
-  step_impute_median(all_numeric_predictors()) |>  # median imputation for numeric
-  step_impute_mode(all_nominal_predictors()) |>    # mode imputation for factors
-  step_dummy(all_nominal_predictors()) |>          # one-hot encode factors
-  step_normalize(all_numeric_predictors()) |>      # center + scale automatically
+  update_role(masked_student_ID, new_role = "ID") |>  # exclude ID
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -has_role("ID")) |>
+  step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_smote(is_SU) # only 2% of data is S/U, correct imbalance
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_units <- selected_vars[!str_detect(selected_vars, "load_status")]
 glm_formula_units <- as.formula(
@@ -425,46 +445,6 @@ model_table
 ## With Random Effect
 
 ```{r}
-train_df <- train_df |>
-  mutate(final_grade = recode(final_grade,
-    "A+" = "A_plus",
-    "A"  = "A",
-    "A-" = "A_minus",
-    "B+" = "B_plus",
-    "B"  = "B",
-    "B-" = "B_minus",
-    "C+" = "C_plus",
-    "C"  = "C",
-    "C-" = "C_minus",
-    "D+" = "D_plus",
-    "D"  = "D",
-    "D-" = "D_minus",
-    "F"  = "F"
-  ))
-
-test_df <- test_df |>
-  mutate(final_grade = recode(final_grade,
-    "A+" = "A_plus",
-    "A"  = "A",
-    "A-" = "A_minus",
-    "B+" = "B_plus",
-    "B"  = "B",
-    "B-" = "B_minus",
-    "C+" = "C_plus",
-    "C"  = "C",
-    "C-" = "C_minus",
-    "D+" = "D_plus",
-    "D"  = "D",
-    "D-" = "D_minus",
-    "F"  = "F"
-  ))
-
-# Train set
-train_df |> count(is_SU)
-
-# Test set
-test_df |> count(is_SU)
-
 train_df_small <- train_df |>
   slice_sample(n = 20000) |> 
   ungroup()
@@ -481,7 +461,7 @@ glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
   step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>  # remove zero-variance predictors
-  step_smote(is_SU)
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 # 2. Prep and bake
 train_baked <- prep(glmer_recipe) |> bake(new_data = NULL)
@@ -505,7 +485,7 @@ glmer_fit <- glmer(
 summary(glmer_fit)
 
 # Evaluate performance on test
-test_results <- augment(lasso_fit, new_data = test_df_small) |>
+test_results <- augment(glmer_fit, new_data = test_df_small) |>
   mutate(
     pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
     pred_class = factor(pred_class, levels = c(0, 1))
@@ -631,8 +611,8 @@ plot(residuals(glmer_fit) ~ factor(group_variable))
 
 pear <- residuals(glmer_fit, type = "pearson")
 df$pear <- pear
-student_resid <- df %>%
-  group_by(masked_student_ID) %>%
+student_resid <- df |>
+  group_by(masked_student_ID) |>
   summarize(n = n(), mean_pear = mean(pear), sd_pear = sd(pear), mean_obs = mean(is_SU))
 
 hist(student_resid$mean_pear, main="Mean Pearson residual per student")
