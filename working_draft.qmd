@@ -476,9 +476,9 @@ While I believe all variables included have some relevance to student behavior, 
 
 In addition to elastic–net, I also tested nested models on predictors I did not believe would have a significant effect. These included study away status (significant number of NAs), summer course status, and number of academic plans (due to flaws in imputation for post-pandemic students). The likelihood ratio tests I performed supported the inclusion of these variables in my final model.
 
-For co-linear variables, I opted to compare AIC and BIC.
+For co-linear variables, I opted to compare AIC (metric of the predictive accuracy) and BIC (how likely the model is to be the "true" model). I compared the numerical course load a student takes in a given semester to the discrete categorization .......
 
-A summary of all variables considered for modeling and my verdicts are provided in Table TODO in the Appendix.
+A summary of all variables considered for modeling and my verdicts are provided in the Appendix.
 
 ## Final Model
 
@@ -489,10 +489,6 @@ After addressing major modeling hurdles, I added a random effect on student ID u
 ## Model Evaluation
 
 To evaluate model fit I use a variety of metrics including but not limited to:
-
--   Akaike Information Criterion: $AIC = 2k - 2 \ln(L)$, metric of the predictive accuracy of a model
-
--   Bayesian Information Criterion: $BIC = -2 \ln(L)+k \ln(n)$, metric of the model most likely to be the "true" model given observed data
 
 -   Intraclass Correlation Coefficient: $ICC = \frac{\text{random effect variance}}{\text{total variance}}$ , how much variation can be explained by random effect
 
@@ -505,8 +501,6 @@ To evaluate model fit I use a variety of metrics including but not limited to:
 -   Specificity $= \frac{\text{TN}}{(\text{TP}+\text{FN})}$, true negative rate
 
 -   F1 $= \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision}+{\text{Recall}}}$
-
-    \*$k$ is the number of estimated parameters and $L$ is the maximum value of the likelihood function
 
     \*$\text{TP}$, $\text{TN}$, $\text{FP}$, $\text{FN}$: True Positive, True Negative, False Positive, and False Negative, respectively
 
@@ -540,11 +534,17 @@ Before fitting my model, I created several exploratory plots. In these plots, I 
 
 ## Performance Metrics
 
-\[report F1, roc_auc, roc curve, etc\]
+The confusion matrix from my model is shown in TODO. My model correctly identified 76.4% of negative cases (specificity = 0.764), but it only correctly identified 67.4% of positive cases (sensitivity or recall = 0.674). The precision of my model is 0.99, meaning 99% of all predicted positives were truly positive. Balancing precision and recall, the F1 score was 0.802.
 
-According to the score of ....
+Figure TODO shows the Precision-Recall (PR) curve for my model. The area under the PR curve is an abyssal 0.11. However, due to only 2% of my data being of the positive class, the baseline PR AUC (Area Under the Curve) is 0.02 meaning that my model performs better than a random model.
 
-ROC_AUC, ROC curve, PR_AUC, PR curve, confusion matrix, precision, calibration plot, dispersion
+A plot of the Receiver Operating Characteristics (ROC) curve associated with my model can be seen in Figure TODO. The area under the ROC curve is 0.806, representing good discrimination between positive and negative outcomes. A random model would score 0.5 while a perfect model would score 1.0. Given one positive and one negative case, the model will on average rank the positive one higher 81% of the time.
+
+However, the calibration plot in Figure TODO tells a different story about the fit of my model. My model appears to be poorly calibrated with systematic over confidence. For instance, when the model predicts with an 80% probability of a course being taken S/U, in reality the course is on average taken S/U 10% of the time. At each level of confidence, the model systematically predicts a higher chance of occurrence than supported by reality.
+
+My model has an intra-class correlation (ICC) of 0.96. This means that 96% of the variation in the outcome is due to differences between students. This could mean that ....
+
+Finally, there is an abundance of evidence supporting the presence of under dispersion, meaning that the residual variance is smaller than expected. This could be a result of ...
 
 ## Model Summary
 
@@ -566,7 +566,7 @@ Missing data is not exclusive to after the pandemic. There was also missing data
 
 Beyond the variables I was provided, it is likely that ROTC, pre-med, athlete, and other statuses may have an impact on student behaviors. For instance, it makes sense to believe that ROTC and athlete students may be taking a disproportionate number of "Other" credits to fulfill program requirements. Students intending to apply for medical school have to take a significant number of courses in the natural sciences, but may not necessarily be majoring in the natural science division. Related to these unknowns is my systematic ignorance of student minors and certificates. It is certainly possible that minors in a separate division will fully account for all remaining graduation requirements.
 
-Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is cross-listed across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset, only one of these divisions can be displayed.
+Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is cross-listed across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset only one of these divisions can be displayed.
 
 Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins[^125] or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year[^126].
 
