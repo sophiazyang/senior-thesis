@@ -137,7 +137,8 @@ test_df  <- testing(split)
 ```{r}
 #| label: preprocess
 #| eval: false
-su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
+su_recipe_lasso <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units +
+                      prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -150,6 +151,11 @@ su_recipe_lasso <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = tune()) # correct imbalance
 ```
 
@@ -187,7 +193,7 @@ best_hyperparam <- select_best(lasso_tuned, metric = "roc_auc")
 best_hyperparam
 saveRDS(best_hyperparam, "data/best_hyperparam.rds")
 
-final_lasso <- finalize_workflow(lasso_workflow, best_combo)
+final_lasso <- finalize_workflow(lasso_workflow, best_hyperparam)
 final_fit <- fit(final_lasso, data = train_df)
 
 test_results <- predict(final_fit, new_data = test_df, type = "prob") |>
@@ -195,7 +201,7 @@ test_results <- predict(final_fit, new_data = test_df, type = "prob") |>
   roc_auc(truth = is_SU, .pred_1)
 glmnet_fit <- extract_fit_parsnip(final_fit)$fit
 
-coef_mat <- coef(glmnet_fit, s = best_combo$penalty)
+coef_mat <- coef(glmnet_fit, s = best_hyperparam$penalty)
 coef_df <- as.data.frame(as.matrix(coef_mat))
 coef_df$term <- rownames(coef_df)
 colnames(coef_df)[1] <- "estimate"
@@ -250,6 +256,11 @@ su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
   step_dummy(all_nominal_predictors(), -has_role("ID"), one_hot = FALSE) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)  # plug in tuned value
 
 glm_formula <- as.formula(
@@ -268,8 +279,10 @@ summary(glm_fit)
 ### Testing studied_away
 
 ```{r}
+#| eval: false
 # Model without studied_away
-su_recipe_nostudaway <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
+su_recipe_nostudaway <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units +
+                      prev_semGPA + num_plans +
                       took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -282,6 +295,11 @@ su_recipe_nostudaway <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
   step_dummy(all_nominal_predictors()) |> 
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_nostudaway <- setdiff(selected_vars, "studied_away")
@@ -301,8 +319,10 @@ anova(glm_fit, glm_fit_nostudaway)
 ### Testing took_summer_courses
 
 ```{r}
+#| eval: false
 # Model without took_summer_courses
-su_recipe_nosumm <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
+su_recipe_nosumm <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units + 
+                      prev_semGPA + num_plans +
                       studied_away +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -315,12 +335,17 @@ su_recipe_nosumm <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_nosumm <- setdiff(selected_vars, "took_summer_courses")
 glm_formula_nosumm <- as.formula(
     paste("is_SU ~", paste(vars_nosumm, collapse = " + "))
-  )
+)
 glm_fit_nosumm <- glm(
   glm_formula_nosumm,
   data = bake(prep(su_recipe_nosumm), new_data = NULL),
@@ -334,8 +359,10 @@ anova(glm_fit, glm_fit_nosumm)
 ### Testing num_plans
 
 ```{r}
+#| eval: false
 # Model without num_plans
-su_recipe_noplans <- recipe(is_SU ~ load_status + prev_semGPA +
+su_recipe_noplans <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units +
+                      prev_semGPA +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -348,6 +375,11 @@ su_recipe_noplans <- recipe(is_SU ~ load_status + prev_semGPA +
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_noplans <- setdiff(selected_vars, "num_plans")
@@ -364,18 +396,17 @@ glm_fit_noplans <- glm(
 anova(glm_fit, glm_fit_noplans)
 ```
 
-## Measures of Courseload
-
-### Testing term_units vs load_status
+### Testing num students
 
 ```{r}
-# Model swapping load_status for term_units
-su_recipe_units <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
+#| eval: false
+# Model without num_students
+su_recipe_noenroll <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units + 
+                      prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
                       catalog_level + division +
-                      num_students +
                       num_overloads,
                     data = train_df) |>
   step_impute_median(all_numeric_predictors()) |>
@@ -383,23 +414,35 @@ su_recipe_units <- recipe(is_SU ~ term_units + prev_semGPA + num_plans +
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
-vars_units <- selected_vars[!str_detect(selected_vars, "load_status")]
-glm_formula_units <- as.formula(
-    paste("is_SU ~", paste(vars_units, collapse = " + "))
+vars_noenroll <- setdiff(selected_vars, "num_students")
+glm_formula_noenroll <- as.formula(
+    paste("is_SU ~", paste(vars_noenroll, collapse = " + "))
   )
-glm_fit_units <- glm(
-  glm_formula_units,
-  data = bake(prep(su_recipe_units), new_data = NULL),
+glm_fit_noenroll <- glm(
+  glm_formula_noenroll,
+  data = bake(prep(su_recipe_noenroll), new_data = NULL),
   family = binomial
 )
+
+# ANOVA
+anova(glm_fit, glm_fit_noenroll)
 ```
 
-### Testing actual_load vs load_status
+## Measures of Courseload
+
+### Only load_status
 
 ```{r}
-su_recipe_actload <- recipe(is_SU ~ actual_load + prev_semGPA + num_plans +
+#| eval: false
+su_recipe_loadstat <- recipe(is_SU ~ load_status +
+                      prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -412,11 +455,54 @@ su_recipe_actload <- recipe(is_SU ~ actual_load + prev_semGPA + num_plans +
   step_dummy(all_nominal_predictors()) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
-vars_actload <- selected_vars[!str_detect(selected_vars, "load_status")]
+vars_loadstat <- selected_vars[!str_detect(selected_vars,
+  "term_units|actual_load|actual_units")]
+glm_formula_loadstat <- as.formula(
+    paste("is_SU ~", paste(vars_loadstat, collapse = " + "))
+  )
+glm_fit_loadstat <- glm(
+  glm_formula_loadstat,
+  data = bake(prep(su_recipe_loadstat), new_data = NULL),
+  family = binomial
+) 
+```
+
+### Only actual_load
+
+```{r}
+#| eval: false
+su_recipe_actload <- recipe(is_SU ~ actual_load + 
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+
+vars_actload <- selected_vars[!str_detect(selected_vars,
+  "load_status|term_units|actual_units")]
 glm_formula_actload <- as.formula(
-    paste("is_SU ~", paste(vars_units, collapse = " + "))
+    paste("is_SU ~", paste(vars_actload, collapse = " + "))
   )
 glm_fit_actload <- glm(
   glm_formula_actload,
@@ -425,17 +511,87 @@ glm_fit_actload <- glm(
 )
 ```
 
-### Testing actual_units
+### Only actual_units
 
 ```{r}
+#| eval: false
+su_recipe_actunits <- recipe(is_SU ~ actual_units + 
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
+vars_actunits <- selected_vars[!str_detect(selected_vars,
+  "load_status|term_units|actual_load")]
+glm_formula_actunits <- as.formula(
+    paste("is_SU ~", paste(vars_actunits, collapse = " + "))
+  )
+glm_fit_actunits <- glm(
+  glm_formula_actunits,
+  data = bake(prep(su_recipe_actunits), new_data = NULL),
+  family = binomial
+)
 ```
 
-### Testing interaction
+### Only term_units
 
 ```{r}
+#| eval: false
+su_recipe_termunits <- recipe(is_SU ~ term_units +
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+
+vars_termunits <- selected_vars[!str_detect(selected_vars,
+  "load_status|actual_load|actual_units")]
+glm_formula_termunits <- as.formula(
+    paste("is_SU ~", paste(vars_termunits, collapse = " + "))
+  )
+glm_fit_termunits <- glm(
+  glm_formula_termunits,
+  data = bake(prep(su_recipe_termunits), new_data = NULL),
+  family = binomial
+) 
+```
+
+## Testing interaction
+
+```{r}
+#| eval: false
 # Model with interactions between student and course divisions
-su_recipe_inter <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
+su_recipe_inter <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units + 
+                      prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
                       is_art_humanity + is_social_sci + is_natural_sci +
                       timeperiod + academic_level_bot +
@@ -450,32 +606,33 @@ su_recipe_inter <- recipe(is_SU ~ load_status + prev_semGPA + num_plans +
   step_zv(all_predictors()) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
-subject_vars <- c("is_natural_sci", "is_art_humanity", "is_social_sci")
-division_dummies <- c("division_Natural.Sciences", "division_Social.Sciences", "division_Engineering", "division_WRITING")
-interaction_terms <- as.vector(outer(subject_vars, division_dummies, FUN = function(x,y) paste0(x, ":", y)))
-
-all_terms <- c(selected_vars, interaction_terms)
-glm_formula_actload <- as.formula(
-    paste("is_SU ~", paste(all_terms, collapse = " + "))
+vars_inter <- selected_vars[!grepl("(:|_x_)", selected_vars)]
+glm_formula_inter <- as.formula(
+    paste("is_SU ~", paste(vars_inter, collapse = " + "))
   )
 glm_fit_inter <- glm(
-  glm_formula_actload,
+  glm_formula_inter,
   data = bake(prep(su_recipe_inter), new_data = NULL),
   family = binomial
 )
 ```
 
-### AIC and BICs
+## AIC and BICs
 
 ```{r}
+#| eval: false
 # Put all models in a named list
 models <- list(
   Full = glm_fit,
   No_studied_away = glm_fit_nostudaway,
   No_took_summer_courses = glm_fit_nosumm,
   No_num_plans = glm_fit_noplans,
-  Term_units_instead_of_load_status = glm_fit_units,
-  
+  No_num_students = glm_fit_noenroll,
+  Only_loadstat = glm_fit_loadstat,
+  Only_actload = glm_fit_actload,
+  Only_actunits = glm_fit_actunits,
+  Only_termunits = glm_fit_termunits,
+  Without_interaction = glm_fit_inter
 )
 
 # Compute AIC and BIC for each model
@@ -490,8 +647,12 @@ model_table <- tibble(
     delta_BIC = BIC - min(BIC)
   )
 
-model_table
+saveRDS(model_table, "data/model_table.rds")
+```
 
+```{r}
+model_table <- readRDS("data/model_table.rds")
+model_table
 ```
 
 ## With Random Effect
@@ -512,7 +673,12 @@ glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
   step_mutate(across(where(is.logical), as.factor)) |>  # convert logicals to factors vs glm wanted binary(?)
   step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
   step_normalize(all_numeric_predictors()) |>
-  step_zv(all_predictors()) |>  # remove zero-variance predictors
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 # 2. Prep and bake
@@ -537,12 +703,19 @@ glmer_fit <- glmer(
 summary(glmer_fit)
 
 # Evaluate performance on test
-test_results <- augment(glmer_fit, new_data = test_df_small) |>
-  mutate(
-    pred_class = ifelse(.pred_1 >= best_thresh, 1, 0),
-    pred_class = factor(pred_class, levels = c(0, 1))
-  )
+trained_recipe <- prep(glmer_recipe)
+test_baked <- bake(trained_recipe, new_data = test_df_small)
+test_baked$.pred_1 <- predict(
+  glmer_fit,
+  newdata = test_baked,
+  type = "response",
+  allow.new.levels = TRUE   # allows new students in test set
+)
 
+test_results <- test_baked |>
+  mutate(
+    pred_class = factor(ifelse(.pred_1 >= best_thresh, 1, 0), levels = c(0, 1))
+  )
 ```
 
 ```{r}
@@ -559,22 +732,6 @@ var_student <- vc$vcov[vc$grp == "masked_student_ID"]
 var_resid <- pi^2 / 3
 var_student / (var_student + var_resid)
 icc(glmer_fit)
-
-# RMSE
-test_results_num <- test_results |>
-  mutate(is_SU_num = as.numeric(as.character(is_SU)))
-rmse_tbl <- rmse(test_results_num, truth = is_SU_num, estimate = .pred_1)
-if (is.data.frame(rmse_tbl)) {
-  model_rmse <- rmse_tbl$.estimate[1]
-} else {
-  model_rmse <- as.numeric(rmse_tbl)
-}
-mean_prob <- mean(test_results_num$is_SU_num)
-null_rmse <- sqrt(mean((test_results_num$is_SU_num - mean_prob)^2))
-tibble(
-  Model = c("Lasso Model", "Null Model"),
-  RMSE = c(model_rmse, null_rmse)
-)
 
 # ROC / AUC
 roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
