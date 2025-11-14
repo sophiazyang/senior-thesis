@@ -174,7 +174,7 @@ lasso_workflow <- workflow() |>
   add_model(lasso_spec) |>
   add_recipe(su_recipe_lasso)
 
-# tune and estimate simultaneously (ok since exploratory)
+# tune and estimate simultaneously (ok since exploratory) 
 folds <- group_vfold_cv(train_df, group = masked_student_ID, v = 5)
 grid <- grid_regular(
   over_ratio(range = c(0.2, 1)),
@@ -590,7 +590,7 @@ glm_fit_termunits <- glm(
 
 ```{r}
 #| eval: false
-# Model with interactions between student and course divisions
+# Model without interactions between student and course divisions
 su_recipe_inter <- recipe(is_SU ~ load_status + term_units + actual_load + actual_units + 
                       prev_semGPA + num_plans +
                       studied_away + took_summer_courses +
@@ -701,22 +701,20 @@ glmer_fit <- glmer(
   family = binomial(link = "logit"),
   control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
 )
-summary(glmer_fit)
 
+model_summ <- summary(glmer_fit)
+saveRDS(model_summ, "data/model_summ.rds")
+
+df <- model.frame(glmer_fit)
+saveRDS(df, "data/model_resids.rds")
 ```
 
 ```{r}
-# Model fit
-check_overdispersion(glmer_fit)
-
-AIC(glmer_fit)
-
-BIC(glmer_fit)
-
-icc(glmer_fit)
+model_summ <- readRDS("data/model_summ.rds")
+model_summ
 
 # playing around...
-df <- model.frame(glmer_fit)
+df <- readRDS("data/model_resids.rds")
 df$pear <- residuals(glmer_fit, type = "pearson")
 df$fit <- fitted(glmer_fit)
 
@@ -738,6 +736,30 @@ binnedplot(df$fit, df$pear, xlab = "Predicted probability", ylab = "Residuals",
            main = "Binned residual plot")
 ```
 
+
+```{r}
+# Model fit
+disp <- check_overdispersion(glmer_fit)
+aic_val <- AIC(glmer_fit)
+bic_val <- BIC(glmer_fit)
+icc_val <- icc(glmer_fit)
+
+model_fit_stats <- tibble(
+  AIC = aic_val,
+  BIC = bic_val,
+  Overdispersion_Ratio = disp$dispersion_ratio,
+  Overdispersion_p = disp$p_value,
+  ICC_Adjusted = icc_val$ICC_adjusted,
+  ICC_Conditional = icc_val$ICC_conditional
+)
+saveRDS(model_fit_stats, "data/model_fit_stats.rds")
+```
+
+```{r}
+model_fit_stats <- readRDS("data/model_fit_stats.rds")
+model_fit_stats
+```
+
 ```{r}
 # Evaluate performance on test
 trained_recipe <- prep(glmer_recipe)
@@ -755,12 +777,12 @@ test_results <- test_baked |>
   )
 
 # Brier score
-brier_class(
-  test_results,
-  truth = is_SU,
-  estimate = .pred_1,
-  event_level = "second"
-)
+#brier_class(
+#  test_results,
+#  truth = is_SU,
+#  estimate = .pred_1,
+#  event_level = "second"
+#)
 
 # ROC / AUC
 roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
@@ -813,7 +835,6 @@ cm_metrics <- cm |>
 cm_metrics
 
 # ---- Calibration plot ----
-# Bin predicted probabilities into deciles
 calibration_df <- test_results |>
   mutate(prob_bin = ntile(.pred_1, 10)) |>
   group_by(prob_bin) |>
@@ -826,168 +847,6 @@ calibration_df <- test_results |>
 ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
   geom_point(size = 3, color = "blue") +
   geom_line(color = "blue") +
-  # Add the "perfect calibration" line
-  geom_abline(
-    slope = 1,
-    intercept = 0,
-    color = "red",
-    linetype = "dashed",
-    linewidth = 1
-  ) +
-  labs(
-    x = "Mean Predicted Probability",
-    y = "Observed Event Rate",
-    title = "Calibration Plot"
-  )
-```
-
-## Downsample + Weights
-
-```{r}
-# tune underratio? 
-
-pos_weight_combined <- 5.0 
-
-train_with_weights <- train_df_small |>
-  mutate(
-    case_weight = if_else(as.character(is_SU) == "1", pos_weight_combined, 1.0)
-  )
-
-glmer_recipe2 <- recipe(is_SU ~ ., data = train_with_weights) |>
-  update_role(masked_student_ID, new_role = "id") |>
-  update_role(case_weight, new_role = "weight", bake = FALSE) |>
-  step_impute_median(all_numeric_predictors()) |>
-  step_impute_mode(all_nominal_predictors()) |>
-  step_mutate(across(where(is.logical), as.factor)) |>
-  step_dummy(all_nominal_predictors(), -all_outcomes(), -masked_student_ID) |>
-  step_normalize(all_numeric_predictors()) |>
-  step_zv(all_predictors()) |>
-  step_interact(
-    terms = ~ is_natural_sci:starts_with("division_") +
-             is_art_humanity:starts_with("division_") +
-             is_social_sci:starts_with("division_")
-  ) |>
-  step_downsample(is_SU, under_ratio = 5) 
-
-train_baked_full <- prep(glmer_recipe2) |> 
-  bake(new_data = train_with_weights)
-glmer_data_final <- train_baked_full |>
-  dplyr::select(all_of(selected_vars), masked_student_ID, is_SU, case_weight) 
-glmer_data_final$case_weight <- as.numeric(glmer_data_final$case_weight)
-glm_formula <- as.formula(
-  paste0("is_SU ~ ", paste(selected_vars, collapse = " + "), " + (1 | masked_student_ID)")
-)
-
-glmer_fit_combined <- glmer(
-  glm_formula,
-  data = glmer_data_final,
-  family = binomial(link = "logit"),
-  weights = glmer_data_final$case_weight, 
-  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
-)
-
-summary(glmer_fit_combined)
-
-```
-
-```{r}
-# Model fit
-check_overdispersion(glmer_fit_combined)
-
-AIC(glmer_fit_combined)
-
-BIC(glmer_fit_combined)
-
-icc(glmer_fit_combined)
-
-# Evaluate performance on test
-trained_recipe2 <- prep(glmer_recipe2)
-test_df_small$case_weight <- 1
-test_baked2 <- bake(trained_recipe2, new_data = test_df_small)
-test_baked2$.pred_1 <- predict(
-  glmer_fit,
-  newdata = test_baked2,
-  type = "response",
-  allow.new.levels = TRUE   # allows new students in test set
-)
-
-test_results2 <- test_baked2 |>
-  mutate(
-    pred_class = factor(ifelse(.pred_1 >= best_thresh, 1, 0), levels = c(0, 1))
-  )
-
-# Brier score
-brier_class(
-  test_results2,
-  truth = is_SU,
-  estimate = .pred_1,
-  event_level = "second"
-)
-
-# ROC / AUC
-roc_auc(test_results2, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
-
-# Plot ROC
-roc_df2 <- roc_curve(test_results2, truth = is_SU, .pred_1, event_level = "second")
-ggplot(roc_df2, aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line(color = "blue", size = 1.2) +
-  geom_abline(linetype = "dashed", color = "gray") + # diagonal line
-  labs(
-    title = "ROC Curve",
-    x = "False Positive Rate (1 - Specificity)",
-    y = "True Positive Rate (Sensitivity)"
-  ) +
-  theme_minimal()
-
-# PR-AUC
-pr_auc(
-  test_results2, truth = is_SU, .pred_1,
-  event_level = "second"
-)
-
-# Plot PR
-pr_df2 <- pr_curve(test_results2, truth = is_SU, .pred_1, event_level = "second")
-ggplot(pr_df2, aes(x = recall, y = precision)) +
-  geom_line(color = "darkgreen", size = 1.2) +
-  labs(
-    title = "Precision-Recall Curve",
-    x = "Recall (Sensitivity)",
-    y = "Precision (PPV)"
-  ) +
-  theme_minimal()
-
-# Confusion matrix
-cm2 <- conf_mat(test_results2, truth = is_SU, estimate = pred_class)
-cm2
-
-# Extract Precision, Recall, Specificity F1
-cm2 |> 
-  summary() |>
-  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |>
-  mutate(
-    Metric = recode(.metric,
-      "precision" = "Precision/Positive Predictive Value",
-      "recall"    = "Recall/Sensitivity (True Positive Rate)",
-      "spec"      = "Specificity (True Negative Rate)",
-      "f_meas"    = "F1 Score",
-    )
-  )
-
-# ---- Calibration plot ----
-# Bin predicted probabilities into deciles
-calibration_df2 <- test_results2 |>
-  mutate(prob_bin = ntile(.pred_1, 10)) |>
-  group_by(prob_bin) |>
-  summarise(
-    mean_pred = mean(.pred_1),
-    obs_rate = mean(as.numeric(as.character(is_SU))),
-    .groups = "drop"
-  )
-
-ggplot(calibration_df2, aes(x = mean_pred, y = obs_rate)) +
-  geom_point(size = 3, color = "blue") +
-  geom_line(color = "blue") +
-  # Add the "perfect calibration" line
   geom_abline(
     slope = 1,
     intercept = 0,
