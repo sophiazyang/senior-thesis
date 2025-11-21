@@ -900,11 +900,103 @@ ggplot(accuracy_by_group, aes(x = student_group, y = min_error, color = division
 ```
 
 ```{r}
+#| label: cleaning
 model_df <- final_with_estimates |>
   select(-c(first_major, first_major_descr, 
             second_major, second_major_descr, 
             tbd, location, class_component)) |>
-  filter(actual_load != "underload") # cannot S/U if underloading
+  filter(actual_load != "underload") |>
+  mutate(
+    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
+    final_grade = recode(final_grade,
+      "A+" = "A_plus",
+      "A"  = "A",
+      "A-" = "A_minus",
+      "B+" = "B_plus",
+      "B"  = "B",
+      "B-" = "B_minus",
+      "C+" = "C_plus",
+      "C"  = "C",
+      "C-" = "C_minus",
+      "D+" = "D_plus",
+      "D"  = "D",
+      "D-" = "D_minus",
+      "F"  = "F"
+  ))
+```
+
+```{r}
+#| label: class-imbalance
+
+# Imbalance of S/U vs A-F
+model_df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+# Imbalance by student group
+model_df |>
+  group_by(student_group) |>
+  summarise(
+    n_total   = n(),
+    n_true    = sum(is_SU == "1", na.rm = TRUE),
+    n_false   = sum(is_SU == "0", na.rm = TRUE),
+    prop_true = mean(is_SU == "1", na.rm = TRUE)
+  ) |>
+  arrange(desc(prop_true))
+
+# Chose to drop data prior to Fall 2015
+model_df <- model_df |>
+  mutate(is_SU = factor(is_SU, levels = c(0, 1))) |>
+  filter(term_enrolled > "Summer 2 2015")
+
+# Slightly improved imbalance of S/U A-F
+model_df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+# Most courses are 1.0 credits
+model_df |>
+  count(max_units) |>
+  mutate(prop = n / sum(n))
+
+# A lot of uncommon term_units
+model_df |>
+  count(term_units) |>
+  mutate(prop = n / sum(n)) |>
+  print(n = Inf)
+
+# Relatively balanced when using categories instead of units
+model_df |>
+  count(load_status) |>
+  mutate(prop = n / sum(n))
+
+# Final class imbalance
+model_df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+# Can only S/U 1.0 credit courses(?)
+model_df <- model_df |>
+  filter(max_units == 1.0) |>
+  mutate(
+    load_status = case_when(
+      term_units < 4    ~ "underload",
+      term_units == 4   ~ "normal",
+      term_units > 4    ~ "overload",
+      TRUE              ~ NA_character_   # handles any missing cases
+    ),
+    actual_load = factor(
+      actual_load,
+      levels = c("normal", "overload"),
+      ordered = TRUE
+    ),
+    load_status = factor(
+      load_status,
+      levels = c("underload", "normal", "overload"),
+      ordered = TRUE
+    ),
+  )
 
 saveRDS(model_df, file = "data/model_df.rds")
 ```
