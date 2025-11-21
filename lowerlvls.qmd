@@ -8,6 +8,17 @@ editor_options:
 ```{r}
 #| label: load-libraries
 #| message: false
+library(lme4)
+library(glmnet)
+library(pROC)
+library(tidymodels)
+library(rsample)
+library(themis)
+library(caret)
+library(performance)
+library(DHARMa)
+library(kableExtra)
+library(broom.mixed)
 library(tidyverse)
 ```
 
@@ -85,11 +96,7 @@ summary(glm_fit)
 ```
 
 ```{r}
-model_formula <- as.formula(
-  paste("is_SU ~", paste(selected_vars, collapse = " + "))
-)
-
-glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
+glmer_recipe <- recipe(is_SU ~ ., data = train_df) |>
   update_role(masked_student_ID, new_role = "id") |>
   step_impute_median(all_numeric_predictors()) |>
   step_impute_mode(all_nominal_predictors()) |>
@@ -108,6 +115,7 @@ glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
 trained_recipe <- prep(glmer_recipe, retain = TRUE)
 glmer_data <- bake(trained_recipe, new_data = NULL)
 
+selected <- setdiff(selected_vars, c("term_units", "actual_units"))
 glm_formula <- as.formula(
   paste0("is_SU ~ ", paste(selected, collapse = " + "), 
          " + (1 | masked_student_ID)")

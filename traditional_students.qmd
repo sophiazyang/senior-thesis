@@ -584,10 +584,6 @@ test_df_small <- test_df |>
 
 selected <- setdiff(selected_vars, c("term_units", "actual_units"))
 
-model_formula <- as.formula(
-  paste("is_SU ~", paste(selected_vars, collapse = " + "))
-)
-
 glmer_recipe <- recipe(is_SU ~ ., data = train_df_small) |>
   update_role(masked_student_ID, new_role = "id") |>
   step_impute_median(all_numeric_predictors()) |>

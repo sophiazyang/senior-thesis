@@ -87,7 +87,7 @@ In a 2011 review of pass/fail and well-being literature (1980-2010) in medical s
 
 @spring_2011 also reviewed an additional five papers (9 total) on pass/fail and academic outcomes (GPA, scores, residency attainment and performance). Grades were not found to be significantly different between pass/fail and tiered grading cohorts. Pass/fail cohort average significantly higher than the pass/fail cut-off in [@robins_1995]. The pass/fail system was not found to adversely affect academic performance. However, acceptance into desired residency programs may be negatively impacted by pass/fail. In terms of residency attainment, roughly 73% of directors claimed they did not give preference to tier-grading schools and 33% of programs who filled all spots preferred students from tier-graded schools [@tardiff_1980]. Surveys of students and directors also showed majority belief that pass/fail evaluation hindered the ability to compete for residency [@dederichs_2020] [@provan_cuttress_1995]. Although, other studies have shown that some students believe grades are already arbitrary while others prefer grading for motivation [@dederichs_2020]. However, it appears that the actual impact of grading tiers may depend on the institution giving the grades as in practice when program directors were asked to compare Stanford’s pass/fail classes with their own classes, only 3% of the Stanford graduates were judged as “poor” compared to their peer group [@vosti_jacobs_1999]. There was also evidence that pass/fail grading reduced competition and external motivation for grades without decreasing the amount of time students spent studying, defying expectations of increased laziness [@jessee_simon_1971].
 
-Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes [@slavin_2019]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts [@ange_2018]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation \[@blum_2017\] while others argue pass/fail is a cause of grade inflation \[\@goldman_1985\].
+Research supporting pass/fail and flexible grading continued to be published in the late 2010s. For instance, a decade long longitudinal study of medical student well-being found an 85% decrease in depression rate and a 75% decrease in anxiety in first-years when switching from a four-tier to two-tier grading system and restructuring their curriculum, among other changes [@slavin_2019]. Additional studies on the differences between pass/fail and graded students found no consistent difference between student cohorts [@ange_2018]. Interestingly, some have also suggested the usage of pass/fail as a method of combating grade inflation [@blum_2017] while others argue pass/fail is a cause of grade inflation \[\@goldman_1985\].
 
 In summary, there has been an increased interest in pass/fail arising from a prevalent attitude that educational reforms were necessary. Researchers have found evidence that flexible grading systems reduce student distress, support collaboration, and encourage intrinsic learning without having a substantial impact on academic performance and test scores [@white_fantone_2010]. However, there is also evidence that suggests that a two-tiered system makes it near impossible to distinguish between satisfactory and truly exceptional students, harming future career prospects as well as disincentivizing some students from putting forth their best effort and persevering through challenges. There is no definitive consensus in the literature about whether or not pass/fail is a better system than traditional A-F tiered grading.
 
@@ -183,15 +183,15 @@ Before fitting any models, I split my data into training (80%) and test (20%) se
 
 An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to narrow my dataset to Fall 2015-Spring 2025. This marginally helped with an improved imbalance to 97.7% vs 2.3%, but this is not nearly enough.
 
-Class imbalance is not an unique problem. The literature suggests methods such as the use of weights (source), oversampling of the minority class (source), SMOTE (source), adjusting decision thresholds, and usage of more robust methods such as support vector machines (source). I experimented with several of these techniques and my results are shown below in Table ....
+Class imbalance is not an unique problem. The literature suggests methods such as the use of weights (source), oversampling of the minority class (source), SMOTE (source), adjusting decision thresholds, and usage of more robust methods such as support vector machines (source). I experimented with several of these techniques and ...
 
-| Technique(s)       | True Positive | True Negative | False Positive | False Negative |
-|---------------|---------------|---------------|---------------|---------------|
-| SMOTE              | 1104          | 36350         | 17238          | 232            |
-| Weights            | 1104          | 36350         | 17238          | 232            |
-| Decision Threshold |               |               |                |                |
+## Hyperparameter Tuning
+
+over_ratio, decision threshold, etc...
 
 ## Variable Selection
+
+In terms of interaction terms, ... I did not explore other interactions in this thesis due to time constraints and lack of rationale supporting the testing of such terms...
 
 While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes or not generalize well. Techniques used for variable selection include all-subset selection, step-wise AIC/BIC, LASSO, ridge regression, and elastic search. For this thesis, I did not explore all-subset selection or step-wise methods. The problem with all-subset selection is its need for high computational resources to compare each combination of features (2^p^). Step-wise methods are flawed due to their greedy approach being dependent on starting values and the lack of guarantee of an optimal solution. Hence, here I focus on elastic-net regression, a combination of LASSO and ridge regression.
 
@@ -199,7 +199,7 @@ In addition to elastic–net, I also tested nested models on predictors I did no
 
 For co-linear variables, I opted to compare AIC (metric of the predictive accuracy) and BIC (how likely the model is to be the "true" model). I compared the numerical course load a student takes in a given semester to the discrete categorization .......
 
-A summary of all variables considered for modeling and my verdicts are provided in the Appendix.
+A detailed record of all variables considered for modeling and my verdicts are provided in the Appendix. In summary, most variables remained ... since so many observations everything was significant. Notably, despite the deterministic relationship between load categories and load units, all four indicators of load were kept by elastic-net. This may suggest... However, for ease of interpretation, I opted to select the categorical versions (x, y) over their numeric counterparts. This is because they tended to have higher AIC and BIC scores, as well eliminating the lack of specific values... 
 
 ## Final Model
 
@@ -265,6 +265,8 @@ However, the calibration plot in Figure TODO tells a different story about the f
 
 My model has an intra-class correlation (ICC) of 0.96. This means that 96% of the variation in the outcome is due to differences between students. This could mean that ....
 
+Quantile resid and QQ plot using DHarma
+
 Finally, there is an abundance of evidence supporting the presence of under dispersion, meaning that the residual variance is smaller than expected. This could be a result of ...
 
 ## Model Summary
@@ -320,7 +322,7 @@ Code used for this thesis can be found at <https://github.com/sophiazyang/senior
 # Appendix
 
 | Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                                                          | Use in Final Model?                                         |
-|---------------|---------------|--------------------------|---------------|
+|-----------------|-----------------|----------------------|-----------------|
 | term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                                                       | No                                                          |
 | term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                                                            | Yes, better AIC/BIC than term_units                         |
 | prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                                                            | Yes                                                         |
