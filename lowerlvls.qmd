@@ -1,6 +1,6 @@
 ---
 title: "lower lvl classes"
-format: pdf
+format: html
 editor_options: 
   chunk_output_type: console
 ---
