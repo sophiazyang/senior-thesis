@@ -1,0 +1,230 @@
+---
+title: "model for each period"
+format: pdf
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: load-libraries
+#| message: false
+library(lme4)
+library(glmnet)
+library(pROC)
+library(tidymodels)
+library(rsample)
+library(themis)
+library(caret)
+library(performance)
+library(DHARMa)
+library(kableExtra)
+library(broom.mixed)
+library(tidyverse)
+```
+
+```{r}
+df <- readRDS("data/model_df.rds")
+
+df <- df |>
+  separate(term_enrolled,
+           into = c("sem_type", "acad_year"),
+           sep = " ", remove = FALSE) |>
+  mutate(acad_year = as.numeric(acad_year))
+  
+df_pre <- df |>
+  filter(timeperiod == "pre_covid") |>
+  dplyr::select(-c(year_enrolled, term_enrolled, course_ID, estimated, 
+                   did_indep_study, student_group, 
+                   max_units, final_grade, timeperiod))
+
+df_post <- df |>
+  filter(timeperiod == "post_covid") |>
+  dplyr::select(-c(year_enrolled, term_enrolled, course_ID, estimated, 
+                   did_indep_study, student_group, 
+                   max_units, final_grade, timeperiod))
+```
+
+## Train Test Split
+
+```{r}
+#| label: train-test-split
+set.seed(123)
+
+split <- group_initial_split(df_pre, group = masked_student_ID, prop = 0.8)
+train_pre <- training(split)
+test_pre  <- testing(split)
+
+split <- group_initial_split(df_post, group = masked_student_ID, prop = 0.8)
+train_post <- training(split)
+test_post  <- testing(split)
+```
+
+```{r}
+best_hyperparam <- readRDS("data/best_hyperparam.rds")
+best_thresh <- readRDS("data/best_thresh.rds")
+selected_vars <- readRDS("data/selected_vars.rds")
+```
+
+```{r}
+selected <- setdiff(selected_vars, c("term_units", "actual_units", 
+                                     "timeperiod_1", "timeperiod_2"))
+selected <- c(selected, "acad_year", "sem_type_Spring", "sem_type_Fall")
+
+glm_formula <- as.formula(
+  paste0("is_SU ~ ", paste(selected, collapse = " + "), 
+         " + (1 | masked_student_ID)")
+)
+
+glmer_pre <- recipe(is_SU ~ ., data = train_pre) |>
+  update_role(masked_student_ID, new_role = "id") |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_mutate(across(where(is.logical), as.factor)) |>
+  step_dummy(all_nominal_predictors(), -all_outcomes(), 
+             -masked_student_ID, one_hot = TRUE) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_zv(all_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+
+trained_pre <- prep(glmer_pre, retain = TRUE)
+glmer_pre <- bake(trained_pre, new_data = NULL)
+
+glmer_fit_pre <- glmer(
+  glm_formula,
+  data = glmer_pre,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
+)
+
+model_tidy_pre <- tidy(glmer_fit_pre, effects = "fixed", conf.int = TRUE) 
+kable(model_tidy_pre, digits = 3, caption = "GLMM Fixed Effects") |>
+  kable_styling(full_width = FALSE) |>
+  column_spec(1, width = "10em")
+```
+
+```{r}
+glmer_post <- recipe(is_SU ~ ., data = train_post) |>
+  update_role(masked_student_ID, new_role = "id") |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_mutate(across(where(is.logical), as.factor)) |>
+  step_dummy(all_nominal_predictors(), -all_outcomes(), 
+             -masked_student_ID, one_hot = TRUE) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_zv(all_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+
+trained_post <- prep(glmer_post, retain = TRUE)
+glmer_post <- bake(trained_post, new_data = NULL)
+
+glmer_fit_post <- glmer(
+  glm_formula,
+  data = glmer_post,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
+)
+
+model_tidy_post <- tidy(glmer_fit_post, effects = "fixed", conf.int = TRUE) 
+kable(model_tidy_post, digits = 3, caption = "GLMM Fixed Effects") |>
+  kable_styling(full_width = FALSE) |>
+  column_spec(1, width = "10em")
+```
+
+```{r}
+# ---- Extract means and SDs from the pre recipe ----
+step_idx_pre <- which(sapply(trained_pre$steps, inherits, what = "step_normalize"))
+norm_step_pre <- trained_pre$steps[[step_idx_pre]]
+
+means_pre <- norm_step_pre$means
+sds_pre   <- norm_step_pre$sds
+
+
+# ---- Extract means and SDs from the post recipe ----
+step_idx_post <- which(sapply(trained_post$steps, inherits, what = "step_normalize"))
+norm_step_post <- trained_post$steps[[step_idx_post]]
+
+means_post <- norm_step_post$means
+sds_post   <- norm_step_post$sds
+
+unscaled_pre <- model_tidy_pre
+unscaled_post <- model_tidy_post
+
+# Add a new column
+unscaled_pre$estimate_unscaled <- unscaled_pre$estimate
+
+for (v in names(sds_pre)) {
+  unscaled_pre$estimate_unscaled[unscaled_pre$term == v] <-
+    unscaled_pre$estimate[unscaled_pre$term == v] / sds_pre[v]
+}
+
+interaction_rows_pre <- grep(":", unscaled_pre$term)
+
+for (i in interaction_rows_pre) {
+  term <- unscaled_pre$term[i]
+  parts <- strsplit(term, ":")[[1]]
+
+  mult <- 1
+  for (p in parts) {
+    if (p %in% names(sds_pre)) {
+      mult <- mult * (1 / sds_pre[p])
+    }
+  }
+
+  unscaled_pre$estimate_unscaled[i] <- unscaled_pre$estimate[i] * mult
+}
+```
+
+```{r}
+unscaled_post$estimate_unscaled <- unscaled_post$estimate
+
+for (v in names(sds_post)) {
+  unscaled_post$estimate_unscaled[unscaled_post$term == v] <-
+    unscaled_post$estimate[unscaled_post$term == v] / sds_post[v]
+}
+
+interaction_rows_post <- grep(":", unscaled_post$term)
+
+for (i in interaction_rows_post) {
+  term <- unscaled_post$term[i]
+  parts <- strsplit(term, ":")[[1]]
+
+  mult <- 1
+  for (p in parts) {
+    if (p %in% names(sds_post)) {
+      mult <- mult * (1 / sds_post[p])
+    }
+  }
+
+  unscaled_post$estimate_unscaled[i] <- unscaled_post$estimate[i] * mult
+}
+
+```
+
+```{r}
+coef_compare <- unscaled_pre[, c("term", "estimate_unscaled")] |>
+  rename(est_pre = estimate_unscaled) |>
+  inner_join(
+    unscaled_post[, c("term", "estimate_unscaled")] |>
+      rename(est_post = estimate_unscaled),
+    by = "term"
+  ) |>
+  mutate(diff = est_post - est_pre) |>
+  arrange(desc(abs(diff)))   # optional sort by size of change
+
+kable(coef_compare, digits = 3,
+      caption = "Unscaled Coefficient Differences (post − pre)") |>
+  kable_styling(full_width = FALSE) |>
+  column_spec(1, width = "10em")
+
+```
+
