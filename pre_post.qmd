@@ -1,6 +1,6 @@
 ---
 title: "model for each period"
-format: pdf
+format: html
 editor_options: 
   chunk_output_type: console
 ---
@@ -101,10 +101,12 @@ glmer_fit_pre <- glmer(
   control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
 )
 
-model_tidy_pre <- tidy(glmer_fit_pre, effects = "fixed", conf.int = TRUE) 
+model_tidy_pre <- tidy(glmer_fit_pre, effects = "fixed", conf.int = TRUE) |>
+  select(-effect)
 kable(model_tidy_pre, digits = 3, caption = "GLMM Fixed Effects") |>
   kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
+  column_spec(1, width = "10em", 
+              extra_css = "word-wrap: break-word; white-space: normal;")
 ```
 
 ```{r}
@@ -137,7 +139,8 @@ glmer_fit_post <- glmer(
 model_tidy_post <- tidy(glmer_fit_post, effects = "fixed", conf.int = TRUE) 
 kable(model_tidy_post, digits = 3, caption = "GLMM Fixed Effects") |>
   kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
+  column_spec(1, width = "10em", 
+              extra_css = "word-wrap: break-word; white-space: normal;")
 ```
 
 ```{r}
@@ -224,7 +227,7 @@ coef_compare <- unscaled_pre[, c("term", "estimate_unscaled")] |>
 kable(coef_compare, digits = 3,
       caption = "Unscaled Coefficient Differences (post − pre)") |>
   kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
-
+  column_spec(1, width = "10em", 
+              extra_css = "word-wrap: break-word; white-space: normal;")
 ```
 

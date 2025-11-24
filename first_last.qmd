@@ -1,6 +1,6 @@
 ---
 title: "first and last year"
-format: pdf
+format: html
 editor_options: 
   chunk_output_type: console
 ---
@@ -94,10 +94,12 @@ glmer_fit_2015 <- glmer(
   control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
 )
 
-model_tidy_2015 <- tidy(glmer_fit_2015, effects = "fixed", conf.int = TRUE) 
+model_tidy_2015 <- tidy(glmer_fit_2015, effects = "fixed", conf.int = TRUE) |>
+  select(-effect)
 kable(model_tidy_2015, digits = 3, caption = "GLMM Fixed Effects") |>
   kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
+  column_spec(1, width = "10em", 
+              extra_css = "word-wrap: break-word; white-space: normal;")
 ```
 
 ```{r}
@@ -127,10 +129,12 @@ glmer_fit_2024 <- glmer(
   control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
 )
 
-model_tidy_2024 <- tidy(glmer_fit_2024, effects = "fixed", conf.int = TRUE) 
+model_tidy_2024 <- tidy(glmer_fit_2024, effects = "fixed", conf.int = TRUE) |>
+  select(-effect)
 kable(model_tidy_2024, digits = 3, caption = "GLMM Fixed Effects") |>
   kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
+  column_spec(1, width = "10em", 
+              extra_css = "word-wrap: break-word; white-space: normal;")
 ```
 
 ```{r}
@@ -217,7 +221,8 @@ coef_compare <- unscaled_2015[, c("term", "estimate_unscaled")] |>
 kable(coef_compare, digits = 3,
       caption = "Unscaled Coefficient Differences (2024 − 2015)") |>
   kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
+  column_spec(1, width = "10em", 
+              extra_css = "word-wrap: break-word; white-space: normal;")
 
 ```
 
