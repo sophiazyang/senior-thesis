@@ -15,6 +15,7 @@ library(readxl)
 library(tidyverse)
 library(binom)
 library(kableExtra)
+library(patchwork)
 ```
 
 ## Load Data
@@ -260,7 +261,7 @@ clean_df <- term_df |>
 
 just_8sem_ids <- clean_df |>
   filter(!str_starts(term_enrolled, "Summer")) |>
-  distinct(masked_student_ID, term_enrolled) |>  # make sure each term counts once
+  distinct(masked_student_ID, term_enrolled) |>  # each term counts once
   group_by(masked_student_ID) |>
   summarise(max_semester = n(), .groups = "drop") |>
   filter(max_semester == 8) |>
@@ -386,7 +387,8 @@ load_comparison_df |>
 misalign <- numbered_df |>
   filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
   count(semester_num, academic_level_bot) |>
-  pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
+  pivot_wider(names_from = academic_level_bot, 
+              values_from = n, values_fill = 0)
 misalign
 
 saveRDS(misalign, "figures/misalign.rds")
@@ -515,21 +517,42 @@ saveRDS(eda_df, file = "data/eda_df.rds")
 ```{r}
 #| label: eda-gpa
 
-gpa_plot <- prevGPA_df |>
+gpa_summary <- prevGPA_df |>
   group_by(term_enrolled) |>
   summarise(
-    avg_semGPA = mean(semGPA, na.rm = TRUE),
+    q25 = quantile(semGPA, 0.25, na.rm = TRUE),
+    q50 = quantile(semGPA, 0.50, na.rm = TRUE),
+    q75 = quantile(semGPA, 0.75, na.rm = TRUE),
     .groups = "drop"
-  ) |>
-  ggplot(aes(x = term_enrolled, y = avg_semGPA, group = 1)) +
-  geom_line() +
+  )
+
+deans_list <- read_xlsx("deans_list.xlsx")
+deans_list <- deans_list |>
+  rename(term_enrolled = Term)
+
+gpa_plot <- ggplot() +
+  geom_ribbon(
+    data = gpa_summary,
+    aes(x = term_enrolled, ymin = q25, ymax = q75, group = 1),
+    fill = "lightgray"
+  ) +
+  geom_line(
+    data = gpa_summary,
+    aes(x = term_enrolled, y = q50, group = 1),
+  ) +
+  geom_line(
+    data = deans_list,
+    aes(x = term_enrolled, y = `Dean's List`, group = 1),
+    color = "red",
+  ) +
   labs(
-    title = "Average Semester GPA Over Time",
-    x = "Term Index",
-    y = "Average GPA"
+    title = "Semester GPA Quantiles and Dean’s List Rate Over Time",
+    x = "Term",
+    y = "Weighted GPA",
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+gpa_plot
 
 ggsave("figures/gpa_plot.png", plot = gpa_plot, dpi = 300)
 ```
@@ -542,7 +565,8 @@ all_grades <- c("A+", "A", "A-", "B+", "B", "B-",
 # Courses with no A-F grades
 courses_no_grades <- gpa_df |>
   group_by(term_enrolled, course_ID) |>
-  summarize(letter_grades = any(final_grade %in% all_grades), .groups = "drop") |>
+  summarize(letter_grades = any(final_grade %in% all_grades), 
+            .groups = "drop") |>
   filter(!letter_grades) |>
   dplyr::select(term_enrolled, course_ID)
 
@@ -658,7 +682,8 @@ compute_error <- function(p_thresh) {
 
 errors_by_p <- map_dfr(p_vals, compute_error)
 
-ggplot(errors_by_p, aes(x = p, y = error_rate, color = division)) +
+impute_error_plot <- ggplot(errors_by_p, 
+                            aes(x = p, y = error_rate, color = division)) +
   geom_line() +
   geom_point() +
   labs(
@@ -668,6 +693,8 @@ ggplot(errors_by_p, aes(x = p, y = error_rate, color = division)) +
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
+impute_error_plot
+ggsave("figures/impute_error_plot.png", impute_error_plot)
 
 best_p <- errors_by_p |>
   group_by(division) |>
@@ -712,7 +739,8 @@ confusion_table <- map_dfr(p_vals, function(p_thresh) {
 confusion_long <- confusion_table |>
   pivot_longer(cols = TP:TN, names_to = "metric", values_to = "count")
 
-confusion_metrics <- ggplot(confusion_long, aes(x = threshold, y = count, color = metric)) +
+confusion_metrics <- ggplot(confusion_long, 
+                            aes(x = threshold, y = count, color = metric)) +
   geom_line() +
   facet_wrap(~division, scales = "free_y") +
   labs(
@@ -724,8 +752,7 @@ confusion_metrics <- ggplot(confusion_long, aes(x = threshold, y = count, color 
   theme_minimal() +
   theme(legend.position = "bottom")
 confusion_metrics
-
-saveRDS(confusion_metrics, "figures/impute_confusion_plot")
+ggsave("figures/impute_confusion_plot.png", confusion_metrics)
 ```
 
 ```{r}
@@ -758,7 +785,8 @@ student_div_props_no_major <- student_div_props_no_major |>
 predicted_divisions <- student_div_props_no_major |>
   filter(estimated_flag) |>
   group_by(masked_student_ID) |>
-  summarise(predicted_divisions = paste(division, collapse = ", "), .groups = "drop")
+  summarise(predicted_divisions = paste(division, collapse = ", "), 
+            .groups = "drop")
 
 predicted_majors <- predicted_divisions |>
   count(predicted_divisions, sort = TRUE)
@@ -846,7 +874,8 @@ student_div_props <- student_div_counts |>
 
 # Get "true" divisions
 student_flags <- students_with_major |>
-  dplyr::select(masked_student_ID, student_group, is_art_humanity:is_natural_sci) |>
+  dplyr::select(masked_student_ID, student_group, 
+                is_art_humanity:is_natural_sci) |>
   pivot_longer(
     cols = is_art_humanity:is_natural_sci,
     names_to = "division_flag",
@@ -865,7 +894,8 @@ student_flags <- students_with_major |>
   distinct()
 
 check_table <- student_div_props |>
-  left_join(student_flags, by = c("masked_student_ID", "student_group", "division"))
+  left_join(student_flags, 
+            by = c("masked_student_ID", "student_group", "division"))
 
 # Compute classification error at a given threshold
 compute_error <- function(p_thresh) {
@@ -910,12 +940,12 @@ accuracy_by_group <- student_flags_estimated |>
   ) |>
   arrange(division, student_group)
 
-accuracy_by_year <- ggplot(accuracy_by_group, aes(x = student_group, y = best_p, color = division)) +
+accuracy_by_year <- ggplot(accuracy_by_group, 
+                    aes(x = student_group, y = best_p, color = division)) +
   geom_point(size = 3) +
   geom_line(aes(group = division), linewidth = 1) +
-  scale_color_brewer(palette = "Set2") +
   labs(
-    title = "Best Thresholds by Student Group and Division",
+    title = "Best Thresholds",
     x = "Student Group",
     y = "Best Threshold",
     color = "Division"
@@ -925,15 +955,13 @@ accuracy_by_year <- ggplot(accuracy_by_group, aes(x = student_group, y = best_p,
     axis.text.x = element_text(angle = 45, hjust = 1),
     panel.grid.minor = element_blank()
   )
-accuracy_by_year
-ggsave("figures/impute_accuracy_by_year.png", plot = accuracy_by_year, dpi = 300)
 
-error_by_years_plot <- ggplot(accuracy_by_group, aes(x = student_group, y = min_error, color = division)) +
+error_by_years_plot <- ggplot(accuracy_by_group, 
+                    aes(x = student_group, y = min_error, color = division)) +
   geom_point(size = 3) +
   geom_line(aes(group = division), linewidth = 1) +
-  scale_color_brewer(palette = "Set1") +
   labs(
-    title = "Minimum Error by Student Group and Division",
+    title = "Minimum Error",
     x = "Student Group",
     y = "Minimum Error",
     color = "Division"
@@ -943,8 +971,12 @@ error_by_years_plot <- ggplot(accuracy_by_group, aes(x = student_group, y = min_
     axis.text.x = element_text(angle = 45, hjust = 1),
     panel.grid.minor = element_blank()
   )
-error_by_years_plot
-ggsave("figures/impute_error_by_year.png", plot = error_by_years_plot, dpi = 300)
+
+impute_by_year_plot <- (accuracy_by_year + error_by_years_plot) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+impute_by_year_plot
+ggsave("figures/impute_by_year.png", plot = impute_by_year_plot, dpi = 300)
 ```
 
 ## Final Data Cleaning

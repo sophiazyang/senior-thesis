@@ -173,21 +173,29 @@ In addition to constructing variables for major divisions and time period relati
 
 ## Exploratory Data Analysis
 
-Before fitting any models, I conducted a brief exploratory analysis. In Figure 1, I plot changes in the proportion of student-course pairs which have the final grade of either "S" or "U". The data used represent all records of courses taught at Durham or online to Trinity undergraduates who follow the standard eight semester graduation timeline. The results verify my expectation of a massive surge in S/U grades during the Spring 2020 semester in which all courses could be taken S/U. However, it also reveals a large discrepancy between Fall 2012-Fall 2019 with the total proportion of grades being taken S/U less than 2.5% of the time, compared to averages around 5% in Fall 2020 through Spring 2025. A very similar plot (not shown) was drawn with counts on the y-axis as the number of enrolled students and hence the approximate number of courses taken per term stays consistent across all years.
+Before fitting any models, I conducted a brief exploratory analysis. For Figures 1-3, the data are more inclusive than my model dataset. Figures 1-3 have dropped study away and summer courses as well as only retaining Trinity undergraduates who graduated in eight semesters or non-transfer students who matriculated in 2022 and beyond. Figures 4 and 5 were created using the modeling dataset from the process described in the Data Cleaning section, above.
 
-![Fig 1. test caption!](figures/prop_su_plot.png){width="1000"}
+In Figure 1, I plot changes in the proportion of student-course pairs which have the final grade of either "S" or "U". The results verify my expectation of a massive surge in S/U grades during the Spring 2020 semester in which all courses could be taken S/U. However, it also reveals a large discrepancy between Fall 2012-Fall 2019 with the total proportion of grades being taken S/U less than 2.5% of the time, compared to averages around 5% in Fall 2020 through Spring 2025. A very similar plot (not shown) was drawn with counts on the y-axis as the number of enrolled students and hence the approximate number of courses taken per term stays consistent across all years.
 
-To put the shift in S/U grades into context with all grades, Figure 2 uses the same data but shows relative proportions of grade categories. I grouped +/- letter grades together for ease of interpretation, although +/- grades are be associated with different GPA points (with the exception of A+ and A). "No Credit" refers to a variety of grades including failing grades (F and U), withdrawals (W), incomplete (I), audit (AD), and other miscellaneous grades that do not impact a student's GPA. Over time, it's clear that the proportion of A's given has steadily increased since Fall 2012, with a dip in Spring 2020 likely due to pandemic impacts as S's rose sharply. The proportion of S's seeminingly surpassed D's within the first five years of its introduction. From the pandemic onwards, the proportion of S's have also overtaken the proportion of C's. From the declining trend in B's, it is possible that without policy changes S's may even surpass B's in the coming academic terms. Additionally, the prominence of non-credit grades over D's seems to signal the lack of use a D has in the modern academic system. While beyond the scope of this thesis, it could be hypothesized that students may be opting for non-credit grades to avoid drops in GPA. What is striking is that in the 2024-2025 academic year, for the first time (from my understanding), A's made up over 80% of all grades, providing evidence towards continued grade inflation in Duke University's Trinity College of Arts & Sciences.
+![Bar chart of the proportion of all grades given to Trinity College undergraduate students taught at Durham or online in Spring and Fall terms from Fall 2012 to Spring 2025. The prominent, red peak in Spring 2020 indicates the impact of pandemic policies during that term. Prior to the pandemic, there seems to be a slight increasing trend in S/Us. In contrast, terms following Spring 2020 are relatively stable at a higher proportion of S/U grades with no increasing or decreasing trends. Note that changes in S/Us may be related to the number of courses with mandatory S/U grading.](figures/prop_su_plot.png)
 
-![Fig 2. test caption!](figures/grade_dist_plot.png){width="1000"}
+To put the shift in S/U grades into context with all grades, Figure 2 uses the same data but shows relative proportions of grade categories. Over time, it's clear that the proportion of A's given has steadily increased since Fall 2012, with a dip in Spring 2020 likely due to pandemic impacts as S's rose sharply. The proportion of S's seeminingly surpassed D's within the first five years of its introduction. From the pandemic onwards, the proportion of S's have also overtaken the proportion of C's. From the declining trend in B's, it is possible that without policy changes S's may even surpass B's in the coming academic terms. Additionally, the prominence of non-credit grades over D's seems to signal the lack of use a D has in the modern academic system. While beyond the scope of this thesis, it could be hypothesized that students may be opting for non-credit grades to avoid drops in GPA. What is striking is that in the 2024-2025 academic year, for the first time (from my understanding), A's made up over 80% of all grades, providing evidence towards continued grade inflation in Duke University's Trinity College of Arts & Sciences.
 
-For more clarity on grade inflation at Duke University, Figure 3 presents average student GPAs from .... Trends of grade inflation are also supported by increasing cutoffs for the Dean's List, a distinction awarded for students in top class rank percentiles, in both Trinity and Pratt \[source\].
+![Line plot of relative proportions of final grades in each of 6 categories. Plus and minute (+/-) letter grades are together for ease of interpretation, although +/- grades are be associated with different GPA points (with the exception of A+ and A). "No Credit" refers to a variety of grades including failing grades (F and U), withdrawals (W), incomplete (I), audit (AD), and other miscellaneous grades that do not impact a student's GPA.](figures/grade_dist_plot.png)
 
-![Fig 3. test caption! try to show percentiles on this/overlay dean's list!!](figures/gpa_plot.png){width="1000"}
+For more clarity on grade inflation at Duke University, I plot median and quantiles of weighted semester GPAs in my dataset. The plot is also supplemented by historic Dean's List (a distinction awarded for students in top class rank percentiles cutoffs) from the Office of the University Registrar @dean_list. From Figure 3, there is a clear trend of increasing weighted GPAs throughout the period from Fall 2012 to Spring 2025. Understandably, there is a spike in GPAs during the pandemic. Yet, even with a return to normalcy in Fall 2022, GPAs continue to steadily rise. In the 2024-2025 academic year, GPAs have reached the maximum of 4.0. Perfection is now the norm.
 
-Figure 4 presents a summary of the proportion of all courses taken by Trinity undergraduates from Fall 2012 through Spring 2025 by the final grades given. \[be more particular about the colors in this plot please...\]
+![Plot displaying trends in Trinity undergraduate students' weighted GPAs from Fall 2012 through Spring 2025. In black is the median semester weighted GPA from my dataset. The gray bands represent the 25th and 75th quantiles of weighted GPAs. Overlaid in red are the historic cutoffs for Dean's List in Trinity. Dean's List was paused in Spring 2020, Fall 2020, and Spring 2021 due to pandemic era policies.](figures/gpa_plot.png)
+
+Figures 1 through 3 have included mandatory S/U courses. ...
+
+Figure 4 presents a summary of the proportion of all courses taken by Trinity undergraduates from Fall 2012 through Spring 2025 by the final grades given. As a reminder, I do not have information on whether or not a course is officially classified as "Graded Only" or "S/U required". Instead, if no students received grades A-F I classify the course as "S/U Required". If no students received grades S or U I classify the course as "All Graded".
+
+![Fig 4. test caption! fix the colors!](figures/grade_type_plot.png)
 
 Figure 5 explores nuances in the total number of S/Us students have taken. Please note that in addition to dropping summer and study away courses, this data has filtered out S/Us from courses where no A-F letter grades were given to any student and only considers full (1.0) credit courses.
+
+![Fig 5. test caption!!](figures/total_su_plot.png)
 
 # Methodology
 
@@ -203,19 +211,19 @@ In addition to ambiguous majors, there are also a significant number of unknown 
 
 I used labeled data to inform my imputation, assuming that there has been no significant change in the distribution of courses a student takes in their major(s). Initial attempts included experimentation to determine the best threshold for number of courses and major divisions. However, using number of courses taken does not extend well to students who have not completed a full eight semesters. In fact, it is plausible that some students remain undecided in their first several semesters, some students space out their requirements across all four years, and some students focus on their major and only later are reminded of general education requirements.
 
-My current approach is to use proportion of 200 and above levels courses a student has taken per division to assign major divisions. With a 0.93%, 0.87%, and 0.87% accuracy for major divisions, the data suggested a threshold of 0.5, 0.4, 0.3 for Arts & Humanities, Natural Sciences, and Social Sciences respectively. The high threshold for Arts & Humanities logically makes sense, the more classes more likely to be majoring. However, the threshold for Social Sciences seems abnormally low as it insinuates a student who has a major in Social Sciences only takes roughly a third of their courses in Social Sciences. However, it should also be taken into consideration that 1) many students end up double majoring, 2) students might have minors or certificates in other divisions, 3) students could have other academic interests, 4) courses could be cross-listed across divisions, and 5) categorization of majors is somewhat debatable. To provide as example of 5, as defined by Trinity, African & African American Studies is classified as a Social Science while Asian & Middle Eastern Studies is in Arts & Humanities. Looking at the confusion metrics for each proportion threshold in Figure TODO, it becomes evident that the increase in false positives with higher thresholds offsets the increase in true positives.
+My current approach is to use proportion of 200 and above levels courses a student has taken per division to assign major divisions. With a 0.93%, 0.87%, and 0.87% accuracy for major divisions, the data suggested a threshold of 0.5, 0.4, 0.3 for Arts & Humanities, Natural Sciences, and Social Sciences respectively (Figure 6). The high threshold for Arts & Humanities logically makes sense, the more classes more likely to be majoring. However, the threshold for Social Sciences seems abnormally low as it insinuates a student who has a major in Social Sciences only takes roughly a third of their courses in Social Sciences. However, it should also be taken into consideration that 1) many students end up double majoring, 2) students might have minors or certificates in other divisions, 3) students could have other academic interests, 4) courses could be cross-listed across divisions, and 5) categorization of majors is somewhat debatable. To provide as example of 5, as defined by Trinity, African & African American Studies is classified as a Social Science while Asian & Middle Eastern Studies is in Arts & Humanities. Looking at the confusion metrics for each proportion threshold in Figure 7, it becomes evident that the increase in false positives with higher thresholds offsets the increase in true positives.
 
-\[figures/....\]
+![Fig 6. test caption!!](figures/impute_error_plot.png)
 
-To ensure that this imputation strategy is not dependent on when a student is enrolled, I also tested this imputation strategy by class year. ...
+![Fig 7. test caption!!](figures/impute_confusion_plot.png)
 
-\[figures/impute_accuracy_by_year.png\]
+To ensure that this imputation strategy is not dependent on when a student is enrolled, I also tested this imputation strategy by class year. Results in Figure 8 show slight variations in the best threshold and error rates across class years. However, there does not appear to be a significant correlation between student group and thresholds for imputation. Hence, I deem that my approach is appropriate to be applied to the subsequent classes on which I am imputing.
 
-\[figures/impute_error_by_year.png\]
+![Fig 8. test caption!!](figures/impute_by_year.png)
 
 ## Class Imbalance
 
-An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to narrow my dataset to Fall 2015-Spring 2025. This marginally helped with an improved imbalance to 97.7% vs 2.3%, but this is not nearly enough.
+An important detail to note about my data is that there is a large class imbalance. After removing courses for which 99% of students received no A-F grades, only roughly 2% of rows were positive for S/U. This means that the overwhelming majority of 98.0% of rows were taken either A-F (or the course was incomplete, withdrawn, taken as an audit, etc). In this case, the best model to minimize error would chose to predict that courses are not taken on S/U basis. Figure TODO shows that class imbalance improves over time with more recent years having a slightly higher proportion of S/Us. Hence, I opted to narrow my dataset to Fall 2015-Spring 2025. This marginally helped with an improved imbalance to 97.6% vs 2.37%, but this is not nearly enough.
 
 Class imbalance is not an unique problem. The literature suggests methods such as the use of weights (source), oversampling of the minority class (source), SMOTE (source), adjusting decision thresholds, and usage of more robust methods such as support vector machines (source). I experimented with several of these techniques and ...
 
@@ -265,30 +273,6 @@ To evaluate model fit I use a variety of metrics including but not limited to:
 
 # Results
 
-## Exploratory Data Analysis
-
-Before fitting my model, I created several exploratory plots. In these plots, I use a more complete dataset than I do for my model by including mandatory S/U courses, non-traditional students, ....
-
-\*mention enrollment at Duke stable across years
-
-\[prop of grades given out A, B, etc by AY/term + GPAs\]
-
-\[prop of overloads, S/U, \# plans by CY\]
-
-\[# S/U required(?) courses\]
-
-\[prop S/U, S/U allowed courses, course sizes –\> across divisions\]
-
-\[acad lvl and catalog lvl\]
-
-\[acad lvl/catalog lvl and S/U\]
-
-\[# overloads and \# S/U\]
-
-\[time periods –\> increase S/U decrease in W, 2014 vs 2019 vs 2024\]
-
-\[student majors/divisions by AY\]
-
 ## Performance Metrics
 
 The confusion matrix from my model is shown in TODO. My model correctly identified 76.4% of negative cases (specificity = 0.764), but it only correctly identified 67.4% of positive cases (sensitivity or recall = 0.674). The precision of my model is 0.99, meaning 99% of all predicted positives were truly positive. Balancing precision and recall, the F1 score was 0.802.
@@ -309,6 +293,8 @@ Finally, there is an abundance of evidence supporting the presence of under disp
 
 \[insert table of exponentiated coefficients and signif\]
 
+Smaller models....
+
 # Discussion
 
 Based on model time period really matters...but not much else
@@ -316,6 +302,8 @@ Based on model time period really matters...but not much else
 Bc of the high ICC seems like Student level beliefs and stances for and against flexible grading based on cultural beliefs or personal values and whatever else plays a large role in...
 
 S/U was supposed to help with mental health things -\> comparing with data from DUCkI it says... so i think ...
+
+\[DuCKl data\]
 
 ## Limitations
 
@@ -358,7 +346,7 @@ Code used for this thesis can be found at <https://github.com/sophiazyang/senior
 # Appendix
 
 | Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                                                          | Use in Final Model?                                         |
-|-----------------|-----------------|--------------------|-----------------|
+|------------------|------------------|-------------------|------------------|
 | term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                                                       | No                                                          |
 | term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                                                            | Yes, better AIC/BIC than term_units                         |
 | prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                                                            | Yes                                                         |
