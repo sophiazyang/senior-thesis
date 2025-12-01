@@ -27,16 +27,10 @@ library(tidyverse)
 #| label: load-data
 df <- readRDS("data/model_df.rds")
 
-nrow(df)
-sum(df$division == "WRITING")
-sum(df$division == "Engineering")
-
 df <- df |>
   dplyr::select(-c(term_enrolled, course_ID, estimated, 
                    did_indep_study, student_group, year_enrolled, 
-                   max_units, final_grade)) |>
-  filter(division != "Engineering") |>
-  filter(division != "WRITING")
+                   max_units, final_grade))
 ```
 
 ## Train Test Split
@@ -589,12 +583,12 @@ glmer_recipe <- recipe(is_SU ~ ., data = train_df) |>
   step_mutate(across(where(is.logical), as.factor)) |>
   step_dummy(all_nominal_predictors(), -all_outcomes(), 
              -masked_student_ID, one_hot = TRUE) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio) |>
   step_interact(
     terms = ~ is_natural_sci:starts_with("division_") +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
+  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors())
 
