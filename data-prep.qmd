@@ -1,5 +1,5 @@
 ---
-title: "Data Playground"
+title: "Data Preparation"
 format: pdf
 editor: visual
 author: Sophia Yang
@@ -13,7 +13,6 @@ editor_options:
 
 library(readxl)
 library(tidyverse)
-library(viridis)
 library(binom)
 library(kableExtra)
 ```
@@ -30,52 +29,6 @@ file2 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sop
                     guess_max = 10000)
 
 combined_df <- rbind(file1, file2)
-
-saveRDS(combined_df, file = "data/1-combined.rds")
-glimpse(combined_df)
-```
-
-## Data Notes
-
-```{r}
-#| label: final-grades
-
-final_grades <- combined_df |>
-  count(final_grade) |>
-  mutate(prop = n / sum(n)) |>
-  arrange(n)
-print(final_grades, n = Inf)
-
-```
-
-```{r}
-#| label: class_component
-
-class_components <- combined_df |>
-  count(class_component) |>
-  mutate(prop = n / sum(n)) |>
-  arrange(n)
-print(class_components, n = Inf)
-```
-
-```{r}
-#| label: division
-
-class_division <- combined_df |>
-  count(division) |>
-  mutate(prop = n / sum(n)) |>
-  arrange(n)
-print(class_division, n = Inf)
-```
-
-```{r}
-#| label: class_location
-
-class_location <- combined_df |>
-  count(location) |>
-  mutate(prop = n / sum(n)) |>
-  arrange(desc(n))
-print(class_location, n = Inf)
 ```
 
 ```{r}
@@ -100,19 +53,33 @@ missing_summary <- combined_df |>
 print(missing_summary, n = Inf)
 ```
 
-## Data Cleaning/Variable Creation
+## Clean Data
 
 ```{r}
-#| label: clean-data
+#| label: reduce-data
 
-clean_df <- combined_df |> 
+smaller_df <- combined_df |> 
+  filter(str_starts(student_acad_prog, "A&S")) |> # Remove Pratt
+  filter(str_sub(student_group, 1, 2) != "TR") |> # Remove Transfers
   mutate(
-    student_acad_prog = ifelse(str_starts(student_acad_prog, "A&S"), 
-                               "Trinity", "Pratt"),
+    student_group = str_replace(student_group, "^..", "20"),
+    student_group = as.numeric(student_group),
     term_enrolled = as.numeric(term_enrolled),
-    total_enrolled = Tot_Enrl,
   ) |>
-  select(-c(career, course_crosslisted, class_nbr_rev, Tot_Enrl))
+  filter(student_group > 2011) |> # Remove prior to P/F -> S/U F2012
+  mutate( # Compute number of academic plans
+    num_plans = rowSums(
+      !is.na(pick(first_major, second_major,
+                  first_minor, second_minor,
+                  first_certificate, second_certificate))
+    )
+  ) |> # Drop extra variables
+  dplyr::select(-c(
+    first_minor, first_minor_desc, second_minor, second_minor_desc, 
+    first_certificate, first_certificate_desc, 
+    second_certificate, second_certificate_desc, 
+    career, student_acad_prog, course_crosslisted, class_nbr_rev
+  )) 
 ```
 
 ```{r}
@@ -120,33 +87,6 @@ clean_df <- combined_df |>
 
 term_lookup <- tribble(
   ~term_number, ~term_enrolled_new,  ~year_enrolled,
-  1180,         "Fall 2006",        "2006-2007",
-  1190,         "Spring 2007",      "2006-2007",
-  1200,         "Summer Full 2007", "2006-2007",
-  1205,         "Summer 1 2007",    "2006-2007",
-  1210,         "Summer 2 2007",    "2007-2008",
-  1220,         "Fall 2007",        "2007-2008",
-  1230,         "Spring 2008",      "2007-2008",
-  1240,         "Summer Full 2008", "2007-2008",
-  1245,         "Summer 1 2008",    "2007-2008",
-  1250,         "Summer 2 2008",    "2008-2009",
-  1260,         "Fall 2008",        "2008-2009",
-  1270,         "Spring 2009",      "2008-2009",
-  1280,         "Summer Full 2009", "2008-2009",
-  1285,         "Summer 1 2009",    "2008-2009",
-  1290,         "Summer 2 2009",    "2009-2010",
-  1300,         "Fall 2009",        "2009-2010",
-  1310,         "Spring 2010",      "2009-2010",
-  1320,         "Summer Full 2010", "2009-2010",
-  1325,         "Summer 1 2010",    "2009-2010",
-  1330,         "Summer 2 2010",    "2010-2011",
-  1340,         "Fall 2010",        "2010-2011",
-  1350,         "Spring 2011",      "2010-2011",
-  1360,         "Summer Full 2011", "2010-2011",
-  1365,         "Summer 1 2011",    "2010-2011",
-  1370,         "Summer 2 2011",    "2011-2012",
-  1380,         "Fall 2011",        "2011-2012",
-  1390,         "Spring 2012",      "2011-2012",
   1400,         "Summer Full 2012", "2011-2012",
   1405,         "Summer 1 2012",    "2011-2012",
   1410,         "Summer 2 2012",    "2012-2013",
@@ -206,33 +146,6 @@ term_lookup <- tribble(
 )
 
 term_levels <- c(
-  "Fall 2006",
-  "Spring 2007",
-  "Summer Full 2007",
-  "Summer 1 2007",
-  "Summer 2 2007",
-  "Fall 2007",
-  "Spring 2008",
-  "Summer Full 2008",
-  "Summer 1 2008",
-  "Summer 2 2008",
-  "Fall 2008",
-  "Spring 2009",
-  "Summer Full 2009",
-  "Summer 1 2009",
-  "Summer 2 2009",
-  "Fall 2009",
-  "Spring 2010",
-  "Summer Full 2010",
-  "Summer 1 2010",
-  "Summer 2 2010",
-  "Fall 2010",
-  "Spring 2011",
-  "Summer Full 2011",
-  "Summer 1 2011",
-  "Summer 2 2011",
-  "Fall 2011",
-  "Spring 2012",
   "Summer Full 2012",
   "Summer 1 2012",
   "Summer 2 2012",
@@ -291,7 +204,7 @@ term_levels <- c(
   "Spring 2025"
 )
 
-clean_term_df <- clean_df |>
+term_df <- smaller_df |>
   left_join(
     term_lookup,
     by = c("term_enrolled" = "term_number")
@@ -300,16 +213,13 @@ clean_term_df <- clean_df |>
     term_enrolled = factor(term_enrolled_new,
                            levels = term_levels, ordered = TRUE),
   ) |>
-  select(-c(term_enrolled_new)) |>
-  filter(term_enrolled > "Summer 2 2012")
-
-saveRDS(clean_term_df, file = "data/2-fall2012.rds")
+  dplyr::select(-c(term_enrolled_new))
 ```
 
 ```{r}
-#| label: data-types
-
-typed_df <- clean_term_df |>
+#| label: types-SU-timeperiod
+clean_df <- term_df |>
+  rename(num_students = Tot_Enrl) |>
   mutate(
     catalog_level = factor(
       catalog_level,
@@ -322,100 +232,70 @@ typed_df <- clean_term_df |>
     ),
     masked_student_ID = as.character(masked_student_ID),
     academic_level_bot = recode(academic_level_bot,
-                                "1st Year Undergraduate" = "Freshman",
+                                "1st Year Undergraduate" = "1st Year",
                                 "5th Year Undergraduate" = "5th Year"
                                 ),
     academic_level_bot = factor(
       academic_level_bot,
-      levels = c("Freshman", "Sophomore", "Junior", "Senior", "5th Year"),
+      levels = c("1st Year", "Sophomore", "Junior", "Senior", "5th Year"),
       ordered = TRUE
-    )
-  )
-
-saveRDS(typed_df, file = "data/3-types.rds")
-```
-
-```{r}
-#| label: timeperiod
-
-timeperiod_df <- typed_df |>
-  mutate(
+    ),
     is_SU = if_else(final_grade %in% c("S", "U", "P"), 1, 0),
     timeperiod = case_when(
       term_enrolled < "Spring 2020" ~ "pre_covid",
       term_enrolled > "Summer 2 2022" ~ "post_covid",
       TRUE ~ "dur_covid"
-    )
-  )
-
-saveRDS(timeperiod_df, file = "data/4-timeperiod.rds")
-```
-
-```{r}
-#| label: admission
-
-# Drop transfer students and students with unknown matriculuation
-timeperiod_df |>
-  mutate(starts_with_TR = str_sub(student_group, 1, 2) == "TR") |>
-  count(starts_with_TR)
-
-admit_df <- timeperiod_df |>
-  filter(str_sub(student_group, 1, 2) != "TR") |>
-  mutate(
-    student_group = str_replace(student_group, "^..", "20"),
-    student_group = as.numeric(student_group)
-  )
-
-saveRDS(admit_df, file = "data/5-admission.rds")
-```
-
-```{r}
-#| label: num-plans
-
-plans_df <- admit_df |>
-  mutate(
-    num_plans = rowSums(
-      !is.na(pick(first_major, second_major,
-                  first_minor, second_minor,
-                  first_certificate, second_certificate))
-    )
+    ),
+    timeperiod = factor(timeperiod, 
+                        levels = c("pre_covid", "dur_covid", "post_covid"), 
+                        ordered = TRUE)
   ) |>
-  select(-c(first_minor, first_minor_desc, 
-            second_minor, second_minor_desc, 
-            first_certificate, first_certificate_desc, 
-            second_certificate, second_certificate_desc))
-
-saveRDS(plans_df, file = "data/6-numplans.rds")
+  group_by(masked_student_ID) |>
+  mutate(did_indep_study = any(class_component == "IND")) |>
+  ungroup()
 ```
 
 ```{r}
-#| label: non-acad
+#| label: 8-sem-grads
 
-# all ACT courses are either NA or < 1 credit
-# majority of MUS and STU are < 1, assuming NA are < 1
-underload_df <- plans_df |>
-  group_by(masked_student_ID, term_enrolled) |>
-  mutate(term_units = sum(max_units, na.rm = TRUE)) |>   # total units that term
+just_8sem_ids <- clean_df |>
+  filter(!str_starts(term_enrolled, "Summer")) |>
+  distinct(masked_student_ID, term_enrolled) |>  # make sure each term counts once
   group_by(masked_student_ID) |>
-  mutate(
-  underload = as.integer(
-    any(term_units < 4 & !str_starts(term_enrolled, "Summer"))
-  )) |>
-  ungroup()
-  
-academ_df <- underload_df |>
-  filter(division != "Other") |>
-  filter(class_component != "ACT") |> 
-  filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
-  filter(!(class_component == "STU" & (max_units < 1 | is.na(max_units))))
+  summarise(max_semester = n(), .groups = "drop") |>
+  filter(max_semester == 8) |>
+  pull(masked_student_ID)
+
+only8_sem_df <- clean_df |> 
+  filter(masked_student_ID %in% just_8sem_ids | student_group >= 2022)
 ```
 
 ```{r}
 #| label: course-load
 
+# mark underload semesters (cannot S/U if underloading)
+actual_load_df <- only8_sem_df |>
+  group_by(masked_student_ID, term_enrolled) |>
+  mutate(actual_units = sum(max_units, na.rm = TRUE)) |>
+  ungroup() |>
+  mutate(actual_load = case_when(
+    actual_units < 4.0 ~ "underload",
+    actual_units == 4.0 ~ "normal",
+    actual_units > 4.0 ~ "overload"
+  ))
+
+# remove "non-academic" courses
+# all ACT courses are either NA or < 1 credit
+# majority of MUS and STU are < 1, assuming NA are < 1
+academ_df <- actual_load_df |>
+  filter(division != "Other") |>
+  filter(class_component != "ACT") |> 
+  filter(!(class_component == "MUS" & (max_units < 1 | is.na(max_units)))) |> 
+  filter(!(class_component == "STU" & (max_units < 1 | is.na(max_units))))
+
 course_load_df <- academ_df |>
-  arrange(masked_student_ID, term_enrolled) |>  # ensure semesters are in order
-  group_by(masked_student_ID, term_enrolled) |>  # aggregate per student per term
+  arrange(masked_student_ID, term_enrolled) |>
+  group_by(masked_student_ID, term_enrolled) |>
   summarise(
     term_units = sum(max_units, na.rm = TRUE),
     .groups = "drop"
@@ -427,11 +307,11 @@ course_load_df <- academ_df |>
     semester_num = cumsum(!grepl("^Summer", term_enrolled)),
     # Increment overload if term_units > 4
     num_overloads = cumsum(term_units > 4 & !grepl("^Summer", term_enrolled)),
-  ) |>
-  # Compute total overloads for each student
-  mutate(
-    total_overloads = max(num_overloads, na.rm = TRUE),
-    early_grad = if_else(max(semester_num, na.rm = TRUE) < 8, 1L, 0L)
+    load_status = case_when(
+      term_units < 4    ~ "underload",
+      term_units == 4   ~ "normal",
+      term_units > 4    ~ "overload",
+    )
   ) |>
   ungroup()
 
@@ -440,14 +320,77 @@ numbered_df <- academ_df |>
     course_load_df, by = c("masked_student_ID", "term_enrolled")
   )
 
-# academic_level_bot doesn't seem that trustworthy?
-# not as important now that we have complete course history for all students
-numbered_df |>
+# Compare actual vs acad units
+comparison_df <- numbered_df |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarise(
+    actual_units = unique(actual_units),
+    term_units   = unique(term_units),
+    .groups = "drop"
+  ) |>
+  mutate(
+    diff = actual_units - term_units,
+    same_units = (diff == 0),
+    underload_flag = actual_units < 4.0
+  )
+comparison_df |>
+  summarise(
+    n_total = n(),
+    n_diff = sum(!same_units),
+    pct_diff = 100 * n_diff / n_total,
+    mean_diff = mean(diff, na.rm = TRUE),
+    median_diff = median(diff, na.rm = TRUE)
+  )
+comparison_df |>
+  filter(!same_units) |>
+  group_by(term_enrolled) |>
+  summarise(
+    n = n(),
+    mean_diff = mean(diff, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  arrange(desc(n))
+
+# Compare actual vs acad load categories
+load_comparison_df <- numbered_df |>
+  group_by(masked_student_ID, term_enrolled) |>
+  summarise(
+    actual_load = unique(actual_load),
+    load_status = unique(load_status),
+    .groups = "drop"
+  ) |>
+  mutate(
+    same_load = (actual_load == load_status)
+  )
+load_comparison_df |>
+  summarise(
+    n_total = n(),
+    n_diff = sum(!same_load, na.rm = TRUE),
+    pct_diff = 100 * n_diff / n_total
+  )
+load_comparison_df |>
+  filter(!same_load) |>
+  count(actual_load, load_status) |>
+  arrange(desc(n))
+load_comparison_df |>
+  group_by(term_enrolled) |>
+  summarise(
+    n = n(),
+    n_diff = sum(!same_load, na.rm = TRUE),
+    pct_diff = 100 * n_diff / n,
+    .groups = "drop"
+  ) |>
+  arrange(desc(pct_diff))
+
+# academic_level_bot doesn't align with semester_num
+misalign <- numbered_df |>
   filter(!is.na(semester_num), !is.na(academic_level_bot)) |>
   count(semester_num, academic_level_bot) |>
   pivot_wider(names_from = academic_level_bot, values_from = n, values_fill = 0)
+misalign
 
-saveRDS(numbered_df, file = "data/7-courseload.rds")
+saveRDS(misalign, "figures/misalign.rds")
+
 ```
 
 ```{r}
@@ -462,10 +405,6 @@ away_df <- numbered_df |>
     )
   )
 
-# study away could be indicator of willingness to explore, 
-# taking advantage of alternative grading systems
-# (duke approved is TRC vs duke administered is graded), 
-# limited course offering, etc
 studied_away <- away_df |>
   group_by(masked_student_ID) |>
   summarise(
@@ -478,15 +417,11 @@ studied_away <- away_df |>
   )
 away_df <- away_df |>
   left_join(studied_away, by = "masked_student_ID")
-
-saveRDS(away_df, file = "data/8-abroad.rds")
 ```
 
 ```{r}
 #| label: summer
 
-# Summer courses could be indicators of financial aid, 
-# pre-med, lack of internship, retaking a course, etc
 summer_student <- away_df |>
   group_by(masked_student_ID) |>
   summarise(
@@ -498,31 +433,6 @@ summer_df <- away_df |>
 
 no_summer_df <- summer_df |>
   filter(!str_starts(term_enrolled, "Summer"))
-
-saveRDS(no_summer_df, file = "data/9-no-summer.rds")
-```
-
-```{r}
-#| label: missing-majors
-
-proportion_first_major <- no_summer_df |>
-  group_by(student_group, masked_student_ID) |>
-  summarise(
-    has_first_major = mean(!is.na(first_major_descr)),
-    .groups = "drop"
-  ) |>
-  group_by(student_group) |>
-  summarise(
-    prop_major = mean(has_first_major),
-    n_students = n(),
-    .groups = "drop"
-  )
-print(proportion_first_major, n = Inf)
-
-fy2010_df <- no_summer_df |>
-  filter(student_group > 2009)
-
-saveRDS(fy2010_df, file = "data/10-fy2010.rds")
 ```
 
 ```{r}
@@ -530,8 +440,8 @@ saveRDS(fy2010_df, file = "data/10-fy2010.rds")
 
 major_mapping <- read_excel("major_divisions.xlsx")
 
-student_divisions <- fy2010_df |>
-  select(masked_student_ID, first_major_descr, second_major_descr) |>
+student_divisions <- no_summer_df |>
+  dplyr::select(masked_student_ID, first_major_descr, second_major_descr) |>
   pivot_longer(cols = c(first_major_descr, second_major_descr), 
                names_to = "major_type", values_to = "major") |>
   filter(!is.na(major)) |>
@@ -544,21 +454,13 @@ student_divisions <- fy2010_df |>
     is_art_humanity = as.integer(any(is_art_humanity == 1, na.rm = TRUE)),
     is_social_sci   = as.integer(any(is_social_sci == 1, na.rm = TRUE)),
     is_natural_sci  = as.integer(any(is_natural_sci == 1, na.rm = TRUE)),
-    is_engr         = as.integer(any(is_engr == 1, na.rm = TRUE)),
     tbd             = as.integer(any(tbd == 1, na.rm = TRUE)),
     .groups = "drop"
   ) 
 
-# dropping 204 students with program 2 or unknown IDM
-student_divisions |>
-  filter(tbd == 1L) |>
-  summarise(n = n())
-
-divisions_df <- fy2010_df |>
+divisions_df <- no_summer_df |>
   left_join(student_divisions, by = "masked_student_ID") |> 
-  filter(!(tbd == 1L) | is.na(tbd))
-
-saveRDS(divisions_df, file = "data/11-major-div.rds")
+  filter(!(tbd == 1L) | is.na(tbd)) # Drop Program 2 and unknown IDM
 ```
 
 ```{r}
@@ -596,50 +498,80 @@ prevGPA_df <- semGPA_df |>
 gpa_df <- divisions_df |>
   left_join(
     prevGPA_df |> 
-      select(masked_student_ID, term_enrolled, prev_semGPA),
+      dplyr::select(masked_student_ID, term_enrolled, prev_semGPA),
     by = c("masked_student_ID", "term_enrolled")
-  ) |>
-  filter(!str_detect(location, "AWAY"))
+  )
 
-saveRDS(gpa_df, file = "data/12-gpa.rds")
+eda_df <- gpa_df |>
+  filter(division != "Engineering") |>
+  filter(division != "WRITING") |>
+  filter(!is.na(course_ID)) |>
+  filter(str_detect(location, "DURHAM") | str_detect(location, "ONLINE")) |>
+  filter(!is.na(catalog_level))
 
-class_components2 <- gpa_df |>
-  count(class_component) |>
-  mutate(prop = n / sum(n)) |>
-  arrange(n)
-print(class_components2, n = Inf)
+saveRDS(eda_df, file = "data/eda_df.rds")
 ```
 
 ```{r}
-#| label: indep-study
+#| label: eda-gpa
 
-course_counts <- gpa_df |>
-  group_by(term_enrolled, course_ID) |>
+gpa_plot <- prevGPA_df |>
+  group_by(term_enrolled) |>
   summarise(
-    num_students = n_distinct(masked_student_ID),
+    avg_semGPA = mean(semGPA, na.rm = TRUE),
     .groups = "drop"
-  )
+  ) |>
+  ggplot(aes(x = term_enrolled, y = avg_semGPA, group = 1)) +
+  geom_line() +
+  labs(
+    title = "Average Semester GPA Over Time",
+    x = "Term Index",
+    y = "Average GPA"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# Step 2: join back into your main pipeline
-final_clean_df <- gpa_df |>
-  left_join(course_counts, by = c("term_enrolled" = "term_enrolled", 
-                                  "course_ID" = "course_ID"))
+ggsave("figures/gpa_plot.png", plot = gpa_plot, dpi = 300)
+```
 
+```{r}
+#| label: remove-su-required
+all_grades <- c("A+", "A", "A-", "B+", "B", "B-", 
+                "C+", "C", "C-", "D+", "D", "D-", "F")
 
-final_clean_df <- final_clean_df |>
-  mutate(
-    did_indep_study = class_component == "IND"
-  )
+# Courses with no A-F grades
+courses_no_grades <- gpa_df |>
+  group_by(term_enrolled, course_ID) |>
+  summarize(letter_grades = any(final_grade %in% all_grades), .groups = "drop") |>
+  filter(!letter_grades) |>
+  dplyr::select(term_enrolled, course_ID)
 
-saveRDS(final_clean_df, file = "data/13-final.rds")
+nrow(courses_no_grades)
+
+graded_df <- gpa_df |>
+  anti_join(courses_no_grades, by = c("term_enrolled", "course_ID"))
+```
+
+```{r}
+#| label: filter-courses
+
+valid_courses_df <- graded_df |>
+  filter(division != "Engineering") |>
+  filter(division != "WRITING") |>
+  filter(!is.na(course_ID)) |>
+  filter(str_detect(location, "DURHAM") | str_detect(location, "ONLINE")) |>
+  filter(!is.na(catalog_level)) |>
+  # Remove non-credited courses (withdraws, audits, etc)
+  filter(final_grade %in% c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", 
+                            "D+", "D", "D-", "F", "S", "U"))
 ```
 
 ```{r}
 #| label: missing-data-after
 
-glimpse(final_clean_df)
+glimpse(valid_courses_df)
 
-missing_summary <- final_clean_df |>
+missing_summary <- valid_courses_df |>
   summarise(across(
     everything(),
     list(
@@ -658,451 +590,34 @@ missing_summary <- final_clean_df |>
 print(missing_summary, n = Inf)
 ```
 
-## EDA
-
-### Summer EDA
+## Impute Major Divisions
 
 ```{r}
-#| label: summer-eda
-# Divisions
-summer_df |> 
-  filter(str_starts(term_enrolled, "Summer")) |> 
-  count(division) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n) 
-summer_df |> 
-  filter(!str_starts(term_enrolled, "Summer")) |> 
-  count(division) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n)
+#| label: best-threshold
+students_with_major <- valid_courses_df |>
+  filter(!is.na(first_major) & student_group > 2019 & student_group < 2023) |>
+  filter(max_units >= 1)
 
-# S/U
-summer_df |> 
-  filter(str_starts(term_enrolled, "Summer")) |> 
-  count(is_SU) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n) 
-summer_df |> 
-  filter(!str_starts(term_enrolled, "Summer")) |> 
-  count(is_SU) |> 
-  mutate(prop = n / sum(n)) |> 
-  select(-n)
+division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences")
+p_vals <- seq(0.1, 0.9, by = 0.05)  # candidate proportion thresholds
 
-# Final Grades
-grade_order <- c("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", 
-                 "S", "D+", "D", "D-", "AD", "F", "No Credit")
-grade_prop <- summer_df |>
-  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "P", "CR", "WE")) |>
-  mutate(
-    final_grade = case_when(
-      final_grade %in% c("A+", "A") ~ "A",
-      final_grade %in% c("F", "I", "U", "W", "W*", "WP", "WF") ~ "No Credit",
-      TRUE ~ final_grade
-    ),
-    final_grade = factor(final_grade, levels = grade_order, ordered = TRUE),
-    is_summer = str_starts(term_enrolled, "Summer")
-  ) |>
-  group_by(is_summer, final_grade) |>
-  summarise(count = n(), .groups = "drop") |>
-  group_by(is_summer) |>
-  mutate(prop = count / sum(count))
-
-ggplot(grade_prop, aes(y = final_grade, x = prop, fill = is_summer)) +
-  geom_col(position = "dodge") +
-  scale_x_continuous(labels = scales::percent_format()) +
-  scale_fill_manual(values = c("FALSE" = "steelblue", "TRUE" = "orange"),
-                    labels = c("Non-Summer", "Summer")) +
-  labs(
-    title = "Distribution of Final Grades: Summer vs Non-Summer Classes",
-    y = "Final Grade",
-    x = "Proportion of Classes",
-    fill = ""
-  ) +
-  theme_minimal()
-```
-
-### Final DF EDA
-
-```{r}
-#| label: eda-enrollment
-
-plot_df <- final_clean_df |>
-  group_by(term_enrolled) |>
-  summarise(
-    n_students = n_distinct(masked_student_ID),
-    .groups = "drop"
-  ) |>
-  arrange(term_enrolled)
-
-ggplot(plot_df, 
-       aes(x = term_enrolled, y = n_students)
-      ) +
-  geom_col() +
-  labs(
-    title = "Number of Students per Term",
-    x = "Term Enrolled",
-    y = "Number of Students",
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-```
-
-```{r}
-#| label: eda-su
-
-prop_df <- final_clean_df |>
-  group_by(term_enrolled) |>
-  summarise(prop_passfail = mean(is_SU), .groups = "drop") |>
-  mutate(highlight = if_else(term_enrolled == "Spring 2020", "highlight", "other"))
-
-count_df <- final_clean_df |>
-  group_by(term_enrolled) |>
-  summarise(
-  passfail_count = sum(is_SU),
-  total = n(),
-    .groups = "drop"
-  ) |>
-  mutate(highlight = if_else(term_enrolled == "Spring 2020", "highlight", "other"))
-
-ggplot(prop_df, 
-       aes(x = term_enrolled, y = prop_passfail, fill = highlight)
-      ) +
-  geom_col() +
-  scale_y_continuous(labels = scales::percent_format()) +
-  scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
-  labs(
-    title = "Proportion of S/U Grades by Term",
-    x = "Term Enrolled",
-    y = "Proportion (S/U)"
-  ) +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-ggplot(count_df, 
-       aes(x = term_enrolled, y = passfail_count, fill = highlight)
-      ) +
-  geom_col() +
-  scale_fill_manual(values = c("highlight" = "red", "other" = "gray")) +
-  labs(
-    title = "Count of S/U Grades by Term",
-    x = "Term Enrolled",
-    y = "Count (S/U)"
-  ) +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-```{r}
-#| label: eda-grade-dist
-
-grade_order <- c("A", "B", "C", "S", "D", "AD", "No Credit")
-grade_prop <- final_clean_df |>
-  filter(!final_grade %in% c("HP", "Z", "TNC", "WA", "X", "N", "I", "CR", "WE")) |>
-  mutate(
-    final_grade = case_when(
-      final_grade %in% c("A+", "A", "A-") ~ "A",
-      final_grade %in% c("B+", "B", "B-") ~ "B",
-      final_grade %in% c("C+", "C", "C-") ~ "C",
-      final_grade %in% c("D+", "D", "D-") ~ "D",
-      final_grade %in% c("S", "P") ~ "S",
-      final_grade %in% c("F", "I", "U", "W", "W*", "WF", "WP") ~ "No Credit",
-      TRUE ~ final_grade
-    ),
-    final_grade = factor(
-      final_grade,
-      levels = grade_order,
-      ordered = TRUE,
-    )
-  ) |>
-  group_by(term_enrolled, final_grade) |>
-  summarise(count = n(), .groups = "drop_last") |>
-  mutate(prop = count / sum(count))
-
-ggplot(grade_prop, aes(x = term_enrolled, y = prop, fill = final_grade)) +
-  geom_col(position = "fill") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  scale_fill_viridis(discrete = TRUE) +
-  labs(
-    title = "Distribution of Grades by Term",
-    x = "Term Enrolled",
-    y = "Proportion of Grades",
-    fill = "Grade Group",
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-```{r}
-#| label: eda-division
-
-final_clean_df |>
-  group_by(term_enrolled, division, course_ID) |>
-  summarise(.groups = "drop") |>
-  group_by(term_enrolled, division) |>
-  summarise(
-    n_courses = n(),
-    .groups = "drop"
-  ) |>
-  group_by(term_enrolled) |>
-  mutate(
-    prop_courses = n_courses / sum(n_courses)
-  ) |>
+# Upper-level (>199) course proportions
+student_div_props <- students_with_major |>
+  filter(!is.na(division),
+         !(division %in% c("WRITING", "Engineering")),
+         catalog_level > "100-199") |>
+  group_by(masked_student_ID, division) |>
+  summarise(n_div_courses = n(), .groups = "drop_last") |>
+  mutate(total_200 = sum(n_div_courses)) |>
   ungroup() |>
-  ggplot(aes(
-    x = term_enrolled,
-    y = prop_courses,
-    color = division,
-    group = division
-  )) +
-  geom_line() +
-  scale_y_continuous(labels = scales::percent_format()) +
-  scale_fill_viridis(discrete = TRUE) +
-  labs(
-    title = "Proportion of Courses by Division Over Terms",
-    x = "Term Enrolled",
-    y = "Proportion of Courses",
-    color = "Division"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  filter(total_200 >= 3) |>  # at least 3 upper-level courses
+  mutate(prop_division = n_div_courses / total_200)
 
-final_clean_df |>
-  group_by(term_enrolled, division, course_ID) |>
-  summarise(
-    course_SU = as.integer(any(final_grade %in% c("S", "U", "P"))),
-    .groups = "drop"
-  ) |>
-  group_by(term_enrolled, division) |>
-  summarise(
-    n_SU_courses = sum(course_SU),
-    n_courses = n(),
-    prop_SU_division = n_SU_courses / n_courses,
-    .groups = "drop"
-  ) |>
-  ggplot(aes(x = term_enrolled, y = prop_SU_division)) +
-  geom_col() +
-  facet_wrap(~division) +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(
-    title = "Proportion of Courses with > 1 S/U Student",
-    x = "Term Enrolled",
-    y = "Proportion of Courses Taken S/U"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-```{r}
-#| label: eda-gpa
-
-prevGPA_df |>
-  group_by(term_enrolled) |>
-  summarise(
-    avg_semGPA = mean(semGPA, na.rm = TRUE),
-    .groups = "drop"
-  ) |>
-  ggplot(aes(x = term_enrolled, y = avg_semGPA, group = 1)) +
-  geom_line() +
-  labs(
-    title = "Average Semester GPA Over Time",
-    x = "Term Index",
-    y = "Average GPA"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-```{r}
-#| label: eda-num-su-by-student
-
-selected_years <- c("2014-2015", "2019-2020", "2024-2025")
-
-# Step 1: per student, count number of S/U courses in the selected term_enrolled
-student_SU_counts <- final_clean_df |>
-  filter(year_enrolled %in% selected_years) |>
-  group_by(masked_student_ID, year_enrolled) |>
-  summarise(
-    n_SU_courses = sum(is_SU == 1L, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-# Step 2: compute number of students per SU course count
-plot_df <- student_SU_counts |>
-  group_by(year_enrolled, n_SU_courses) |>
-  summarise(
-    n_students = n(),
-    .groups = "drop"
-  )
-
-# Step 3: dot plot
-ggplot(plot_df, aes(x = n_SU_courses, y = n_students)) +
-  geom_point() +
-  facet_wrap(~year_enrolled, scales = "free_y") +
-  scale_x_continuous(breaks = 0:max(plot_df$n_SU_courses)) +
-  labs(
-    title = "Number of Students by Number of S/U Courses Taken",
-    x = "Number of S/U Courses",
-    y = "Number of Students"
-  ) +
-  theme_minimal()
-```
-
-Tables
-
-columns are students who have at least one major that falls into that division
-
-rows are classes that belong to which division
-
-cells are the probability a student who has major in that division takes a class in the division (student lvl)
-
-```{r}
-# Step 1: put majors in long format
-major_long <- final_clean_df |>
-  select(masked_student_ID, division,
-         is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd) |>
-  pivot_longer(
-    cols = c(is_art_humanity, is_social_sci, is_natural_sci, is_engr, tbd),
-    names_to = "major_division",
-    values_to = "has_major"
-  )
-
-# Step 2: expand to all student × division combos
-all_divisions <- unique(final_clean_df$division)
-
-expanded <- major_long |>
-  distinct(masked_student_ID, major_division, has_major) |>
-  crossing(division = all_divisions) |>
-  left_join(
-    major_long |> distinct(masked_student_ID, division) |> mutate(took_course = 1),
-    by = c("masked_student_ID", "division")
-  ) |>
-  mutate(took_course = if_else(is.na(took_course), 0L, took_course))
-
-# Step 3: counts for students WITH the major
-counts <- expanded |>
-  filter(has_major == 1) |>   # only students who have that major
-  group_by(division, major_division) |>
-  summarise(
-    n_total = n(),
-    n_took  = sum(took_course),
-    .groups = "drop"
-  )
-
-# Step 4: compute probability + Wilson CI
-probs <- counts |>
-  rowwise() |>
-  mutate(
-    ci = list(binom.confint(n_took, n_total, methods = "wilson"))
-  ) |>
-  unnest(ci) |>
-  transmute(
-    division,
-    major_division,
-    display = sprintf("%.3f [%.3f, %.3f]", mean, lower, upper)
-  ) |>
-  pivot_wider(names_from = major_division, values_from = display)
-
-# ---- Step 2: compute last row (percent of students who have each major) ----
-total_students <- expanded |>
-  group_by(major_division) |>
-  summarise(
-    pct_students = mean(has_major) * 100,
-    .groups = "drop"
-  ) |>
-  transmute(major_division, display = sprintf("%.1f%%", pct_students)) |>
-  pivot_wider(names_from = major_division, values_from = display) |>
-  mutate(division = "Pct Ppl")
-
-# ---- Step 3: compute last column (percent of courses in each division) ----
-total_courses <- final_clean_df |>
-  group_by(division) |>
-  summarise(
-    pct_courses = n() / nrow(final_clean_df) * 100,
-    .groups = "drop"
-  ) |>
-  transmute(division, Total = sprintf("%.1f%%", pct_courses))
-
-# ---- Step 4: merge totals into table ----
-final_table <- probs |>
-  left_join(total_courses, by = "division") |>
-  bind_rows(total_students)
-
-# Example abbreviation mapping for majors
-abbr_map <- c(
-  "is_art_humanity" = "ART",
-  "is_social_sci"   = "SS",
-  "is_natural_sci"  = "NS",
-  "is_engr"         = "EGR",
-  "tbd"             = "TBD"
-)
-
-# Replace column names
-final_table_abbr <- final_table |>
-  rename_with(~ abbr_map[.x], .cols = names(abbr_map))
-
-# Example for row names / course divisions
-division_map <- c(
-  "Arts & Humanities" = "ART",
-  "Social Sciences"   = "SS",
-  "Natural Sciences"  = "NS",
-  "Engineering"       = "EGR",
-  "WRITING"           = "WR"
-)
-
-final_table_abbr <- final_table_abbr |>
-  mutate(division = recode(division, !!!division_map))
-
-n_cols <- ncol(final_table_abbr)
-n_rows <- nrow(final_table_abbr)
-
-final_table_abbr |>
-  kable(
-    format = "latex",
-    booktabs = TRUE,
-    caption = "Student-Level Probabilities by Major and Course Division",
-    align = c("l", rep("c", n_cols - 1))
-  ) |>
-  kable_styling(latex_options = c("striped", "hold_position")) |>
-  row_spec(n_rows, bold = TRUE) |>
-  column_spec(n_cols, bold = TRUE)
-
-```
-
-```{r}
-# Percent of SU courses that are U
-final_clean_df |>
-  filter(is_SU == 1) |>
-  summarise(
-    pct_U = mean(final_grade == "U", na.rm = TRUE)
-  )
-
-# Percent of non-SU courses that are D-F
-grades_DF <- c("D-", "D", "D+", "F")
-final_clean_df |>
-  filter(is_SU == 0) |>
-  summarise(
-    pct_DF = mean(final_grade %in% grades_DF, na.rm = TRUE)
-  )
-```
-
-Major imputation test...
-
-```{r}
-students_with_major <- final_clean_df |>
-  filter(!is.na(first_major))
-
-# --- Parameters ---
-division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences") # exclude Engineering
-x_vals <- 1:14  # candidate thresholds
-
-# --- Step 1: Student-level flags ---
+# True major divisions
 student_flags <- students_with_major |>
-  select(masked_student_ID, is_art_humanity:is_engr) |>
+  dplyr::select(masked_student_ID, is_art_humanity:is_natural_sci) |>
   pivot_longer(
-    cols = is_art_humanity:is_engr,
+    cols = is_art_humanity:is_natural_sci,
     names_to = "division_flag",
     values_to = "is_division"
   ) |>
@@ -1115,92 +630,448 @@ student_flags <- students_with_major |>
     )
   ) |>
   filter(division %in% division_cols) |>
-  select(masked_student_ID, division, is_division) |>
+  dplyr::select(masked_student_ID, division, is_division) |>
   distinct()
 
-# --- Step 2: Count courses per student per division ---
-student_div_counts <- students_with_major |>
-  filter(!is.na(division), !(division %in% c("WRITING", "Engineering"))) |>
-  group_by(masked_student_ID, division) |>
-  summarise(
-    n_courses = n(),
-    .groups = "drop"
-  ) |>
-  pivot_wider(
-    names_from = division,
-    values_from = n_courses,
-    values_fill = 0
-  ) |>
-  pivot_longer(
-    cols = all_of(division_cols),
-    names_to = "division",
-    values_to = "n_courses"
-  )
-
-# --- Step 3: Join counts with flags ---
-check_table <- student_div_counts |>
+check_table <- student_div_props |>
   left_join(student_flags, by = c("masked_student_ID", "division"))
 
-# --- Step 4: Function to compute error for one threshold ---
-compute_error <- function(x_thresh) {
+# Computes classification error at a given proportion threshold
+compute_error <- function(p_thresh) {
   check_table |>
-    mutate(took_gt_x = n_courses > x_thresh) |>
+    mutate(
+      took_gt_p = prop_division > p_thresh
+    ) |>
     group_by(division) |>
     summarise(
-      TP = sum(took_gt_x & is_division == 1, na.rm = TRUE),
-      FP = sum(took_gt_x & is_division == 0, na.rm = TRUE),
-      TN = sum(!took_gt_x & is_division == 0, na.rm = TRUE),
-      FN = sum(!took_gt_x & is_division == 1, na.rm = TRUE),
+      TP = sum(took_gt_p & is_division == 1, na.rm = TRUE),
+      FP = sum(took_gt_p & is_division == 0, na.rm = TRUE),
+      TN = sum(!took_gt_p & is_division == 0, na.rm = TRUE),
+      FN = sum(!took_gt_p & is_division == 1, na.rm = TRUE),
       .groups = "drop"
     ) |>
     mutate(
-      x = x_thresh,
+      p = p_thresh,
       error_rate = (FP + FN) / (TP + FP + TN + FN)
     )
 }
 
-# --- Step 5: Apply to all thresholds ---
-errors_by_x <- map_dfr(x_vals, compute_error)
+errors_by_p <- map_dfr(p_vals, compute_error)
 
-# --- Step 6: Plot error rate vs threshold ---
-ggplot(errors_by_x, aes(x = x, y = error_rate, color = division)) +
+ggplot(errors_by_p, aes(x = p, y = error_rate, color = division)) +
   geom_line() +
   geom_point() +
-  labs(x = "Course threshold (x)", y = "Error rate",
-       title = "Error rate vs course threshold for each division")
+  labs(
+    x = "Proportion Threshold (p)",
+    y = "Error Rate",
+    title = "Error Rate vs Proportion Threshold"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
-# --- Step 7 (optional): Pick best x per division ---
-best_x <- errors_by_x |>
+best_p <- errors_by_p |>
   group_by(division) |>
   slice_min(error_rate, n = 1) |>
-  select(division, best_x = x, error_rate)
+  dplyr::select(division, best_p = p, error_rate)
 
-# --- Step 8 (optional): Apply best threshold to flag students ---
+# Use best threshold to classify students
 student_flags_estimated <- check_table |>
-  left_join(best_x, by = "division") |>
+  left_join(best_p, by = "division") |>
   mutate(
-    estimated_flag = n_courses > best_x
+    estimated_flag = prop_division > best_p
   )
 
+best_p <- student_flags_estimated |>
+  group_by(division) |>
+  summarise(
+    accuracy = mean(estimated_flag == (is_division == 1), na.rm = TRUE),
+    best_p = unique(best_p)
+  )
+best_p
+
+saveRDS(best_p, "figures/best_p.rds")
 ```
 
 ```{r}
-students_missing_major <- final_clean_df |>
-  filter(is.na(first_major) & student_group > 2019 & student_group < 2023) |>
-  filter(student_acad_prog == "Trinity") |>
+#| label: error-plot
+# for each candidate proportion threshold
+confusion_table <- map_dfr(p_vals, function(p_thresh) {
+  check_table |>
+    mutate(predicted = prop_division > p_thresh) |>
+    group_by(division) |>
+    summarise(
+      TP = sum(predicted & is_division == 1, na.rm = TRUE),
+      FP = sum(predicted & is_division == 0, na.rm = TRUE),
+      FN = sum(!predicted & is_division == 1, na.rm = TRUE),
+      TN = sum(!predicted & is_division == 0, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(threshold = p_thresh)
+})
+
+confusion_long <- confusion_table |>
+  pivot_longer(cols = TP:TN, names_to = "metric", values_to = "count")
+
+confusion_metrics <- ggplot(confusion_long, aes(x = threshold, y = count, color = metric)) +
+  geom_line() +
+  facet_wrap(~division, scales = "free_y") +
+  labs(
+    title = "TP/FP/FN/TN counts vs proportion threshold",
+    x = "Proportion threshold",
+    y = "Number of students",
+    color = "Confusion Metric"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+confusion_metrics
+
+saveRDS(confusion_metrics, "figures/impute_confusion_plot")
+```
+
+```{r}
+#| label: make-predictions
+# Imputing for students with at least 8 semesters and ignoring those 
+# who may have dropped out prior to 2019
+students_no_major <- valid_courses_df |>
+  filter(is.na(first_major) & student_group %in% c(2022, 2023)) |>
   filter(max_units >= 1)
 
-courses_by_division <- students_missing_major |>
-  filter(!is.na(division), division != "WRITING", division != "Engineering") |>
+# Compute upper-level course proportions
+student_div_props_no_major <- students_no_major |>
+  filter(!is.na(division),
+         !(division %in% c("WRITING", "Engineering")),
+         catalog_level > "100-199") |>
   group_by(masked_student_ID, division) |>
-  summarise(
-    n_courses = n(),
-    .groups = "drop"
-  ) |>
+  summarise(n_div_courses = n(), .groups = "drop_last") |>
+  mutate(total_200 = sum(n_div_courses)) |>
+  ungroup() |>
+  filter(total_200 >= 3) |> # require at least 3 upper-level courses
+  mutate(prop_division = n_div_courses / total_200)
+
+student_div_props_no_major <- student_div_props_no_major |>
+  left_join(best_p, by = "division")
+
+# Impute
+student_div_props_no_major <- student_div_props_no_major |>
+  mutate(estimated_flag = prop_division > best_p)
+
+predicted_divisions <- student_div_props_no_major |>
+  filter(estimated_flag) |>
+  group_by(masked_student_ID) |>
+  summarise(predicted_divisions = paste(division, collapse = ", "), .groups = "drop")
+
+predicted_majors <- predicted_divisions |>
+  count(predicted_divisions, sort = TRUE)
+predicted_majors
+
+saveRDS(predicted_majors, "figures/predicted_majors.rds")
+```
+
+```{r}
+#| label: join-predictions
+
+predicted_flags_wide <- predicted_divisions |>
+  # one row per student per predicted division
+  separate_rows(predicted_divisions, sep = ",\\s*") |>
+  mutate(value = 1) |>
   pivot_wider(
-    names_from = division,
-    values_from = n_courses,
-    values_fill = 0  # fill 0 if student took 0 courses in that division
+    names_from = predicted_divisions,
+    values_from = value,
+    values_fill = 0
+  ) |>
+  rename(
+    is_art_humanity = `Arts & Humanities`,
+    is_social_sci   = `Social Sciences`,
+    is_natural_sci  = `Natural Sciences`
+  ) |>
+  mutate(num_plans = is_art_humanity + is_social_sci + is_natural_sci,
+         estimated = TRUE)
+
+final_with_estimates <- valid_courses_df |>
+  left_join(predicted_flags_wide, by = "masked_student_ID") |>
+  # replace only for students with predictions
+  mutate(
+    is_art_humanity = coalesce(is_art_humanity.y, is_art_humanity.x),
+    is_social_sci   = coalesce(is_social_sci.y,   is_social_sci.x),
+    is_natural_sci  = coalesce(is_natural_sci.y,  is_natural_sci.x),
+    num_plans       = coalesce(num_plans.y, num_plans.x),
+    estimated       = coalesce(estimated, FALSE)
+  ) |>
+  dplyr::select(-ends_with(".x"), -ends_with(".y"))
+```
+
+```{r}
+#| label: comparison
+# Compare estimates with actual
+final_with_estimates |>
+  filter(estimated == TRUE) |>
+  mutate(n_divisions = is_art_humanity + is_social_sci + is_natural_sci) |>
+  count(n_divisions)
+
+final_with_estimates |>
+  filter(estimated == FALSE) |>
+  mutate(n_divisions = is_art_humanity + is_social_sci + is_natural_sci) |>
+  count(n_divisions)
+
+final_with_estimates |>
+  count(num_plans)
+```
+
+## Across Year Test
+
+```{r}
+#| label: across-years
+students_with_major <- valid_courses_df |>
+  filter(!is.na(first_major)) |>
+  filter(max_units >= 1)
+
+division_cols <- c("Arts & Humanities", "Social Sciences", "Natural Sciences")
+p_vals <- seq(0.1, 0.9, by = 0.05)  # candidate proportion thresholds
+
+# Count courses per student × division × student_group
+student_div_counts <- students_with_major |>
+  filter(!is.na(division),
+         !(division %in% c("WRITING", "Engineering")),
+         catalog_level > "100-199") |>
+  group_by(masked_student_ID, student_group, division) |>
+  summarise(n_div_courses = n(), .groups = "drop")
+
+# Compute total upper-level courses per student (across divisions)
+student_div_props <- student_div_counts |>
+  group_by(masked_student_ID, student_group) |>
+  mutate(total_200 = sum(n_div_courses)) |>
+  ungroup() |>
+  filter(total_200 >= 3) |>
+  mutate(prop_division = n_div_courses / total_200)
+
+# Get "true" divisions
+student_flags <- students_with_major |>
+  dplyr::select(masked_student_ID, student_group, is_art_humanity:is_natural_sci) |>
+  pivot_longer(
+    cols = is_art_humanity:is_natural_sci,
+    names_to = "division_flag",
+    values_to = "is_division"
+  ) |>
+  mutate(
+    division = case_when(
+      division_flag == "is_art_humanity" ~ "Arts & Humanities",
+      division_flag == "is_social_sci"  ~ "Social Sciences",
+      division_flag == "is_natural_sci" ~ "Natural Sciences",
+      TRUE ~ division_flag
+    )
+  ) |>
+  filter(division %in% division_cols) |>
+  dplyr::select(masked_student_ID, student_group, division, is_division) |>
+  distinct()
+
+check_table <- student_div_props |>
+  left_join(student_flags, by = c("masked_student_ID", "student_group", "division"))
+
+# Compute classification error at a given threshold
+compute_error <- function(p_thresh) {
+  check_table |>
+    mutate(took_gt_p = prop_division > p_thresh) |>
+    group_by(student_group, division) |>
+    summarise(
+      TP = sum(took_gt_p & is_division == 1, na.rm = TRUE),
+      FP = sum(took_gt_p & is_division == 0, na.rm = TRUE),
+      TN = sum(!took_gt_p & is_division == 0, na.rm = TRUE),
+      FN = sum(!took_gt_p & is_division == 1, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    mutate(
+      p = p_thresh,
+      error_rate = (FP + FN) / pmax(TP + FP + TN + FN, 1)  # safe divide
+    )
+}
+
+errors_by_p <- map_dfr(p_vals, compute_error)
+
+best_p <- errors_by_p |>
+  group_by(student_group, division) |>
+  filter(error_rate == min(error_rate, na.rm = TRUE)) |>
+  arrange(p) |>
+  slice(1) |>
+  ungroup() |>
+  dplyr::select(student_group, division, best_p = p, min_error = error_rate)
+
+# Apply best thresholds 
+student_flags_estimated <- check_table |>
+  left_join(best_p, by = c("student_group", "division")) |>
+  mutate(estimated_flag = prop_division > best_p)
+
+# Accuracy by student group and division
+accuracy_by_group <- student_flags_estimated |>
+  group_by(student_group, division) |>
+  reframe(
+    accuracy = mean(estimated_flag == (is_division == 1), na.rm = TRUE),
+    best_p = unique(best_p),
+    min_error = unique(min_error)
+  ) |>
+  arrange(division, student_group)
+
+accuracy_by_year <- ggplot(accuracy_by_group, aes(x = student_group, y = best_p, color = division)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = division), linewidth = 1) +
+  scale_color_brewer(palette = "Set2") +
+  labs(
+    title = "Best Thresholds by Student Group and Division",
+    x = "Student Group",
+    y = "Best Threshold",
+    color = "Division"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+accuracy_by_year
+ggsave("figures/impute_accuracy_by_year.png", plot = accuracy_by_year, dpi = 300)
+
+error_by_years_plot <- ggplot(accuracy_by_group, aes(x = student_group, y = min_error, color = division)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = division), linewidth = 1) +
+  scale_color_brewer(palette = "Set1") +
+  labs(
+    title = "Minimum Error by Student Group and Division",
+    x = "Student Group",
+    y = "Minimum Error",
+    color = "Division"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+error_by_years_plot
+ggsave("figures/impute_error_by_year.png", plot = error_by_years_plot, dpi = 300)
+```
+
+## Final Data Cleaning
+
+```{r}
+#| label: cleaning
+model_df <- final_with_estimates |>
+  dplyr::select(-c(first_major, first_major_descr, 
+            second_major, second_major_descr, 
+            tbd, location, class_component)) |>
+  filter(actual_load != "underload") |>
+  mutate(
+    studied_away = if_else(is.na(studied_away), FALSE, studied_away),
+    prev_semGPA  = if_else(is.na(prev_semGPA), 4, prev_semGPA),
+    final_grade = recode(final_grade,
+      "A+" = "A_plus",
+      "A"  = "A",
+      "A-" = "A_minus",
+      "B+" = "B_plus",
+      "B"  = "B",
+      "B-" = "B_minus",
+      "C+" = "C_plus",
+      "C"  = "C",
+      "C-" = "C_minus",
+      "D+" = "D_plus",
+      "D"  = "D",
+      "D-" = "D_minus",
+      "F"  = "F"
+  ))
+```
+
+```{r}
+#| label: class-imbalance
+
+# Imbalance of S/U vs A-F
+model_df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+# Imbalance by student group
+model_df |>
+  group_by(student_group) |>
+  summarise(
+    n_total   = n(),
+    n_true    = sum(is_SU == "1", na.rm = TRUE),
+    n_false   = sum(is_SU == "0", na.rm = TRUE),
+    prop_true = mean(is_SU == "1", na.rm = TRUE)
+  ) |>
+  arrange(desc(prop_true))
+
+# Chose to drop data prior to Fall 2015
+model_df <- model_df |>
+  mutate(is_SU = factor(is_SU, levels = c(0, 1))) |>
+  filter(term_enrolled > "Summer 2 2015")
+
+# Slightly improved imbalance of S/U A-F
+model_df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+# Most courses are 1.0 credits
+model_df |>
+  count(max_units) |>
+  mutate(prop = n / sum(n))
+
+# A lot of uncommon term_units
+model_df |>
+  count(term_units) |>
+  mutate(prop = n / sum(n)) |>
+  print(n = Inf)
+
+# Relatively balanced when using categories instead of units
+model_df |>
+  count(load_status) |>
+  mutate(prop = n / sum(n))
+
+# Can only S/U 1.0 credit courses(?)
+model_df <- model_df |>
+  filter(max_units == 1.0) |>
+  mutate(
+    load_status = case_when(
+      term_units < 4    ~ "underload",
+      term_units == 4   ~ "normal",
+      term_units > 4    ~ "overload",
+      TRUE              ~ NA_character_   # handles any missing cases
+    ),
+    actual_load = factor(
+      actual_load,
+      levels = c("normal", "overload"),
+      ordered = TRUE
+    ),
+    load_status = factor(
+      load_status,
+      levels = c("underload", "normal", "overload"),
+      ordered = TRUE
+    ),
   )
 
+# Final class imbalance
+model_df |>
+  count(is_SU) |>
+  mutate(prop = n / sum(n))
+
+saveRDS(model_df, file = "data/model_df.rds")
 ```
+
+```{r}
+#| label: missing-data-final
+
+glimpse(model_df)
+
+missing_final <- model_df |>
+  summarise(across(
+    everything(),
+    list(
+      n_missing = ~sum(is.na(.)),
+      prop_missing = ~mean(is.na(.))
+    ),
+    .names = "{.col}-{.fn}"
+  )) |>
+  pivot_longer(
+    everything(),
+    names_to = c("variable", ".value"),
+    names_sep = "-"
+  ) |>
+  arrange(desc(n_missing))
+          
+print(missing_final, n = Inf)
+```
+
