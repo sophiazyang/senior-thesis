@@ -177,7 +177,8 @@ su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
   ) |>
   step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
 
-baked <- bake(prep(su_recipe_fixed), new_data = NULL)
+trained_recipe <- prep(su_recipe_fixed)
+baked <- bake(trained_recipe, new_data = NULL)
 selected_vars <- intersect(selected_vars, names(baked))
 
 glm_formula <- as.formula(
@@ -190,6 +191,27 @@ glm_fit <- glm(
   family = binomial
 )
 summary(glm_fit)
+```
+
+```{r}
+# Evaluate performance on test
+test_processed <- bake(trained_recipe, new_data = test_df)
+test_processed <- test_processed[, selected_vars, drop = FALSE]
+
+test_probs <- tibble(.pred_1 = predict(glm_fit, newdata = test_processed, type = "response"))
+
+results <- test_df |>
+  select(is_SU) |>
+  bind_cols(test_probs) |>
+  mutate(pred_class = ifelse(.pred_1 >= best_thresh, 1, 0)) |>
+  mutate(
+    is_SU = factor(is_SU, levels = c(0, 1)),
+    pred_class = factor(pred_class, levels = c(0, 1))
+  )
+
+# Metrics
+roc_auc(results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+conf_mat(results, truth = is_SU, estimate = pred_class)
 ```
 
 ## Explicit Variable Checks
@@ -539,7 +561,7 @@ glm_fit_inter <- glm(
 #| eval: false
 # Put all models in a named list
 models <- list(
-  Full = glm_fit,
+  All_variables = glm_fit,
   No_studied_away = glm_fit_nostudaway,
   No_took_summer_courses = glm_fit_nosumm,
   No_num_plans = glm_fit_noplans,
@@ -548,11 +570,11 @@ models <- list(
   Only_actload = glm_fit_actload,
   Only_actunits = glm_fit_actunits,
   Only_termunits = glm_fit_termunits,
-  Without_interaction = glm_fit_inter
+  No_interaction = glm_fit_inter
 )
 
 # Compute AIC and BIC for each model
-model_table <- tibble(
+var_select <- tibble(
   Model = names(models),
   AIC = sapply(models, AIC),
   BIC = sapply(models, BIC)
@@ -563,12 +585,12 @@ model_table <- tibble(
     delta_BIC = BIC - min(BIC)
   )
 
-saveRDS(model_table, "data/model_table.rds")
+saveRDS(var_select, "data/var_select_table.rds")
 ```
 
 ```{r}
-model_table <- readRDS("data/model_table.rds")
-model_table
+var_select <- readRDS("data/var_select_table.rds")
+var_select
 ```
 
 ## With Random Effect
