@@ -20,6 +20,7 @@ library(performance)
 library(DHARMa)
 library(kableExtra)
 library(broom.mixed)
+library(arm)
 library(tidyverse)
 ```
 
@@ -70,7 +71,7 @@ su_recipe_lasso <- recipe(is_SU ~ load_status + term_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = tune()) # correct imbalance
+  step_smotenc(is_SU, over_ratio = tune()) # correct imbalance
 ```
 
 ```{r}
@@ -87,7 +88,7 @@ lasso_workflow <- workflow() |>
   add_model(lasso_spec) |>
   add_recipe(su_recipe_lasso)
 
-# tune and estimate simultaneously (ok since exploratory) 
+# tune and estimate simultaneously 
 folds <- group_vfold_cv(train_df, group = masked_student_ID, v = 5)
 grid <- grid_regular(
   over_ratio(range = c(0.2, 1)),
@@ -105,7 +106,7 @@ lasso_tuned <- tune_grid(
 
 best_hyperparam <- select_best(lasso_tuned, metric = "roc_auc")
 best_hyperparam
-saveRDS(best_hyperparam, "data/best_hyperparam.rds")
+saveRDS(best_hyperparam, "smotenc/best_hyperparam.rds")
 
 final_lasso <- finalize_workflow(lasso_workflow, best_hyperparam)
 final_fit <- fit(final_lasso, data = train_df)
@@ -126,14 +127,19 @@ selected_vars <- coef_df |>
   pull(term)
 
 selected_vars
-saveRDS(selected_vars, "data/selected_vars.rds")
+saveRDS(selected_vars, "smotenc/selected_vars.rds")
 
 dropped_vars <- coef_df |>
   filter(estimate == 0, term != "(Intercept)") |>
   pull(term)
 
 dropped_vars
-saveRDS(dropped_vars, "data/dropped_vars.rds")
+saveRDS(dropped_vars, "smotenc/dropped_vars.rds")
+
+# Manual specification of baseline...
+# selected_vars[selected_vars == "catalog_level_1"] <- "catalog_level_3"
+# selected_vars[selected_vars == "timeperiod_1"] <- "timeperiod_3"
+# selected_vars[selected_vars == "academic_level_bot_1"] <- "academic_level_bot_2"
 ```
 
 ```{r}
@@ -155,13 +161,13 @@ results <- map_dfr(thresholds, ~{
 # Find best threshold
 best_thresh <- results |> filter(F1 == max(F1)) |> pull(threshold)
 best_thresh
-saveRDS(best_thresh, "data/best_thresh.rds")
+saveRDS(best_thresh, "smotenc/best_thresh.rds")
 ```
 
 ```{r}
-best_hyperparam <- readRDS("data/best_hyperparam.rds")
-best_thresh <- readRDS("data/best_thresh.rds")
-selected_vars <- readRDS("data/selected_vars.rds")
+best_hyperparam <- readRDS("smotenc/best_hyperparam.rds")
+best_thresh <- readRDS("smotenc/best_thresh.rds")
+selected_vars <- readRDS("smotenc/selected_vars.rds")
 
 su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
   update_role(masked_student_ID, new_role = "ID") |>  # exclude ID
@@ -175,7 +181,7 @@ su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 trained_recipe <- prep(su_recipe_fixed)
 baked <- bake(trained_recipe, new_data = NULL)
@@ -190,7 +196,6 @@ glm_fit <- glm(
   data = baked,
   family = binomial
 )
-summary(glm_fit)
 ```
 
 ```{r}
@@ -198,10 +203,11 @@ summary(glm_fit)
 test_processed <- bake(trained_recipe, new_data = test_df)
 test_processed <- test_processed[, selected_vars, drop = FALSE]
 
-test_probs <- tibble(.pred_1 = predict(glm_fit, newdata = test_processed, type = "response"))
+test_probs <- tibble(.pred_1 = predict(glm_fit, newdata = test_processed, 
+                                       type = "response"))
 
-results <- test_df |>
-  select(is_SU) |>
+test_results <- test_df |>
+  dplyr::select(is_SU) |>
   bind_cols(test_probs) |>
   mutate(pred_class = ifelse(.pred_1 >= best_thresh, 1, 0)) |>
   mutate(
@@ -209,9 +215,149 @@ results <- test_df |>
     pred_class = factor(pred_class, levels = c(0, 1))
   )
 
-# Metrics
-roc_auc(results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
-conf_mat(results, truth = is_SU, estimate = pred_class)
+# Model fit
+disp <- check_overdispersion(glm_fit)
+aic_val <- AIC(glm_fit)
+bic_val <- BIC(glm_fit)
+icc_val <- icc(glm_fit)
+
+model_fit_stats <- tibble(
+  AIC = aic_val,
+  BIC = bic_val,
+  Overdispersion_Ratio = disp$dispersion_ratio,
+  Overdispersion_p = disp$p_value,
+  ICC_Adjusted = icc_val$ICC_adjusted,
+  ICC_Conditional = icc_val$ICC_conditional
+) |> 
+  pivot_longer(
+    cols = everything(),
+    names_to = "Metric",
+    values_to = "Value"
+  )
+
+# Brier score
+brier <- brier_class(
+  test_results,
+  truth = is_SU,
+  .pred_1,
+  event_level = "second"
+)
+
+# ROC / AUC
+rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+
+# PR-AUC
+prauc <- pr_auc(
+  test_results, truth = is_SU, .pred_1,
+  event_level = "second"
+)
+
+overall_metrics <- tibble(
+  Metric = c("Brier Score", "ROC AUC", "PR AUC"),
+  Value  = c(
+    brier$.estimate,
+    rocauc$.estimate,
+    prauc$.estimate
+  )
+)
+
+# Confusion matrix
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm
+saveRDS(cm, "smotenc/glm_cm.rds")
+
+# Extract Precision, Recall, Specificity F1
+cm_metrics <- cm |> 
+  summary() |> 
+  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |> 
+  mutate(
+    Metric = recode(.metric,
+                    "precision" = "Precision / Positive Predictive Value",
+                    "recall"    = "Recall / Sensitivity (True Positive Rate)",
+                    "spec"      = "Specificity (True Negative Rate)",
+                    "f_meas"    = "F1 Score"),
+    Value = .estimate
+  ) |> 
+  dplyr::select(Metric, Value)
+
+all_metrics <- bind_rows(model_fit_stats, cm_metrics, overall_metrics) |> 
+  mutate(Value = round(Value, 3))
+
+all_metrics <- all_metrics |> 
+  mutate(
+    Section = case_when(
+      Metric %in% c(
+        "Precision / Positive Predictive Value",
+        "Recall / Sensitivity (True Positive Rate)",
+        "F1 Score",
+        "Specificity (True Negative Rate)"
+      ) ~ "Classification Metrics",
+      
+      Metric %in% c("Brier Score", "ROC AUC", "PR AUC") ~ "Overall Predictive Metrics",
+      
+      TRUE ~ "Model Fit Statistics"  # everything else goes here
+    )
+  ) |> 
+  dplyr::select(Section, Metric, Value) |> 
+  arrange(factor(Section, levels = c(
+    "Classification Metrics",
+    "Overall Predictive Metrics",
+    "Model Fit Statistics"
+  )))
+all_metrics
+saveRDS(all_metrics, "smotenc/glm_all_metrics.rds")
+
+# Plot ROC
+roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(color = "blue") +
+  geom_abline(linetype = "dashed", color = "gray") +
+  labs(
+    title = "ROC Curve",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
+ggsave("smotenc/glm_roc_plot.png", roc)
+
+# Plot PR
+pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
+  geom_line(color = "darkgreen") +
+  labs(
+    title = "Precision-Recall Curve",
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
+ggsave("smotenc/glm_pr_plot.png", pr)
+
+# Calibration plot
+calibration_df <- test_results |>
+  mutate(prob_bin = ntile(.pred_1, 10)) |>
+  group_by(prob_bin) |>
+  summarise(
+    mean_pred = mean(.pred_1),
+    obs_rate = mean(as.numeric(as.character(is_SU))),
+    .groups = "drop"
+  )
+
+calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    x = "Mean Predicted Probability",
+    y = "Observed Event Rate",
+    title = "Calibration Plot"
+  )
+ggsave("smotenc/glm_calibration_plot.png", calibration)
 ```
 
 ## Explicit Variable Checks
@@ -240,7 +386,7 @@ su_recipe_nostudaway <- recipe(is_SU ~ load_status + term_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_nostudaway <- setdiff(selected_vars, "studied_away")
 glm_formula_nostudaway <- as.formula(
@@ -279,7 +425,7 @@ su_recipe_nosumm <- recipe(is_SU ~ load_status + term_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_nosumm <- setdiff(selected_vars, "took_summer_courses")
 glm_formula_nosumm <- as.formula(
@@ -318,7 +464,7 @@ su_recipe_noplans <- recipe(is_SU ~ load_status + term_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_noplans <- setdiff(selected_vars, "num_plans")
 glm_formula_noplans <- as.formula(
@@ -357,7 +503,7 @@ su_recipe_noenroll <- recipe(is_SU ~ load_status + term_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_noenroll <- setdiff(selected_vars, "num_students")
 glm_formula_noenroll <- as.formula(
@@ -397,7 +543,7 @@ su_recipe_loadstat <- recipe(is_SU ~ load_status +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_loadstat <- selected_vars[!str_detect(selected_vars,
   "term_units|actual_load|actual_units")]
@@ -434,7 +580,7 @@ su_recipe_actload <- recipe(is_SU ~ actual_load +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_actload <- selected_vars[!str_detect(selected_vars,
   "load_status|term_units|actual_units")]
@@ -471,7 +617,7 @@ su_recipe_actunits <- recipe(is_SU ~ actual_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_actunits <- selected_vars[!str_detect(selected_vars,
   "load_status|term_units|actual_load")]
@@ -508,7 +654,7 @@ su_recipe_termunits <- recipe(is_SU ~ term_units +
              is_art_humanity:starts_with("division_") +
              is_social_sci:starts_with("division_")
   ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_termunits <- selected_vars[!str_detect(selected_vars,
   "load_status|actual_load|actual_units")]
@@ -542,7 +688,7 @@ su_recipe_inter <- recipe(is_SU ~ load_status + term_units +
   step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
   step_normalize(all_numeric_predictors()) |>
   step_zv(all_predictors()) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio)
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio)
 
 vars_inter <- selected_vars[!grepl("(:|_x_)", selected_vars)]
 glm_formula_inter <- as.formula(
@@ -585,15 +731,17 @@ var_select <- tibble(
     delta_BIC = BIC - min(BIC)
   )
 
-saveRDS(var_select, "data/var_select_table.rds")
+saveRDS(var_select, "smotenc/var_select_table.rds")
 ```
 
 ```{r}
-var_select <- readRDS("data/var_select_table.rds")
+var_select <- readRDS("smotenc/var_select_table.rds")
 var_select
 ```
 
-## With Random Effect
+# With Random Effect
+
+## SMOTE
 
 ```{r}
 selected <- setdiff(selected_vars, c("term_units", "actual_units"))
@@ -638,33 +786,37 @@ saveRDS(result, "data/model_resids.rds")
 ```
 
 ```{r}
+#| eval: false
 model_tidy <- readRDS("data/model_tidy.rds")
-kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
+glmm_coeff <- kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
   kable_styling(full_width = FALSE) |>
   column_spec(1, width = "10em")
+saveRDS(glmm_coeff, "data/glmm_coeff.rds")
 
-# playing around...
 result <- readRDS("data/model_resids.rds")
 result$pear <- residuals(glmer_fit, type = "pearson")
 result$fit <- fitted(glmer_fit)
 
-hist(result$pear, main = "Distribution of Pearson Residuals", 
-     xlab = "Pearson residuals")
+png("figures/glmm_qq_plot.png", width = 6*300, height = 4*300, res = 300) 
 qqnorm(result$pear); qqline(result$pear, col = "red")
-ggplot(result, aes(x = fit, y = pear)) +
+dev.off()
+
+glmm_pearson <- ggplot(result, aes(x = fit, y = pear)) +
   geom_point(alpha = 0.3) +
   geom_smooth(se = FALSE, color = "blue") +
   geom_hline(yintercept = 0, color = "red") +
   labs(x = "Fitted values", y = "Pearson residuals",
        title = "Residuals vs Fitted Values")
-library(arm)
+ggsave("figures/glmm_pearson_plot.png", plot = glmm_pearson, dpi = 300)
+
+png("figures/glmm_binned_plot.png", width = 6*300, height = 4*300, res = 300) 
 binnedplot(result$fit, result$pear, xlab = "Predicted probability", 
            ylab = "Residuals",
            main = "Binned residual plot")
+dev.off()
 ```
 
 ```{r}
-#| eval: false
 # Model fit
 disp <- check_overdispersion(glmer_fit)
 aic_val <- AIC(glmer_fit)
@@ -678,16 +830,20 @@ model_fit_stats <- tibble(
   Overdispersion_p = disp$p_value,
   ICC_Adjusted = icc_val$ICC_adjusted,
   ICC_Conditional = icc_val$ICC_conditional
-)
-saveRDS(model_fit_stats, "data/model_fit_stats.rds")
+) |> 
+  pivot_longer(
+    cols = everything(),
+    names_to = "Metric",
+    values_to = "Value"
+  )
 ```
 
 ```{r}
-model_fit_stats <- readRDS("data/model_fit_stats.rds")
-model_fit_stats
-
-sim <- simulateResiduals(fittedModel = glmer_fit, n = 1000)
+# DHARMA
+sim <- simulateResiduals(fittedModel = glmer_fit, n = 300)
+png("figures/glmm_dharma_plot.png", width = 6*300, height = 4*300, res = 300) 
 plot(sim)
+dev.off()
 ```
 
 ```{r}
@@ -699,14 +855,13 @@ test_baked$.pred_1 <- predict(
   type = "response",
   allow.new.levels = TRUE   # allows new students in test set
 )
-
 test_results <- test_baked |>
   mutate(
     pred_class = factor(ifelse(.pred_1 >= best_thresh, 1, 0), levels = c(0, 1))
   )
 
 # Brier score
-brier_class(
+brier <- brier_class(
   test_results,
   truth = is_SU,
   .pred_1,
@@ -714,56 +869,95 @@ brier_class(
 )
 
 # ROC / AUC
-roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+
+# PR-AUC
+prauc <- pr_auc(
+  test_results, truth = is_SU, .pred_1,
+  event_level = "second"
+)
+
+overall_metrics <- tibble(
+  Metric = c("Brier Score", "ROC AUC", "PR AUC"),
+  Value  = c(
+    brier$.estimate,
+    rocauc$.estimate,
+    prauc$.estimate
+  )
+)
+
+# Confusion matrix
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm
+saveRDS(cm, "data/glmm_cm.rds")
+
+# Extract Precision, Recall, Specificity F1
+cm_metrics <- cm |> 
+  summary() |> 
+  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |> 
+  mutate(
+    Metric = recode(.metric,
+                    "precision" = "Precision / Positive Predictive Value",
+                    "recall"    = "Recall / Sensitivity (True Positive Rate)",
+                    "spec"      = "Specificity (True Negative Rate)",
+                    "f_meas"    = "F1 Score"),
+    Value = .estimate
+  ) |> 
+  dplyr::select(Metric, Value)
+
+all_metrics <- bind_rows(model_fit_stats, cm_metrics, overall_metrics) |> 
+  mutate(Value = round(Value, 3))
+
+all_metrics <- all_metrics |> 
+  mutate(
+    Section = case_when(
+      Metric %in% c(
+        "Precision / Positive Predictive Value",
+        "Recall / Sensitivity (True Positive Rate)",
+        "F1 Score",
+        "Specificity (True Negative Rate)"
+      ) ~ "Classification Metrics",
+      
+      Metric %in% c("Brier Score", "ROC AUC", "PR AUC") ~ "Overall Predictive Metrics",
+      
+      TRUE ~ "Model Fit Statistics"  # everything else goes here
+    )
+  ) |> 
+  dplyr::select(Section, Metric, Value) |> 
+  arrange(factor(Section, levels = c(
+    "Classification Metrics",
+    "Overall Predictive Metrics",
+    "Model Fit Statistics"
+  )))
+all_metrics
+saveRDS(all_metrics, "data/glmm_metrics.rds")
 
 # Plot ROC
 roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
-ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line(color = "blue", size = 1.2) +
-  geom_abline(linetype = "dashed", color = "gray") + # diagonal line
+roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(color = "blue") +
+  geom_abline(linetype = "dashed", color = "gray") +
   labs(
     title = "ROC Curve",
     x = "False Positive Rate (1 - Specificity)",
     y = "True Positive Rate (Sensitivity)"
   ) +
   theme_minimal()
-
-# PR-AUC
-pr_auc(
-  test_results, truth = is_SU, .pred_1,
-  event_level = "second"
-)
+ggsave("figures/glmm_roc_plot.png", roc)
 
 # Plot PR
 pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
-ggplot(pr_df, aes(x = recall, y = precision)) +
-  geom_line(color = "darkgreen", size = 1.2) +
+pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
+  geom_line(color = "darkgreen") +
   labs(
     title = "Precision-Recall Curve",
     x = "Recall (Sensitivity)",
     y = "Precision (PPV)"
   ) +
   theme_minimal()
+ggsave("figures/glmm_pr_plot.png", pr)
 
-# Confusion matrix
-cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
-cm
-
-# Extract Precision, Recall, Specificity F1
-cm_metrics <- cm |> 
-  summary() |>
-  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |>
-  mutate(
-    Metric = recode(.metric,
-      "precision" = "Precision/Positive Predictive Value",
-      "recall"    = "Recall/Sensitivity (True Positive Rate)",
-      "spec"      = "Specificity (True Negative Rate)",
-      "f_meas"    = "F1 Score",
-    )
-  )
-cm_metrics
-
-# ---- Calibration plot ----
+# Calibration plot
 calibration_df <- test_results |>
   mutate(prob_bin = ntile(.pred_1, 10)) |>
   group_by(prob_bin) |>
@@ -773,7 +967,7 @@ calibration_df <- test_results |>
     .groups = "drop"
   )
 
-ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
+calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
   geom_point(size = 3, color = "blue") +
   geom_line(color = "blue") +
   geom_abline(
@@ -788,4 +982,488 @@ ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
     y = "Observed Event Rate",
     title = "Calibration Plot"
   )
+ggsave("figures/glmm_calibration_plot.png", calibration)
 ```
+
+## SMOTE NC
+
+```{r}
+selected <- setdiff(selected_vars, c("term_units", "actual_units"))
+
+smotenc_glmer_recipe <- recipe(is_SU ~ ., data = train_df) |>
+  update_role(masked_student_ID, new_role = "id") |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_mutate(across(where(is.logical), as.factor)) |>
+  step_dummy(all_nominal_predictors(), -all_outcomes(), 
+             -masked_student_ID, one_hot = TRUE) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_smotenc(is_SU, over_ratio = best_hyperparam$over_ratio) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors())
+
+trained_recipe <- prep(smotenc_glmer_recipe, retain = TRUE)
+glmer_data <- bake(trained_recipe, new_data = NULL)
+selected <- intersect(selected, names(glmer_data))
+
+glm_formula <- as.formula(
+  paste0("is_SU ~ ", paste(selected, collapse = " + "), 
+         " + (1 | masked_student_ID)")
+)
+
+glmer_fit <- glmer(
+  glm_formula,
+  data = glmer_data,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
+)
+
+model_tidy <- tidy(glmer_fit, effects = "fixed", conf.int = TRUE)
+saveRDS(model_tidy, "smotenc/model_tidy.rds")
+
+result <- model.frame(glmer_fit)
+saveRDS(result, "smotenc/model_resids.rds")
+```
+
+```{r}
+glmm_coeff <- kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
+  kable_styling(full_width = FALSE) |>
+  column_spec(1, width = "10em")
+saveRDS(glmm_coeff, "smotenc/glmm_coeff.rds")
+
+result$pear <- residuals(glmer_fit, type = "pearson")
+result$fit <- fitted(glmer_fit)
+
+png("smotenc/glmm_qq_plot.png", width = 6*300, height = 4*300, res = 300) 
+qqnorm(result$pear); qqline(result$pear, col = "red")
+dev.off()
+
+glmm_pearson <- ggplot(result, aes(x = fit, y = pear)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(se = FALSE, color = "blue") +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(x = "Fitted values", y = "Pearson residuals",
+       title = "Residuals vs Fitted Values")
+ggsave("smotenc/glmm_pearson_plot.png", plot = glmm_pearson, dpi = 300)
+
+png("smotenc/glmm_binned_plot.png", width = 6*300, height = 4*300, res = 300) 
+binnedplot(result$fit, result$pear, xlab = "Predicted probability", 
+           ylab = "Residuals",
+           main = "Binned residual plot")
+dev.off()
+```
+
+```{r}
+# Model fit
+disp <- check_overdispersion(glmer_fit)
+aic_val <- AIC(glmer_fit)
+bic_val <- BIC(glmer_fit)
+icc_val <- icc(glmer_fit)
+
+model_fit_stats <- tibble(
+  AIC = aic_val,
+  BIC = bic_val,
+  Overdispersion_Ratio = disp$dispersion_ratio,
+  Overdispersion_p = disp$p_value,
+  ICC_Adjusted = icc_val$ICC_adjusted,
+  ICC_Conditional = icc_val$ICC_conditional
+) |> 
+  pivot_longer(
+    cols = everything(),
+    names_to = "Metric",
+    values_to = "Value"
+  )
+```
+
+```{r}
+# DHARMA
+sim <- simulateResiduals(fittedModel = glmer_fit, n = 300)
+png("smotenc/glmm_dharma_plot.png", width = 6*300, height = 4*300, res = 300) 
+plot(sim)
+dev.off()
+```
+
+```{r}
+# Evaluate performance on test
+test_baked <- bake(trained_recipe, new_data = test_df)
+test_baked$.pred_1 <- predict(
+  glmer_fit,
+  newdata = test_baked,
+  type = "response",
+  allow.new.levels = TRUE   # allows new students in test set
+)
+test_results <- test_baked |>
+  mutate(
+    pred_class = factor(ifelse(.pred_1 >= best_thresh, 1, 0), levels = c(0, 1))
+  )
+
+# Brier score
+brier <- brier_class(
+  test_results,
+  truth = is_SU,
+  .pred_1,
+  event_level = "second"
+)
+
+# ROC / AUC
+rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, 
+                  estimator = "binary", event_level = "second")
+
+# PR-AUC
+prauc <- pr_auc(
+  test_results, truth = is_SU, .pred_1,
+  event_level = "second"
+)
+
+overall_metrics <- tibble(
+  Metric = c("Brier Score", "ROC AUC", "PR AUC"),
+  Value  = c(
+    brier$.estimate,
+    rocauc$.estimate,
+    prauc$.estimate
+  )
+)
+
+# Confusion matrix
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm
+saveRDS(cm, "smotenc/glmm_cm.rds")
+
+# Extract Precision, Recall, Specificity F1
+cm_metrics <- cm |> 
+  summary() |> 
+  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |> 
+  mutate(
+    Metric = recode(.metric,
+                    "precision" = "Precision / Positive Predictive Value",
+                    "recall"    = "Recall / Sensitivity (True Positive Rate)",
+                    "spec"      = "Specificity (True Negative Rate)",
+                    "f_meas"    = "F1 Score"),
+    Value = .estimate
+  ) |> 
+  dplyr::select(Metric, Value)
+
+all_metrics <- bind_rows(model_fit_stats, cm_metrics, overall_metrics) |> 
+  mutate(Value = round(Value, 3))
+
+all_metrics <- all_metrics |> 
+  mutate(
+    Section = case_when(
+      Metric %in% c(
+        "Precision / Positive Predictive Value",
+        "Recall / Sensitivity (True Positive Rate)",
+        "F1 Score",
+        "Specificity (True Negative Rate)"
+      ) ~ "Classification Metrics",
+      
+      Metric %in% c("Brier Score", "ROC AUC", "PR AUC") ~ "Overall Predictive Metrics",
+      
+      TRUE ~ "Model Fit Statistics"  # everything else goes here
+    )
+  ) |> 
+  dplyr::select(Section, Metric, Value) |> 
+  arrange(factor(Section, levels = c(
+    "Classification Metrics",
+    "Overall Predictive Metrics",
+    "Model Fit Statistics"
+  )))
+all_metrics
+saveRDS(all_metrics, "smotenc/glmm_metrics.rds")
+
+# Plot ROC
+roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(color = "blue") +
+  geom_abline(linetype = "dashed", color = "gray") +
+  labs(
+    title = "ROC Curve",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
+ggsave("smotenc/glmm_roc_plot.png", roc)
+
+# Plot PR
+pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
+  geom_line(color = "darkgreen") +
+  labs(
+    title = "Precision-Recall Curve",
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
+ggsave("smotenc/glmm_pr_plot.png", pr)
+
+# Calibration plot
+calibration_df <- test_results |>
+  mutate(prob_bin = ntile(.pred_1, 10)) |>
+  group_by(prob_bin) |>
+  summarise(
+    mean_pred = mean(.pred_1),
+    obs_rate = mean(as.numeric(as.character(is_SU))),
+    .groups = "drop"
+  )
+
+calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    x = "Mean Predicted Probability",
+    y = "Observed Event Rate",
+    title = "Calibration Plot"
+  )
+ggsave("smotenc/glmm_calibration_plot.png", calibration)
+```
+
+## No SMOTE
+
+```{r}
+selected <- setdiff(selected_vars, c("term_units", "actual_units"))
+
+smoteless_glmer_recipe <- recipe(is_SU ~ ., data = train_df) |>
+  update_role(masked_student_ID, new_role = "id") |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_mutate(across(where(is.logical), as.factor)) |>
+  step_dummy(all_nominal_predictors(), -all_outcomes(), 
+             -masked_student_ID, one_hot = TRUE) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors())
+
+trained_recipe <- prep(smoteless_glmer_recipe, retain = TRUE)
+glmer_data <- bake(trained_recipe, new_data = NULL)
+selected <- intersect(selected, names(glmer_data))
+
+glm_formula <- as.formula(
+  paste0("is_SU ~ ", paste(selected, collapse = " + "), 
+         " + (1 | masked_student_ID)")
+)
+
+glmer_fit <- glmer(
+  glm_formula,
+  data = glmer_data,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
+)
+
+model_tidy <- tidy(glmer_fit, effects = "fixed", conf.int = TRUE)
+saveRDS(model_tidy, "smoteless/model_tidy.rds")
+
+result <- model.frame(glmer_fit)
+saveRDS(result, "smoteless/model_resids.rds")
+```
+
+```{r}
+glmm_coeff <- kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
+  kable_styling(full_width = FALSE) |>
+  column_spec(1, width = "10em")
+saveRDS(glmm_coeff, "smoteless/glmm_coeff.rds")
+
+result$pear <- residuals(glmer_fit, type = "pearson")
+result$fit <- fitted(glmer_fit)
+
+png("smoteless/glmm_qq_plot.png", width = 6*300, height = 4*300, res = 300) 
+qqnorm(result$pear); qqline(result$pear, col = "red")
+dev.off()
+
+glmm_pearson <- ggplot(result, aes(x = fit, y = pear)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(se = FALSE, color = "blue") +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(x = "Fitted values", y = "Pearson residuals",
+       title = "Residuals vs Fitted Values")
+ggsave("smoteless/glmm_pearson_plot.png", plot = glmm_pearson, dpi = 300)
+
+png("smoteless/glmm_binned_plot.png", width = 6*300, height = 4*300, res = 300) 
+binnedplot(result$fit, result$pear, xlab = "Predicted probability", 
+           ylab = "Residuals",
+           main = "Binned residual plot")
+dev.off()
+```
+
+```{r}
+# Model fit
+disp <- check_overdispersion(glmer_fit)
+aic_val <- AIC(glmer_fit)
+bic_val <- BIC(glmer_fit)
+icc_val <- icc(glmer_fit)
+
+model_fit_stats <- tibble(
+  AIC = aic_val,
+  BIC = bic_val,
+  Overdispersion_Ratio = disp$dispersion_ratio,
+  Overdispersion_p = disp$p_value,
+  ICC_Adjusted = icc_val$ICC_adjusted,
+  ICC_Conditional = icc_val$ICC_conditional
+) |> 
+  pivot_longer(
+    cols = everything(),
+    names_to = "Metric",
+    values_to = "Value"
+  )
+```
+
+```{r}
+# DHARMA
+sim <- simulateResiduals(fittedModel = glmer_fit, n = 300)
+png("smoteless/glmm_dharma_plot.png", width = 6*300, height = 4*300, res = 300) 
+plot(sim)
+dev.off()
+```
+
+```{r}
+# Evaluate performance on test
+test_baked <- bake(trained_recipe, new_data = test_df)
+test_baked$.pred_1 <- predict(
+  glmer_fit,
+  newdata = test_baked,
+  type = "response",
+  allow.new.levels = TRUE   # allows new students in test set
+)
+test_results <- test_baked |>
+  mutate(
+    pred_class = factor(ifelse(.pred_1 >= best_thresh, 1, 0), levels = c(0, 1))
+  )
+
+# Brier score
+brier <- brier_class(
+  test_results,
+  truth = is_SU,
+  .pred_1,
+  event_level = "second"
+)
+
+# ROC / AUC
+rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+
+# PR-AUC
+prauc <- pr_auc(
+  test_results, truth = is_SU, .pred_1,
+  event_level = "second"
+)
+
+overall_metrics <- tibble(
+  Metric = c("Brier Score", "ROC AUC", "PR AUC"),
+  Value  = c(
+    brier$.estimate,
+    rocauc$.estimate,
+    prauc$.estimate
+  )
+)
+
+# Confusion matrix
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm
+saveRDS(cm, "smoteless/glmm_cm.rds")
+
+# Extract Precision, Recall, Specificity F1
+cm_metrics <- cm |> 
+  summary() |> 
+  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |> 
+  mutate(
+    Metric = recode(.metric,
+                    "precision" = "Precision / Positive Predictive Value",
+                    "recall"    = "Recall / Sensitivity (True Positive Rate)",
+                    "spec"      = "Specificity (True Negative Rate)",
+                    "f_meas"    = "F1 Score"),
+    Value = .estimate
+  ) |> 
+  dplyr::select(Metric, Value)
+
+all_metrics <- bind_rows(model_fit_stats, cm_metrics, overall_metrics) |> 
+  mutate(Value = round(Value, 3))
+
+all_metrics <- all_metrics |> 
+  mutate(
+    Section = case_when(
+      Metric %in% c(
+        "Precision / Positive Predictive Value",
+        "Recall / Sensitivity (True Positive Rate)",
+        "F1 Score",
+        "Specificity (True Negative Rate)"
+      ) ~ "Classification Metrics",
+      
+      Metric %in% c("Brier Score", "ROC AUC", "PR AUC") ~ "Overall Predictive Metrics",
+      
+      TRUE ~ "Model Fit Statistics"  # everything else goes here
+    )
+  ) |> 
+  dplyr::select(Section, Metric, Value) |> 
+  arrange(factor(Section, levels = c(
+    "Classification Metrics",
+    "Overall Predictive Metrics",
+    "Model Fit Statistics"
+  )))
+all_metrics
+saveRDS(all_metrics, "smoteless/glmm_metrics.rds")
+
+# Plot ROC
+roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(color = "blue") +
+  geom_abline(linetype = "dashed", color = "gray") +
+  labs(
+    title = "ROC Curve",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
+ggsave("smoteless/glmm_roc_plot.png", roc)
+
+# Plot PR
+pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
+  geom_line(color = "darkgreen") +
+  labs(
+    title = "Precision-Recall Curve",
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
+ggsave("smoteless/glmm_pr_plot.png", pr)
+
+# Calibration plot
+calibration_df <- test_results |>
+  mutate(prob_bin = ntile(.pred_1, 10)) |>
+  group_by(prob_bin) |>
+  summarise(
+    mean_pred = mean(.pred_1),
+    obs_rate = mean(as.numeric(as.character(is_SU))),
+    .groups = "drop"
+  )
+
+calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    x = "Mean Predicted Probability",
+    y = "Observed Event Rate",
+    title = "Calibration Plot"
+  )
+ggsave("smoteless/glmm_calibration_plot.png", calibration)
+```
+
