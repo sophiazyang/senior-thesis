@@ -13,6 +13,7 @@ csl: apa.csl
 #| warning: false
 library(tidyverse)
 library(kableExtra)
+options(knitr.table.format = "latex")
 ```
 
 # Introduction
@@ -177,25 +178,25 @@ Before fitting any models, I conducted a brief exploratory analysis. For Figures
 
 In Figure 1, I plot changes in the proportion of student-course pairs which have the final grade of either "S" or "U". The results verify my expectation of a massive surge in S/U grades during the Spring 2020 semester in which all courses could be taken S/U. However, it also reveals a large discrepancy between Fall 2012-Fall 2019 with the total proportion of grades being taken S/U less than 2.5% of the time, compared to averages around 5% in Fall 2020 through Spring 2025. A very similar plot (not shown) was drawn with counts on the y-axis as the number of enrolled students and hence the approximate number of courses taken per term stays consistent across all years.
 
-![Bar chart of the proportion of all grades given to Trinity College undergraduate students taught at Durham or online in Spring and Fall terms from Fall 2012 to Spring 2025. The prominent, red peak in Spring 2020 indicates the impact of pandemic policies during that term. Prior to the pandemic, there seems to be a slight increasing trend in S/Us. In contrast, terms following Spring 2020 are relatively stable at a higher proportion of S/U grades with no increasing or decreasing trends. Note that changes in S/Us may be related to the number of courses with mandatory S/U grading.](figures/prop_su_plot.png)
+![Bar chart of the proportion of all grades given to Trinity College undergraduate students taught at Durham or online in Spring and Fall terms from Fall 2012 to Spring 2025. The prominent, red peak in Spring 2020 indicates the impact of pandemic policies during that term. Prior to the pandemic, there seems to be a slight increasing trend in S/Us. In contrast, terms following Spring 2020 are relatively stable at a higher proportion of S/U grades with no increasing or decreasing trends. Note that changes in S/Us may be related to the number of courses with mandatory S/U grading.](figures/prop_su_plot.png){height="40%"}
 
 To put the shift in S/U grades into context with all grades, Figure 2 uses the same data but shows relative proportions of grade categories. Over time, it's clear that the proportion of A's given has steadily increased since Fall 2012, with a dip in Spring 2020 likely due to pandemic impacts as S's rose sharply. The proportion of S's seeminingly surpassed D's within the first five years of its introduction. From the pandemic onwards, the proportion of S's have also overtaken the proportion of C's. From the declining trend in B's, it is possible that without policy changes S's may even surpass B's in the coming academic terms. Additionally, the prominence of non-credit grades over D's seems to signal the lack of use a D has in the modern academic system. While beyond the scope of this thesis, it could be hypothesized that students may be opting for non-credit grades to avoid drops in GPA. What is striking is that in the 2024-2025 academic year, for the first time (from my understanding), A's made up over 80% of all grades, providing evidence towards continued grade inflation in Duke University's Trinity College of Arts & Sciences.
 
-![Line plot of relative proportions of final grades in each of 6 categories. Plus and minute (+/-) letter grades are together for ease of interpretation, although +/- grades are be associated with different GPA points (with the exception of A+ and A). "No Credit" refers to a variety of grades including failing grades (F and U), withdrawals (W), incomplete (I), audit (AD), and other miscellaneous grades that do not impact a student's GPA.](figures/grade_dist_plot.png)
+![Line plot of relative proportions of final grades in each of 6 categories. Plus and minute (+/-) letter grades are together for ease of interpretation, although +/- grades are be associated with different GPA points (with the exception of A+ and A). "No Credit" refers to a variety of grades including failing grades (F and U), withdrawals (W), incomplete (I), audit (AD), and other miscellaneous grades that do not impact a student's GPA.](figures/grade_dist_plot.png){height="50%"}
 
 For more clarity on grade inflation at Duke University, I plot median and quantiles of weighted semester GPAs in my dataset. The plot is also supplemented by historic Dean's List (a distinction awarded for students in top class rank percentiles cutoffs) from the Office of the University Registrar @dean_list. From Figure 3, there is a clear trend of increasing weighted GPAs throughout the period from Fall 2012 to Spring 2025. Understandably, there is a spike in GPAs during the pandemic. Yet, even with a return to normalcy in Fall 2022, GPAs continue to steadily rise. In the 2024-2025 academic year, GPAs have reached the maximum of 4.0. Perfection is now the norm.
 
-![Plot displaying trends in Trinity undergraduate students' weighted GPAs from Fall 2012 through Spring 2025. In black is the median semester weighted GPA from my dataset. The gray bands represent the 25th and 75th quantiles of weighted GPAs. Missing values for first semester students are not included in this figure. Overlaid in red are the historic cutoffs for Dean's List in Trinity. Dean's List was paused in Spring 2020, Fall 2020, and Spring 2021 due to pandemic era policies.](figures/gpa_plot.png)
+![Plot displaying trends in Trinity undergraduate students' weighted GPAs from Fall 2012 through Spring 2025. In black is the median semester weighted GPA from my dataset. The gray bands represent the 25th and 75th quantiles of weighted GPAs. Missing values for first semester students are not included in this figure. Overlaid in red are the historic cutoffs for Dean's List in Trinity. Dean's List was paused in Spring 2020, Fall 2020, and Spring 2021 due to pandemic era policies.](figures/gpa_plot.png){height="50%"}
 
 While the previous figures have been influential in showing trends in final grades across terms, they are somewhat uninformative in the sense that they have no distinction between voluntary and mandatory S/U grading. Figure 4 presents a summary of the proportion of all courses taken by Trinity undergraduates from Fall 2012 through Spring 2025 by their perceived grading status. As a reminder, I do not have information on whether or not a course is officially classified as "Graded Only" or "S/U required". Instead, if no students received grades A-F I classify the course as "S/U Required". If no students received grades S or U, I classify the course as "All Graded". Overall, there seems to be a growing proportion of courses in which some students receive S/U grades and a corresponding decline in the proportion of courses where only A-F grades are given. This is indicative of a rising number of courses in which students choose to voluntarily opt for S/U grading (the number of courses offered has remained relatively stable). However, this plot does not indicate or weight by the size of enrollment.
 
 **TO DO FIX THE COLORS/WEIGHT BY ENROLLMENT??**
 
-![Line plot showing relative proportions of courses that are taken on varying grading bases. Rather than being based on if all grades are S/U, it instead checks if any of the grades are A-F in order to account for alternative grades such as W and AU. Overall, there is a declining trend of courses with no S/U grades and an increase in courses with S/U grades.](figures/grade_type_plot.png)
+![Line plot showing relative proportions of courses that are taken on varying grading bases. Rather than being based on if all grades are S/U, it instead checks if any of the grades are A-F in order to account for alternative grades such as W and AU. Overall, there is a declining trend of courses with no S/U grades and an increase in courses with S/U grades.](figures/grade_type_plot.png){height="40%"}
 
 Figure 5 seeks to quantify the effect of S/U courses at the student level. For this figure, courses categorized to be S/U required have already been dropped and the data matches that used by my models. It's important to note that dashed lines represent current statuses and that actual number of S/U courses taken may be higher as those students have more semesters left before graduation. While all students plotted have or are projected to take eight semesters, they may have taken more or less courses. For students who matriculated in 2012 through 2015, there was little change in number of S/U courses. However, for those who matriculated in 2016 through 2019, there was a steady increase in number of voluntary S/Us per student. These classes of students are precisely the ones who were enrolled during Spring 2020. The first class of students who matriculated after Spring 2020 (student group 2020) show a lower proportion of voluntary S/Us than those who experienced Spring 2020. However, the student group matriculating in 2021 on average have taken more voluntary S/Us than the student group for 2020, despite even less time experiencing pandemic era policies. For students who have yet to graduate, they are still projected to have taken more voluntary S/Us than their 2012-2015 counterparts.
 
-![Plot of colored by total number of voluntary S/Us taken by students who matriculated in the Fall of years 2012 through 2024. The y-axis contextualizes for what proportion of students in each group that number of voluntary S/Us is achieved. Solid lines represent final values for classes who have already graded. Dashed lines represent current values for classes that have not yet graduated, meaning they are conservative underestimates of total number of voluntary S/U courses.](figures/total_su_plot.png)
+![Plot of colored by total number of voluntary S/Us taken by students who matriculated in the Fall of years 2012 through 2024. The y-axis contextualizes for what proportion of students in each group that number of voluntary S/Us is achieved. Solid lines represent final values for classes who have already graded. Dashed lines represent current values for classes that have not yet graduated, meaning they are conservative underestimates of total number of voluntary S/U courses.](figures/total_su_plot.png){height="50%"}
 
 # Methodology
 
@@ -213,13 +214,13 @@ I used labeled data to inform my imputation, assuming that there has been no sig
 
 My current approach is to use proportion of 200 and above levels courses a student has taken per division to assign major divisions. With a 0.93%, 0.87%, and 0.87% accuracy for major divisions, the data suggested a threshold of 0.5, 0.4, 0.3 for Arts & Humanities, Natural Sciences, and Social Sciences respectively (Figure 6). The high threshold for Arts & Humanities logically makes sense, the more classes more likely to be majoring. However, the threshold for Social Sciences seems abnormally low as it insinuates a student who has a major in Social Sciences only takes roughly a third of their courses in Social Sciences. Looking at the confusion metrics for each proportion threshold in Figure 7, it becomes evident that the increase in false positives with higher thresholds offsets the increase in true positives. It should also be taken into consideration that 1) many students pursue a double major, 2) students may have minors or certificates in other divisions, 3) students have a variety of academic interests, 4) courses may be cross-listed across divisions, and 5) categorization of majors is somewhat debatable. To provide as example of 5, as defined by Trinity College, African & African American Studies is classified as a Social Science while Asian & Middle Eastern Studies is in Arts & Humanities.
 
-![Test results for different thresholds for major division imputation. For the Arts & Humanities, students appear to solely take courses in their home division with higher cutoffs performing similarly when compared to lower cutoffs. However, for Natural Sciences and Social Sciences, higher thresholds resulted in more errors.](figures/impute_error_plot.png)
+![Test results for different thresholds for major division imputation. For the Arts & Humanities, students appear to solely take courses in their home division with higher cutoffs performing similarly when compared to lower cutoffs. However, for Natural Sciences and Social Sciences, higher thresholds resulted in more errors.](figures/impute_error_plot.png){height="40%"}
 
-![This plot details false negatives (FN), false positives (FP), true negatives (TN), and true positives (TP) for each of the divisions at difference thresholds. In the Natural Sciences and Social Sciences there is a rapid rise in false negatives, indicating that too high of a threshold misses students who are majoring in these divisions. For Arts & Humanities, the number of students who truly are majoring in Arts & Humanities is low enough such that the penalty of false negatives is negligible.](figures/impute_confusion_plot.png)
+![This plot details false negatives (FN), false positives (FP), true negatives (TN), and true positives (TP) for each of the divisions at difference thresholds. In the Natural Sciences and Social Sciences there is a rapid rise in false negatives, indicating that too high of a threshold misses students who are majoring in these divisions. For Arts & Humanities, the number of students who truly are majoring in Arts & Humanities is low enough such that the penalty of false negatives is negligible.](figures/impute_confusion_plot.png){height="35%"}
 
 To ensure that this imputation strategy is not dependent on when a student is enrolled, I also tested this imputation strategy by class year. Results in Figure 8 show slight variations in the best threshold and error rates across class years. However, there does not appear to be a significant correlation between student group and thresholds for imputation. Hence, I deem that my approach is appropriate to be applied to the subsequent classes on which I am imputing.
 
-![Results from running imputation separately on each student group reveal only slight changes in the best threshold and resulting minimum error rates. There does not immediately appear to be trends across student groups.](figures/impute_by_year.png)
+![Results from running imputation separately on each student group reveal only slight changes in the best threshold and resulting minimum error rates. There does not immediately appear to be trends across student groups.](figures/impute_by_year.png){height="35%"}
 
 While my method of imputation successfully imputed nearly half of all missing major divisions, 9.7% of all observations still had NAs for division. For these values I resorted to the simple solution of filling with the most common student division: Social Sciences. Similarly, for previous semester GPA of first semester students, I fill with the value of 4.0. Unfortunately, this adds systematic error to my dataset, although I deem the data I would have otherwise lost as of greater importance. At this point, no missing values remain.
 
@@ -229,95 +230,180 @@ An important detail to note about my data is that there is a large class imbalan
 
 Class imbalance is not an unique problem. In fact, class imbalance problems have become more and more prevalent in literature with an increase in number of published dissertations on imbalanced learning from 53 in 2013 to 521 in 2022 [@chen_2024]. The literature suggests data-level approaches such as oversampling of the minority class and undersampling the majority class as well as algorithm-level approaches manipulating weights, adjusting decision thresholds, and using ensemble models [@chen_2024] [@japkowicz_stephen_2002]. Each technique has its own set of applications and drawbacks and various hybrid techniques also exist.
 
-For this thesis, I explore the utilization of Synthetic Minority Over-sampling Technique (SMOTE) to address class imbalance. As the name suggests, SMOTE attempts to over sample the minority class by generating synthetic data points based on existing samples and nearest neighbors [@chawla_2002]. Some common drawbacks of SMOTE include potential overfitting, performance overheard from the addition of observations, and mismatch between synthetic data and actual distribution of minority class. Notably, SMOTE is over 20 years old and in that time over 85 variants of SMOTE have been proposed [@fernandez_2018]. Purely for simplicity, this thesis uses the original SMOTE through `themis::step_smote` from the tidymodels ecosystem—although with little success.
+For this thesis, I explore the utilization of Synthetic Minority Over-sampling Technique (SMOTE) to address class imbalance. As the name suggests, SMOTE attempts to over sample the minority class by generating synthetic data points based on existing samples and nearest neighbors [@chawla_2002]. Some common drawbacks of SMOTE include potential overfitting, performance overheard from the addition of observations, and mismatch between synthetic data and actual distribution of minority class. Notably, SMOTE is over 20 years old and in that time over 85 variants of SMOTE have been proposed [@fernandez_2018]. For simplicity, this thesis uses SMOTENC (extension for nominal and continuous features) proposed by @chawla_2002 through `themis::step_smotenc` in the tidymodels ecosystem—although with limited success.
 
 ## Hyperparameter Tuning
 
-Before fitting models, I split my data into training (80%) and test (20%) sets. Data was split on student IDs to prevent data leakage; information about some of a student's courses likely reveals information that helps predict for other observations. For modeling, I use the tidymodels ecosystem. While I intend to use random effects in my final model, pre-liminary model selection is performed without random effects due to computational limitations. Hence, I begin with logistic regression using `glm()` where the response variable is whether or not the course was taken S/U by a particular student.
+Before fitting models, I split my data into training (80%) and test (20%) sets. Data was split on student IDs to prevent data leakage; information about some of a student's courses likely reveals information that helps predict for other observations. For modeling, I use the tidymodels ecosystem. While I intend to use random effects in my final model, preliminary model selection is performed without random effects due to computational limitations. Hence, I begin with logistic regression using `glm()` where the response variable is whether or not the course was taken S/U by a particular student.
 
-The hyperparameters I experiment with tuning in this thesis are the over ratio, penalty, mixture, and decision threshold. Over ratio is used by SMOTE to determine how many synthetic samples should be generated. Penalty refers to regularization strength: how much to penalize model complexity. Mixture is used in elastic net regression to control the balance between LASSO and ridge regression. Generally, LASSO is used to minimize the number of predictors whereas ridge corrects for overfitting and multi-collinearity. Finally, the decision threshold refers to the cutoff for classification. It answers the question: for which predicted probability values should S/U or not S/U be output.
+The hyperparameters I experiment with tuning in this thesis are the over ratio, penalty, mixture, and decision threshold. Over ratio is used by SMOTE to determine how many synthetic samples should be generated. An over ratio of 1 tells SMOTE to generate samples until the balance between the minority and majority class is 1:1 while an over ratio of 0.5 tells SMOTE to generate samples until the ratio is 1:2. Penalty refers to regularization strength: how much to penalize model complexity. Mixture is used in elastic net regression to control the balance between LASSO and ridge regression. Generally, LASSO is used to minimize the number of predictors whereas ridge corrects for overfitting and multi-collinearity. Finally, the decision threshold refers to the cutoff for classification. It answers the question: for which predicted probability values should S/U or not S/U be output.
 
-All tuning of hyperparameters was done with 5-fold cross-validation. Over ratio (0.2 to 1), penalty (10^-4^ to 10^1^), and mixture (0 to 1) were tuned together, testing each combination of the three hyperparameters. Five levels were tested for each hyperparameter, resulting in fitting the workflow 125 times. Afterwards, I experimented with lowering the decision threshold to encourage more predictions of S/U. The model was tested with thresholds from 0.01 to 0.5 at 0.01 interval increments.
-
-The resulting best combination of hyperparameters was an over ratio of .....
-
-An over ratio of 1 tells SMOTE to generate samples until the balance between the minority and majority class is 1:1 while an over ratio of 0.5 tells SMOTE to generate samples until the ratio is 1:2.
+All tuning of hyperparameters was done with 5-fold cross-validation. Over ratio (0.2 to 1), penalty (10^-4^ to 10^1^), and mixture (0 to 1) were tuned together, testing each combination of the three hyperparameters. Five levels were tested for each hyperparameter, resulting in fitting the workflow 125 times. Afterwards, I experimented with lowering the decision threshold to encourage more predictions of S/U. The model was tested with thresholds from 0.01 to 0.5 at 0.01 interval increments. The resulting best combination of hyperparameters was an over ratio of 0.4, penalty of 0.0001 (small penalty), mixture of 1 (pure LASSO), and decision threshold of 0.5.
 
 ## Variable Selection
 
-In terms of interaction terms, ... I did not explore other interactions in this thesis due to time constraints and lack of rationale supporting the testing of such terms...
+There are some variables provided that I did not include in my model. There was an indicator for whether or not a course was cross-listed that I dropped due to an inability to determine the nature of the crosslist (within-division, outside-division, outside Trinity). Instead of including the sparse data on specific majors, minors, and certificates, I engineered features (number of academic plans and division of major) as described previously in the Data Engineering section. While I used class component to filter out courses, I opted to exclude it from modeling due to the lack of clarity I have on consistency across divisions and how credits are distributed for courses with a required lab. Additionally, what is a discussion section in one department could be equivalent to a lab in another. While there are additional specifications for a course to qualify as a seminar, I believe that a significant portion of that information comes from the number of students enrolled. I expect variation in class components to result in difficult to interpret results and leave this as an area of future study. Similarly, I did not explore the addition of interaction terms and transformations with one exception: the interaction between a student's major division and a course's division. This interaction term is critical to my analysis in particular as whether or not a student is taking a course as part of their major likely influences choice of grading![](data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==)—most majors do not permit courses taken S/U to fulfill major requirements.
 
-Beyond While I believe all variables included have some relevance to student behavior, their impact might be insignificant for my purposes or not generalize well. Techniques used for variable selection include all-subset selection, step-wise AIC/BIC, LASSO, ridge regression, and elastic search. For this thesis, I did not explore all-subset selection or step-wise methods. The problem with all-subset selection is its need for high computational resources to compare each combination of features (2^p^). Step-wise methods are flawed due to their greedy approach being dependent on starting values and the lack of guarantee of an optimal solution. Hence, here I focus on elastic-net regression, a combination of LASSO and ridge regression.
+At this point, I believe that all remaining variables in my modeling dataset have some relevance to student behavior. To confirm this belief, I turn towards feature selection strategies. Common techniques for variable selection include all-subset selection, step-wise AIC/BIC, LASSO, ridge regression, and elastic search. For this thesis, I did not explore all-subset selection or step-wise methods. All-subset selection would require high computational resources to compare each combination of features (2^p^); step-wise methods are flawed due to their greedy approach being dependent on starting values and the lack of guarantee of an optimal solution. Hence, here I focus on elastic-net regression, a combination of LASSO and ridge regression. In addition to elastic–net, I isolated several predictors for which I was skeptical. I tested nested models with and without study away status (significant number of NAs filled with FALSE), summer course status, number of academic plans (flaws in imputation for post-pandemic students), and my interaction terms. For the four colinear variables representing course load, I opted to compare AIC (metric of the predictive accuracy) and BIC (how likely the model is to be the "true" model) for the full model with only one of the load variables.
 
-In addition to elastic–net, I also tested nested models on predictors I did not believe would have a significant effect. These included study away status (significant number of NAs), summer course status, and number of academic plans (due to flaws in imputation for post-pandemic students). The likelihood ratio tests I performed supported the inclusion of these variables in my final model.
+From my run of elastic-net, all variables were kept. Similarly, the likelihood ratio tests I performed supported the inclusion of all variables in my final model with significant p-values. AIC and BIC metrics (Table 1) also provide evidence in favor of keeping all variables. Notably, despite the deterministic relationship between load categories and load units, all four indicators of load were kept by elastic-net. This may suggest non-linearity in the relationship between load and the likelihood of opting for voluntary S/U. Alternatively, the inclusion of ... variables may simply be due to the size of my dataset having immense power to detect small, uninteresting effects. For sake of interpretability, I opt to keep the categorical indicators of load (load_stat, act_load) over their numeric counterparts (term_units, act_units).
 
-For co-linear variables, I opted to compare AIC (metric of the predictive accuracy) and BIC (how likely the model is to be the "true" model). I compared the numerical course load a student takes in a given semester to the discrete categorization .......
-
-A detailed record of all variables considered for modeling and my verdicts are provided in the Appendix. In summary, most variables remained ... since so many observations everything was significant. Notably, despite the deterministic relationship between load categories and load units, all four indicators of load were kept by elastic-net. This may suggest... However, for ease of interpretation, I opted to select the categorical versions (x, y) over their numeric counterparts. This is because they tended to have higher AIC and BIC scores, as well eliminating the lack of specific values...
+```{r}
+#| echo: false
+#| results: asis
+var_select <- readRDS("smotenc/var_select_table.rds")
+var_select |> kable(
+  digits = 3,
+  caption = "AIC and BIC metrics excluding select variables. Inclusion of all variables improves model fit."
+) |> 
+  kable_styling(latex_options = "HOLD_position")
+```
 
 ## Final Model
 
-From my preliminary models, the best hyper-parameters I got were a light penalty of 0.0001 on pure LASSO (mixture =1), SMOTE oversampling of the minority class to reach a 1 to 5 ratio of S/U and non-S/U respectively, and the default decision threshold of 0.5. All parameters were testing in combination with each other, except the decision threshold.
-
-After addressing major modeling hurdles, I added a random effect on student ID using `lme4::lmer()`. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course. However, the addition of random effects resulted in a significant increase in run time, so I used a random sample of my observations to be used in the training and test sets.
+After addressing major modeling hurdles, I used the selected features and hyperparameters while adding a random effect on student ID using `lme4::lmer()`. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course.
 
 ## Model Evaluation
 
-To evaluate model fit I use a variety of metrics including but not limited to:
+### Logistic Regression without Student Effect
 
--   Intraclass Correlation Coefficient: $ICC = \frac{\text{random effect variance}}{\text{total variance}}$ , how much variation can be explained by random effect
+When fitting the logistic regression without the random effect on student ID and using SMOTENC, the following diagnostics were generated. From Table 2, it is clear that SMOTENC did have an impact on the number of predictions of the minority class. When testing without SMOTENC, no observations of the minority class were made. However, the quality of the predictions still leaves much to be desired with an abundance of false positives (predicting S/U but S/U was not chosen). This issue of over prediction is also visible in from the calibration plot in Figure 9. For instance, when my model believes the probability of voluntary S/U is 0.1 the actual observed probability is only 0.013.
 
--   Dispersion (for general linear mixed model) $= \frac{\chi^2}{df_{residual}}$, measure of the degree of variability in the dataset relative to what is expected by the theoretical model
+Table 3 provides a more comprehensive view of model diagnostics. For model fit, there does not seem to be signs of significant under (\<1) or overdispersion (\>1). In terms of classification metrics, there is a relatively high ROC (Receiver Operating Characteristics) AUC (Area Under the Curve) of 0.825 which indicates good discrimination between positive and negative outcomes. A random model would score 0.5 while a perfect model would score 1.0. Given one positive and one negative case, the model will on average rank the positive one higher 82.5% of the time. The area under the PR (Precision-Recall) curve is an abyssal 0.086. However, due to only 2% of my data being of the positive class, the baseline PR AUC is 0.02; my model performs better than a random model. Finally, Brier Score is a supplement that measures how far predictions are from observations. A Brier Score of 0.764 is considered fairly high and is a negative signal of performance, related to the low PR AUC and specificity. Due to the relatively low number of On the otherhand, specificity is high as most observations are positive. F1 score serves as a balance between specificity and sensitivity....
 
--   Precision $= \frac{\text{TP}}{(\text{TP}+\text{FP})}$, how many of the observations predicted as positive are positive
+```{r}
+#| echo: false
+cm <- readRDS("smotenc/glm_cm.rds")
+cm$table |>
+  kable(digits = 3, 
+        caption = " Confusion matrix from running SMOTENC without random effect") |>
+  add_header_above(c(" " = 1, "Predicted" = ncol(cm$table))) |>
+  pack_rows("Actual", 1, nrow(cm$table)) |>
+  kable_styling(latex_options = "HOLD_position")
 
--   Recall (aka Sensitivity) $= \frac{\text{TP}}{(\text{TP}+\text{FN})}$, true positive rate
+all_metrics <- readRDS("smotenc/glm_all_metrics.rds")
+all_metrics |> 
+  filter(!Metric %in% c("AIC", "BIC")) |>
+  mutate(
+    Section = factor(Section,
+           levels = c("Model Fit Statistics", 
+                "Overall Predictive Metrics", "Classification Metrics"))
+  ) |>
+  arrange(Section) |>
+  dplyr::select(-Section) |>
+  kable(
+    digits = 3,
+    caption = "Model Diagnostic Values from running SMOTENC without random effect"
+  ) |> 
+  kable_paper("striped", full_width = F) |>
+  pack_rows("Model Fit", 1, 2) |>
+  pack_rows("Classification Metrics", 3, 5) |>
+  pack_rows("Predictive Metrics", 6, 9) |>
+  kable_styling(latex_options = "HOLD_position")
+```
 
--   Specificity $= \frac{\text{TN}}{(\text{TP}+\text{FN})}$, true negative rate
+![Calibration plot from running logistic regression with SMOTENC without random effects. The dashed red line represents a perfect model while the solid blue line represents my model.](smotenc/glm_calibration_plot.png){height="40%"}
 
--   F1 $= \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision}+{\text{Recall}}}$
+### Logistic Regression with Student Effect
 
-    \*$\text{TP}$, $\text{TN}$, $\text{FP}$, $\text{FN}$: True Positive, True Negative, False Positive, and False Negative, respectively
+After preliminary modeling without a random effect on student ID, mixed models were fit both with and without SMOTENC. However, SMOTENC did not appear to boost the minority class as neither model predicted any instances of S/U. This may be due to the inability for SMOTENC to understand the underlying hierarchical structure. SMOTE still treats the random effect as it does any other variable, synthesizing new student-course pairs. Unfortunately, there appears to be a gap in the literature regarding the impact of using SMOTENC on generalized linear mixed models. To to the challenges of interpreting SMOTENC in the context of random effects as well as the evident overconfidence when using SMOTENC on the general linear model, I present results without the use of class imbalance techniques. While hyperparameters varied, the same decision threshold and features were chosen.
 
-    \*$\chi^2$ is the Pearson chi-square statistic, $df_{residual}$ are the residual degrees of freedom
+```{r}
+#| echo: false
+cm <- readRDS("smoteless/glmm_cm.rds")
+cm$table |> kable(
+  digits = 3,
+  caption = "text."
+) |> 
+  kable_styling(latex_options = "HOLD_position")
+
+all_metrics <- readRDS("smoteless/glmm_all_metrics.rds")
+all_metrics |> kable(
+  digits = 3,
+  caption = "."
+) |> 
+  kable_styling(latex_options = "HOLD_position")
+```
+
+![Calibration shows under predicting](smoteless/glmm_calibration_plot.png){height="40%"}
+
+![text](smoteless/glmm_qq_plot.png){height="40%"}
+
+![text](smoteless/glmm_roc_pr_plot.png){height="40%"}
+
+![text](smoteless/glmm_pearson_plot.png){height="40%"}
+
+![text](smoteless/glmm_binned_plot.png){height="40%"}
+
+![text](smoteless/glmm_dharma_plot.png){height="40%"}
 
 # Results
 
-## Performance Metrics
+```{r, echo=FALSE}
+all_metrics <- readRDS("smoteless/glmm_coeff.rds")
+all_metrics |> 
+  select(-effect, -statistic) |>
+  kable(
+  digits = 3,
+  caption = ".",
+  format = "latex", booktabs = TRUE
+) |> 
+  kable_styling(latex_options = "HOLD_position")
+```
 
-The confusion matrix from my model is shown in TODO. My model correctly identified 76.4% of negative cases (specificity = 0.764), but it only correctly identified 67.4% of positive cases (sensitivity or recall = 0.674). The precision of my model is 0.99, meaning 99% of all predicted positives were truly positive. Balancing precision and recall, the F1 score was 0.802.
+prev_semGPA higher the less likely to S/U
 
-Figure TODO shows the Precision-Recall (PR) curve for my model. The area under the PR curve is an abyssal 0.11. However, due to only 2% of my data being of the positive class, the baseline PR AUC (Area Under the Curve) is 0.02 meaning that my model performs better than a random model.
+take summer courses (true?) more likely to S/U
 
-A plot of the Receiver Operating Characteristics (ROC) curve associated with my model can be seen in Figure TODO. The area under the ROC curve is 0.806, representing good discrimination between positive and negative outcomes. A random model would score 0.5 while a perfect model would score 1.0. Given one positive and one negative case, the model will on average rank the positive one higher 81% of the time.
+signif diff with is_natural_sci -\> less likely to S/U
 
-However, the calibration plot in Figure TODO tells a different story about the fit of my model. My model appears to be poorly calibrated with systematic over confidence. For instance, when the model predicts with an 80% probability of a course being taken S/U, in reality the course is on average taken S/U 10% of the time. At each level of confidence, the model systematically predicts a higher chance of occurrence than supported by reality.
+more overloads (so far?) -\> less likely to S/U (maybe from those overloads alrdy did their S/Us OR maybe its part of num of sem, less likely to S/U later in acad career?)
 
-My model has an intra-class correlation (ICC) of 0.96. This means that 96% of the variation in the outcome is due to differences between students. This could mean that ....
+acad load not signif
 
-Quantile resid and QQ plot using DHarma
+overload -\> less likely to S/U
 
-Finally, there is an abundance of evidence supporting the presence of under dispersion, meaning that the residual variance is smaller than expected. This could be a result of ...
+postpan -\> more likely to S/U
 
-## Model Summary
+pan -\> more likely to S/U
 
-\[insert table of exponentiated coefficients and signif\]
+acad lvl 2 -\> more likely
 
-Smaller models....
+acad lvl 3 -\> more likely
+
+acad lvl 4 -\> more likely
+
+\*! lvl 1 baseline is 1-99... so 5 = 400-499
+
+cata lvl 2 more likely su
+
+cata lvl 5 less likely su
+
+nat sci -\> more likely
+
+ss -\> more likely
+
+not signif interaction
+
+NS taking art more likely su
+
+SS taking SS less likely su
+
+Smaller models....?
 
 # Discussion
 
 Based on model time period really matters...but not much else
 
-Bc of the high ICC seems like Student level beliefs and stances for and against flexible grading based on cultural beliefs or personal values and whatever else plays a large role in...
+## Changes in Student Well-Being
 
 S/U was supposed to help with mental health things -\> comparing with data from DUCkI it says... so i think ...
 
-\[DuCKl data\]
+say something about peer institutions?
 
 ## Limitations
 
-As with most studies, there are numerous limitations with this thesis. To begin, there is systematically missing data with the lack data satisfying my classification of post-pandemic (Fall 2022-Spring 2025). There are certainly errors in my imputation of student major divisions as well as a systematic underestimate in the number of academic plans students graduate with. In many cases, students realize later in their academic careers that they have the time to explore other interests. Additionally, I do not attempt to impute student's minors. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
+As with most studies, there are numerous limitations with this thesis. To begin, there is systematically missing data with the lack data satisfying my classification of post-pandemic (Fall 2022-Spring 2025). There are certainly errors in my imputation of student major divisions as well as a systematic underestimate in the number of academic plans students graduate with. In many cases, students realize later in their academic careers that they have the time to explore other interests. Additionally, I do not attempt to impute student's minors or certificates and hence their number of plans is likely an underestimate. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
 
 Missing data is not exclusive to after the pandemic. There was also missing data from the courses for which location was NA as well as no data on previous semesters for first semester students. The choice to systematically give all students a 4.0 as the baseline previous semester GPA for their first semester decreases the perceived significance of prior GPA in my model. There is no good solution to this as there is a the lack of knowledge of a student's prior academic performance in earlier education. This is exacerbated by the loss of the standardized test score application requirement for Duke University and would result in only the usage of high school GPAs which likely vary in rigor across schools. It is also worth emphasizing that while my engineered previous semester GPA does consider courses taken away from Durham, it ignores summer terms which do contribute to a student's overall GPA. My major imputation approach currently ignores both summer and study away courses.
 
@@ -329,13 +415,17 @@ Other variables not captured in my dataset include other policy changes that wer
 
 Some areas of this thesis are rather arbitrary for sake of simplicity. For instance, the labeling of "traditional" students and "academic" courses are based on personal beliefs. Perhaps I have unconscious biases against Arts & Humanities by removing half-credit music courses. However, I also believe there are systematic biases through the classification of departments into divisions. As mentioned in my methodology, the classification of African & African American Studies as a social science but the classification of Asian & Middle Eastern Studies as an arts & humanities department seems to neglect the interdisciplinary nature of many fields.
 
-Finally, my model seeks to determine student-level behavior rather than course-level behavior. I do not include course IDs in my model and hence do not take into consideration the potential for some courses to be known within the student population as a popular course for graduation requirements. For instance, ECS 101 is known as "Rocks for Jocks" among the student community and could therefore have a disproportionate proportion of S/Us when compared to ENVIRON 101, a course which would likely have identical values in my dataset (excluding total enrollment). Similarly, it is plausible that a specific instructor and/or a specific course has a different stance towards requirements for S/U and grade cutoffs than their peers.
+In terms of actual modeling approach, I make assumptions in order to fit the logistic regression. Notably, I assume that predictors are linear with the log odds of the outcome (choice of voluntary S/U). Based on ridge regression's inclusion of both course units and the categorical load as well as the clear patterns in my residual plots, there is evidence that there may be nonlinearity. Additionally, the synthetic data from SMOTE may not adequately match the actual distribution of the minority class, nor did I verify the distribution of these synthetic data.
+
+Finally, since my model seeks to determine student-level behavior rather than course-level behavior, I do not include course IDs in my model. Hence, I do not take into consideration the potential for some courses to be known within the student population as a popular course for graduation requirements. For instance, ECS 101 is known as "Rocks for Jocks" among the student community and could therefore have a disproportionate proportion of S/Us when compared to ENVIRON 101, a course which would likely have identical values in my dataset (excluding total enrollment). Similarly, it is plausible that a specific instructor and/or a specific course has a different stance towards requirements for S/U and grade cutoffs than their peers.
 
 # Conclusion
 
 Based on my model, there is clear evidence that students were more likely to ... Factors such as .... also impact students' decisions to chose S/U grading... There does not seem to be sufficient evidence that students' major divisions ...
 
 ## Future Work
+
+class component, tune decision threshold with other hyperparm, tune neighbors, use of model better suited for imbalance (random forest), glmmTMB, instead of SMOTE use ... interaction terms
 
 For the improvement of the work carried out in this thesis, a couple items come into mind. First, it may be worth exploring a hierarchical structure where-in there is some level of variation in student behavior expected at the the division level, the department level, and at the individual level. Other nitpicks include the potential benefit of capturing specific course ID level effects and the use of overall cumulative GPA instead merely looking at previous semester GPAs. One of the major obstacles in this thesis was the lack of post-pandemic data. I believe that future studies using actual student majors and using longer term data may be able to provide a more accurate framework for evaluating factors influencing student behavior towards voluntary S/U. Moving even further forward, a retrospective analysis of how the shift to opt-in S/U grading on the instructor side and its utilization may also be worth noting. Similarly, the shift to the newest Duke undergraduate curriculum beginning in Fall 2025 should also be evaluated for its intersection with student behaviors.
 
@@ -352,26 +442,3 @@ Code used for this thesis can be found at <https://github.com/sophiazyang/senior
 \newpage
 
 # References
-
-# Appendix
-
-| Variable            | Data Type   | Reason for Interest                                                                                                                                                                                                                                                          | Use in Final Model?                                         |
-|------------------|------------------|-------------------|------------------|
-| term_units          | numerical   | Students who take more credits may elect to S/U to reduce course load.                                                                                                                                                                                                       | No                                                          |
-| term_load           | categorical | Same as term_units but with less class imbalance.                                                                                                                                                                                                                            | Yes, better AIC/BIC than term_units                         |
-| prev_semGPA         | numerical   | Students who have a higher GPA might be more motivated to maintain it. Students who have a lower GPA might be more motivated to take courses graded to boost GPA.                                                                                                            | Yes                                                         |
-| num_plans           | numerical   | Students seeking to satisfy more academic plans could have a greater workload. Alternatively, their additional plans could include courses that satisfy graduation requirements such that they would elect to take more courses graded A-F.                                  | Yes                                                         |
-| studied_away        | binary      | Courses taken as part of Duke Administered programs do count towards student GPA, while Duke Approved programs do not count towards student GPA. In this sense, Duke Approved programs somewhat act as S/U grading.                                                          | Yes                                                         |
-| took_summer_courses | numerical   | The pacing, environment, number of courses, and other factors are different during summer terms. Some students may wait to take more challenging classes for during the summer. Summer courses may also be taken to make up for withdrawals.                                 | Yes                                                         |
-| is_art_humanity     | binary      | A student who majors in arts and humanities may be more incentivized to take such courses on a graded basis to count towards major requirements.                                                                                                                             | Yes                                                         |
-| is_social_sci       | binary      | A student who majors in social sciences may be more incentivized to take such courses on a graded basis to count towards major requirements.                                                                                                                                 | Yes                                                         |
-| is_natural_sci      | binary      | A student who majors in natural sciences may be more incentivized to take such courses on a graded basis to count towards major requirements.                                                                                                                                | Yes                                                         |
-| student_group       | ordinal     | When a student matriculates may say something about peer pressures and the policies they experienced.                                                                                                                                                                        | No, multicolinearity with timeperiod and academic_level_bot |
-| timeperiod          | ordinal     | Policies were different across timeperiods, so student behaviors may have changed.                                                                                                                                                                                           | Yes                                                         |
-| term_enrolled       | ordinal     | Same rationale as timeperiod.                                                                                                                                                                                                                                                | No, colinearity with timeperiod                             |
-| academic_level_bot  | ordinal     | The amount of importance and effort students have for their courses varies across their academic career. Perhaps "senioritis" results in more S/Us, maybe first-years chose to S/U as they adapt to a new environment, etc.                                                  | Yes                                                         |
-| num_semesters       | numerical   | Same rationale as academic_level_bot.                                                                                                                                                                                                                                        | No, colinearity with academic_level_bot                     |
-| catalog_level       | ordinal     | It is possible that a greater proportion of higher level courses do not allow S/U or that lower level courses are typically chosen to fulfill general education requirements.                                                                                                | Yes                                                         |
-| division            | categorical | The academic rigor, requirements, quality of instruction, and other factors placed by different divisions on their courses may vary and influence student decisions.                                                                                                         | Yes                                                         |
-| num_students        | numerical   | A larger class size might disincentivize participation and engagement with course materials, resulting in a loss of effort.                                                                                                                                                  |                                                             |
-| num_overloads       | numerical   | Similar rationale as term_load but at a student behavior level. If a student has overloaded often in the past, they may be more likely to overload in the future. Alternatively, students may get burnt out or realize later in their careers that they are missing credits. |                                                             |

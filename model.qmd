@@ -22,6 +22,7 @@ library(kableExtra)
 library(broom.mixed)
 library(arm)
 library(tidyverse)
+library(patchwork)
 ```
 
 ```{r}
@@ -47,10 +48,11 @@ test_df  <- testing(split)
 # want to test on students (no data leakage about students)
 ```
 
+# SMOTE NC
+
 ## Hyperparameter (lambda for LASSO, over ratio for SMOTE, decision threshold) Tuning
 
 ```{r}
-#| label: preprocess
 #| eval: false
 su_recipe_lasso <- recipe(is_SU ~ load_status + term_units + 
                       actual_load + actual_units +
@@ -244,7 +246,8 @@ brier <- brier_class(
 )
 
 # ROC / AUC
-rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, 
+                  estimator = "binary", event_level = "second")
 
 # PR-AUC
 prauc <- pr_auc(
@@ -262,7 +265,8 @@ overall_metrics <- tibble(
 )
 
 # Confusion matrix
-cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class, 
+               event_level = "second")
 cm
 saveRDS(cm, "smotenc/glm_cm.rds")
 
@@ -739,254 +743,7 @@ var_select <- readRDS("smotenc/var_select_table.rds")
 var_select
 ```
 
-# With Random Effect
-
-## SMOTE
-
-```{r}
-selected <- setdiff(selected_vars, c("term_units", "actual_units"))
-
-glmer_recipe <- recipe(is_SU ~ ., data = train_df) |>
-  update_role(masked_student_ID, new_role = "id") |>
-  step_impute_median(all_numeric_predictors()) |>
-  step_impute_mode(all_nominal_predictors()) |>
-  step_mutate(across(where(is.logical), as.factor)) |>
-  step_dummy(all_nominal_predictors(), -all_outcomes(), 
-             -masked_student_ID, one_hot = TRUE) |>
-  step_interact(
-    terms = ~ is_natural_sci:starts_with("division_") +
-             is_art_humanity:starts_with("division_") +
-             is_social_sci:starts_with("division_")
-  ) |>
-  step_smote(is_SU, over_ratio = best_hyperparam$over_ratio) |>
-  step_normalize(all_numeric_predictors()) |>
-  step_zv(all_predictors())
-
-trained_recipe <- prep(glmer_recipe, retain = TRUE)
-glmer_data <- bake(trained_recipe, new_data = NULL)
-selected <- intersect(selected, names(glmer_data))
-
-glm_formula <- as.formula(
-  paste0("is_SU ~ ", paste(selected, collapse = " + "), 
-         " + (1 | masked_student_ID)")
-)
-
-glmer_fit <- glmer(
-  glm_formula,
-  data = glmer_data,
-  family = binomial(link = "logit"),
-  control = glmerControl(optimizer = "bobyqa", calc.derivs = FALSE)
-)
-
-model_tidy <- tidy(glmer_fit, effects = "fixed", conf.int = TRUE)
-saveRDS(model_tidy, "data/model_tidy.rds")
-
-result <- model.frame(glmer_fit)
-saveRDS(result, "data/model_resids.rds")
-```
-
-```{r}
-#| eval: false
-model_tidy <- readRDS("data/model_tidy.rds")
-glmm_coeff <- kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
-  kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
-saveRDS(glmm_coeff, "data/glmm_coeff.rds")
-
-result <- readRDS("data/model_resids.rds")
-result$pear <- residuals(glmer_fit, type = "pearson")
-result$fit <- fitted(glmer_fit)
-
-png("figures/glmm_qq_plot.png", width = 6*300, height = 4*300, res = 300) 
-qqnorm(result$pear); qqline(result$pear, col = "red")
-dev.off()
-
-glmm_pearson <- ggplot(result, aes(x = fit, y = pear)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(se = FALSE, color = "blue") +
-  geom_hline(yintercept = 0, color = "red") +
-  labs(x = "Fitted values", y = "Pearson residuals",
-       title = "Residuals vs Fitted Values")
-ggsave("figures/glmm_pearson_plot.png", plot = glmm_pearson, dpi = 300)
-
-png("figures/glmm_binned_plot.png", width = 6*300, height = 4*300, res = 300) 
-binnedplot(result$fit, result$pear, xlab = "Predicted probability", 
-           ylab = "Residuals",
-           main = "Binned residual plot")
-dev.off()
-```
-
-```{r}
-# Model fit
-disp <- check_overdispersion(glmer_fit)
-aic_val <- AIC(glmer_fit)
-bic_val <- BIC(glmer_fit)
-icc_val <- icc(glmer_fit)
-
-model_fit_stats <- tibble(
-  AIC = aic_val,
-  BIC = bic_val,
-  Overdispersion_Ratio = disp$dispersion_ratio,
-  Overdispersion_p = disp$p_value,
-  ICC_Adjusted = icc_val$ICC_adjusted,
-  ICC_Conditional = icc_val$ICC_conditional
-) |> 
-  pivot_longer(
-    cols = everything(),
-    names_to = "Metric",
-    values_to = "Value"
-  )
-```
-
-```{r}
-# DHARMA
-sim <- simulateResiduals(fittedModel = glmer_fit, n = 300)
-png("figures/glmm_dharma_plot.png", width = 6*300, height = 4*300, res = 300) 
-plot(sim)
-dev.off()
-```
-
-```{r}
-# Evaluate performance on test
-test_baked <- bake(trained_recipe, new_data = test_df)
-test_baked$.pred_1 <- predict(
-  glmer_fit,
-  newdata = test_baked,
-  type = "response",
-  allow.new.levels = TRUE   # allows new students in test set
-)
-test_results <- test_baked |>
-  mutate(
-    pred_class = factor(ifelse(.pred_1 >= best_thresh, 1, 0), levels = c(0, 1))
-  )
-
-# Brier score
-brier <- brier_class(
-  test_results,
-  truth = is_SU,
-  .pred_1,
-  event_level = "second"
-)
-
-# ROC / AUC
-rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
-
-# PR-AUC
-prauc <- pr_auc(
-  test_results, truth = is_SU, .pred_1,
-  event_level = "second"
-)
-
-overall_metrics <- tibble(
-  Metric = c("Brier Score", "ROC AUC", "PR AUC"),
-  Value  = c(
-    brier$.estimate,
-    rocauc$.estimate,
-    prauc$.estimate
-  )
-)
-
-# Confusion matrix
-cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
-cm
-saveRDS(cm, "data/glmm_cm.rds")
-
-# Extract Precision, Recall, Specificity F1
-cm_metrics <- cm |> 
-  summary() |> 
-  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |> 
-  mutate(
-    Metric = recode(.metric,
-                    "precision" = "Precision / Positive Predictive Value",
-                    "recall"    = "Recall / Sensitivity (True Positive Rate)",
-                    "spec"      = "Specificity (True Negative Rate)",
-                    "f_meas"    = "F1 Score"),
-    Value = .estimate
-  ) |> 
-  dplyr::select(Metric, Value)
-
-all_metrics <- bind_rows(model_fit_stats, cm_metrics, overall_metrics) |> 
-  mutate(Value = round(Value, 3))
-
-all_metrics <- all_metrics |> 
-  mutate(
-    Section = case_when(
-      Metric %in% c(
-        "Precision / Positive Predictive Value",
-        "Recall / Sensitivity (True Positive Rate)",
-        "F1 Score",
-        "Specificity (True Negative Rate)"
-      ) ~ "Classification Metrics",
-      
-      Metric %in% c("Brier Score", "ROC AUC", "PR AUC") ~ "Overall Predictive Metrics",
-      
-      TRUE ~ "Model Fit Statistics"  # everything else goes here
-    )
-  ) |> 
-  dplyr::select(Section, Metric, Value) |> 
-  arrange(factor(Section, levels = c(
-    "Classification Metrics",
-    "Overall Predictive Metrics",
-    "Model Fit Statistics"
-  )))
-all_metrics
-saveRDS(all_metrics, "data/glmm_metrics.rds")
-
-# Plot ROC
-roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
-roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line(color = "blue") +
-  geom_abline(linetype = "dashed", color = "gray") +
-  labs(
-    title = "ROC Curve",
-    x = "False Positive Rate (1 - Specificity)",
-    y = "True Positive Rate (Sensitivity)"
-  ) +
-  theme_minimal()
-ggsave("figures/glmm_roc_plot.png", roc)
-
-# Plot PR
-pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
-pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
-  geom_line(color = "darkgreen") +
-  labs(
-    title = "Precision-Recall Curve",
-    x = "Recall (Sensitivity)",
-    y = "Precision (PPV)"
-  ) +
-  theme_minimal()
-ggsave("figures/glmm_pr_plot.png", pr)
-
-# Calibration plot
-calibration_df <- test_results |>
-  mutate(prob_bin = ntile(.pred_1, 10)) |>
-  group_by(prob_bin) |>
-  summarise(
-    mean_pred = mean(.pred_1),
-    obs_rate = mean(as.numeric(as.character(is_SU))),
-    .groups = "drop"
-  )
-
-calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
-  geom_point(size = 3, color = "blue") +
-  geom_line(color = "blue") +
-  geom_abline(
-    slope = 1,
-    intercept = 0,
-    color = "red",
-    linetype = "dashed",
-    linewidth = 1
-  ) +
-  labs(
-    x = "Mean Predicted Probability",
-    y = "Observed Event Rate",
-    title = "Calibration Plot"
-  )
-ggsave("figures/glmm_calibration_plot.png", calibration)
-```
-
-## SMOTE NC
-
+## Random effect
 ```{r}
 selected <- setdiff(selected_vars, c("term_units", "actual_units"))
 
@@ -1023,18 +780,13 @@ glmer_fit <- glmer(
 )
 
 model_tidy <- tidy(glmer_fit, effects = "fixed", conf.int = TRUE)
-saveRDS(model_tidy, "smotenc/model_tidy.rds")
+saveRDS(model_tidy, "smotenc/glmm_coeff.rds")
 
 result <- model.frame(glmer_fit)
 saveRDS(result, "smotenc/model_resids.rds")
 ```
 
 ```{r}
-glmm_coeff <- kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
-  kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
-saveRDS(glmm_coeff, "smotenc/glmm_coeff.rds")
-
 result$pear <- residuals(glmer_fit, type = "pearson")
 result$fit <- fitted(glmer_fit)
 
@@ -1129,7 +881,8 @@ overall_metrics <- tibble(
 )
 
 # Confusion matrix
-cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class, 
+               event_level = "second")
 cm
 saveRDS(cm, "smotenc/glmm_cm.rds")
 
@@ -1172,7 +925,7 @@ all_metrics <- all_metrics |>
     "Model Fit Statistics"
   )))
 all_metrics
-saveRDS(all_metrics, "smotenc/glmm_metrics.rds")
+saveRDS(all_metrics, "smotenc/glmm_all_metrics.rds")
 
 # Plot ROC
 roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
@@ -1227,7 +980,690 @@ calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
 ggsave("smotenc/glmm_calibration_plot.png", calibration)
 ```
 
-## No SMOTE
+# No SMOTE
+
+## Hyperparameter (lambda for LASSO, over ratio for SMOTE, decision threshold) Tuning
+
+```{r}
+#| eval: false
+su_recipe_lasso <- recipe(is_SU ~ load_status + term_units + 
+                      actual_load + actual_units +
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students + num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+```
+
+```{r}
+#| message: false
+#| eval: false
+lasso_spec <- logistic_reg(
+  mode = "classification",
+  penalty = tune(),  # lambda
+  mixture = tune()
+) |>
+  set_engine("glmnet")
+
+lasso_workflow <- workflow() |>
+  add_model(lasso_spec) |>
+  add_recipe(su_recipe_lasso)
+
+# tune and estimate simultaneously 
+folds <- group_vfold_cv(train_df, group = masked_student_ID, v = 5)
+grid <- grid_regular(
+  penalty(range = c(-4, 1)),
+  mixture(range = c(0, 1)),
+  levels = 5
+)
+lasso_tuned <- tune_grid(
+  lasso_workflow,
+  resamples = folds,
+  grid = grid,
+  metrics = metric_set(roc_auc, accuracy, f_meas),
+  control = control_grid(save_pred = TRUE, verbose = TRUE)
+)
+
+best_hyperparam <- select_best(lasso_tuned, metric = "roc_auc")
+best_hyperparam
+saveRDS(best_hyperparam, "smoteless/best_hyperparam.rds")
+
+final_lasso <- finalize_workflow(lasso_workflow, best_hyperparam)
+final_fit <- fit(final_lasso, data = train_df)
+
+test_results <- predict(final_fit, new_data = test_df, type = "prob") |>
+  bind_cols(test_df) |>
+  roc_auc(truth = is_SU, .pred_1, event_level = "second")
+glmnet_fit <- extract_fit_parsnip(final_fit)$fit
+
+coef_mat <- coef(glmnet_fit, s = best_hyperparam$penalty)
+coef_df <- as.data.frame(as.matrix(coef_mat))
+coef_df$term <- rownames(coef_df)
+colnames(coef_df)[1] <- "estimate"
+
+# Select nonzero coefficients (excluding intercept)
+selected_vars <- coef_df |> 
+  filter(estimate != 0, term != "(Intercept)") |> 
+  pull(term)
+
+selected_vars
+saveRDS(selected_vars, "smoteless/selected_vars.rds")
+
+dropped_vars <- coef_df |>
+  filter(estimate == 0, term != "(Intercept)") |>
+  pull(term)
+
+dropped_vars
+saveRDS(dropped_vars, "smoteless/dropped_vars.rds")
+
+# Manual specification of baseline...
+# selected_vars[selected_vars == "catalog_level_1"] <- "catalog_level_3"
+# selected_vars[selected_vars == "timeperiod_1"] <- "timeperiod_3"
+# selected_vars[selected_vars == "academic_level_bot_1"] <- "academic_level_bot_2"
+```
+
+```{r}
+#| eval: false
+# Suppose you have CV predictions from tune_grid()
+preds <- lasso_tuned$.predictions[[1]]
+
+# Evaluate a range of thresholds
+thresholds <- seq(0.01, 0.5, by = 0.01)  # lower since positive class is rare
+
+results <- map_dfr(thresholds, ~{
+  preds <- preds |>
+    mutate(.pred_class = factor(ifelse(.pred_1 >= .x, 1, 0), levels = c(0,1)))
+  
+  metric <- f_meas(preds, truth = is_SU, estimate = .pred_class)
+  tibble(threshold = .x, F1 = metric$.estimate)
+})
+
+# Find best threshold
+best_thresh <- results |> filter(F1 == max(F1)) |> pull(threshold)
+best_thresh
+saveRDS(best_thresh, "smoteless/best_thresh.rds")
+```
+
+```{r}
+best_hyperparam <- readRDS("smoteless/best_hyperparam.rds")
+best_thresh <- readRDS("smoteless/best_thresh.rds")
+selected_vars <- readRDS("smoteless/selected_vars.rds")
+
+su_recipe_fixed <- recipe(is_SU ~ ., data = train_df) |>
+  update_role(masked_student_ID, new_role = "ID") |>  # exclude ID
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), -has_role("ID"), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+trained_recipe <- prep(su_recipe_fixed)
+baked <- bake(trained_recipe, new_data = NULL)
+selected_vars <- intersect(selected_vars, names(baked))
+
+glm_formula <- as.formula(
+  paste("is_SU ~", paste(selected_vars, collapse = " + "))
+)
+
+glm_fit <- glm(
+  glm_formula,
+  data = baked,
+  family = binomial
+)
+```
+
+```{r}
+# Evaluate performance on test
+test_processed <- bake(trained_recipe, new_data = test_df)
+test_processed <- test_processed[, selected_vars, drop = FALSE]
+
+test_probs <- tibble(.pred_1 = predict(glm_fit, newdata = test_processed, 
+                                       type = "response"))
+
+test_results <- test_df |>
+  dplyr::select(is_SU) |>
+  bind_cols(test_probs) |>
+  mutate(pred_class = ifelse(.pred_1 >= best_thresh, 1, 0)) |>
+  mutate(
+    is_SU = factor(is_SU, levels = c(0, 1)),
+    pred_class = factor(pred_class, levels = c(0, 1))
+  )
+
+# Model fit
+disp <- check_overdispersion(glm_fit)
+aic_val <- AIC(glm_fit)
+bic_val <- BIC(glm_fit)
+icc_val <- icc(glm_fit)
+
+model_fit_stats <- tibble(
+  AIC = aic_val,
+  BIC = bic_val,
+  Overdispersion_Ratio = disp$dispersion_ratio,
+  Overdispersion_p = disp$p_value,
+  ICC_Adjusted = icc_val$ICC_adjusted,
+  ICC_Conditional = icc_val$ICC_conditional
+) |> 
+  pivot_longer(
+    cols = everything(),
+    names_to = "Metric",
+    values_to = "Value"
+  )
+
+# Brier score
+brier <- brier_class(
+  test_results,
+  truth = is_SU,
+  .pred_1,
+  event_level = "second"
+)
+
+# ROC / AUC
+rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, 
+                  estimator = "binary", event_level = "second")
+
+# PR-AUC
+prauc <- pr_auc(
+  test_results, truth = is_SU, .pred_1,
+  event_level = "second"
+)
+
+overall_metrics <- tibble(
+  Metric = c("Brier Score", "ROC AUC", "PR AUC"),
+  Value  = c(
+    brier$.estimate,
+    rocauc$.estimate,
+    prauc$.estimate
+  )
+)
+
+# Confusion matrix
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class, 
+               event_level = "second")
+cm
+saveRDS(cm, "smoteless/glm_cm.rds")
+
+# Extract Precision, Recall, Specificity F1
+cm_metrics <- cm |> 
+  summary() |> 
+  filter(.metric %in% c("precision", "recall", "f_meas", "spec")) |> 
+  mutate(
+    Metric = recode(.metric,
+                    "precision" = "Precision / Positive Predictive Value",
+                    "recall"    = "Recall / Sensitivity (True Positive Rate)",
+                    "spec"      = "Specificity (True Negative Rate)",
+                    "f_meas"    = "F1 Score"),
+    Value = .estimate
+  ) |> 
+  dplyr::select(Metric, Value)
+
+all_metrics <- bind_rows(model_fit_stats, cm_metrics, overall_metrics) |> 
+  mutate(Value = round(Value, 3))
+
+all_metrics <- all_metrics |> 
+  mutate(
+    Section = case_when(
+      Metric %in% c(
+        "Precision / Positive Predictive Value",
+        "Recall / Sensitivity (True Positive Rate)",
+        "F1 Score",
+        "Specificity (True Negative Rate)"
+      ) ~ "Classification Metrics",
+      
+      Metric %in% c("Brier Score", "ROC AUC", "PR AUC") ~ "Overall Predictive Metrics",
+      
+      TRUE ~ "Model Fit Statistics"  # everything else goes here
+    )
+  ) |> 
+  dplyr::select(Section, Metric, Value) |> 
+  arrange(factor(Section, levels = c(
+    "Classification Metrics",
+    "Overall Predictive Metrics",
+    "Model Fit Statistics"
+  )))
+all_metrics
+saveRDS(all_metrics, "smoteless/glm_all_metrics.rds")
+
+# Plot ROC
+roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line(color = "blue") +
+  geom_abline(linetype = "dashed", color = "gray") +
+  labs(
+    title = "ROC Curve",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
+ggsave("smoteless/glm_roc_plot.png", roc)
+
+# Plot PR
+pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
+pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
+  geom_line(color = "darkgreen") +
+  labs(
+    title = "Precision-Recall Curve",
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
+ggsave("smoteless/glm_pr_plot.png", pr)
+
+# Calibration plot
+calibration_df <- test_results |>
+  mutate(prob_bin = ntile(.pred_1, 10)) |>
+  group_by(prob_bin) |>
+  summarise(
+    mean_pred = mean(.pred_1),
+    obs_rate = mean(as.numeric(as.character(is_SU))),
+    .groups = "drop"
+  )
+
+calibration <- ggplot(calibration_df, aes(x = mean_pred, y = obs_rate)) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  labs(
+    x = "Mean Predicted Probability",
+    y = "Observed Event Rate",
+    title = "Calibration Plot"
+  )
+ggsave("smoteless/glm_calibration_plot.png", calibration)
+```
+
+## Explicit Variable Checks
+
+### Testing studied_away
+
+```{r}
+#| eval: false
+# Model without studied_away
+su_recipe_nostudaway <- recipe(is_SU ~ load_status + term_units + 
+                      actual_load + actual_units +
+                      prev_semGPA + num_plans +
+                      took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students + num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |> 
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_nostudaway <- setdiff(selected_vars, "studied_away")
+glm_formula_nostudaway <- as.formula(
+    paste("is_SU ~", paste(vars_nostudaway, collapse = " + "))
+  )
+glm_fit_nostudaway <- glm(
+  glm_formula_nostudaway,
+  data = bake(prep(su_recipe_nostudaway), new_data = NULL),
+  family = binomial
+)
+
+anova(glm_fit, glm_fit_nostudaway)
+```
+
+### Testing took_summer_courses
+
+```{r}
+#| eval: false
+# Model without took_summer_courses
+su_recipe_nosumm <- recipe(is_SU ~ load_status + term_units + 
+                      actual_load + actual_units + 
+                      prev_semGPA + num_plans +
+                      studied_away +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students + num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_nosumm <- setdiff(selected_vars, "took_summer_courses")
+glm_formula_nosumm <- as.formula(
+    paste("is_SU ~", paste(vars_nosumm, collapse = " + "))
+)
+glm_fit_nosumm <- glm(
+  glm_formula_nosumm,
+  data = bake(prep(su_recipe_nosumm), new_data = NULL),
+  family = binomial
+)
+
+anova(glm_fit, glm_fit_nosumm)
+```
+
+### Testing num_plans
+
+```{r}
+#| eval: false
+# Model without num_plans
+su_recipe_noplans <- recipe(is_SU ~ load_status + term_units + 
+                      actual_load + actual_units +
+                      prev_semGPA +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students + num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_noplans <- setdiff(selected_vars, "num_plans")
+glm_formula_noplans <- as.formula(
+    paste("is_SU ~", paste(vars_noplans, collapse = " + "))
+  )
+glm_fit_noplans <- glm(
+  glm_formula_noplans,
+  data = bake(prep(su_recipe_noplans), new_data = NULL),
+  family = binomial
+)
+
+anova(glm_fit, glm_fit_noplans)
+```
+
+### Testing num students
+
+```{r}
+#| eval: false
+# Model without num_students
+su_recipe_noenroll <- recipe(is_SU ~ load_status + term_units + 
+                      actual_load + actual_units + 
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_noenroll <- setdiff(selected_vars, "num_students")
+glm_formula_noenroll <- as.formula(
+    paste("is_SU ~", paste(vars_noenroll, collapse = " + "))
+  )
+glm_fit_noenroll <- glm(
+  glm_formula_noenroll,
+  data = bake(prep(su_recipe_noenroll), new_data = NULL),
+  family = binomial
+)
+
+anova(glm_fit, glm_fit_noenroll)
+```
+
+## Measures of Courseload
+
+### Only load_status
+
+```{r}
+#| eval: false
+su_recipe_loadstat <- recipe(is_SU ~ load_status +
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_loadstat <- selected_vars[!str_detect(selected_vars,
+  "term_units|actual_load|actual_units")]
+glm_formula_loadstat <- as.formula(
+    paste("is_SU ~", paste(vars_loadstat, collapse = " + "))
+  )
+glm_fit_loadstat <- glm(
+  glm_formula_loadstat,
+  data = bake(prep(su_recipe_loadstat), new_data = NULL),
+  family = binomial
+) 
+```
+
+### Only actual_load
+
+```{r}
+#| eval: false
+su_recipe_actload <- recipe(is_SU ~ actual_load + 
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  ) 
+
+vars_actload <- selected_vars[!str_detect(selected_vars,
+  "load_status|term_units|actual_units")]
+glm_formula_actload <- as.formula(
+    paste("is_SU ~", paste(vars_actload, collapse = " + "))
+  )
+glm_fit_actload <- glm(
+  glm_formula_actload,
+  data = bake(prep(su_recipe_actload), new_data = NULL),
+  family = binomial
+)
+```
+
+### Only actual_units
+
+```{r}
+#| eval: false
+su_recipe_actunits <- recipe(is_SU ~ actual_units + 
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_actunits <- selected_vars[!str_detect(selected_vars,
+  "load_status|term_units|actual_load")]
+glm_formula_actunits <- as.formula(
+    paste("is_SU ~", paste(vars_actunits, collapse = " + "))
+  )
+glm_fit_actunits <- glm(
+  glm_formula_actunits,
+  data = bake(prep(su_recipe_actunits), new_data = NULL),
+  family = binomial
+)
+```
+
+### Only term_units
+
+```{r}
+#| eval: false
+su_recipe_termunits <- recipe(is_SU ~ term_units +
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors()) |>
+  step_interact(
+    terms = ~ is_natural_sci:starts_with("division_") +
+             is_art_humanity:starts_with("division_") +
+             is_social_sci:starts_with("division_")
+  )
+
+vars_termunits <- selected_vars[!str_detect(selected_vars,
+  "load_status|actual_load|actual_units")]
+glm_formula_termunits <- as.formula(
+    paste("is_SU ~", paste(vars_termunits, collapse = " + "))
+  )
+glm_fit_termunits <- glm(
+  glm_formula_termunits,
+  data = bake(prep(su_recipe_termunits), new_data = NULL),
+  family = binomial
+) 
+```
+
+## Testing interaction
+
+```{r}
+#| eval: false
+# Model without interactions between student and course divisions
+su_recipe_inter <- recipe(is_SU ~ load_status + term_units + 
+                      actual_load + actual_units + 
+                      prev_semGPA + num_plans +
+                      studied_away + took_summer_courses +
+                      is_art_humanity + is_social_sci + is_natural_sci +
+                      timeperiod + academic_level_bot +
+                      catalog_level + division +
+                      num_students +
+                      num_overloads,
+                    data = train_df) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_impute_mode(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_zv(all_predictors())
+
+vars_inter <- selected_vars[!grepl("(:|_x_)", selected_vars)]
+glm_formula_inter <- as.formula(
+    paste("is_SU ~", paste(vars_inter, collapse = " + "))
+  )
+glm_fit_inter <- glm(
+  glm_formula_inter,
+  data = bake(prep(su_recipe_inter), new_data = NULL),
+  family = binomial
+)
+```
+
+## AIC and BICs
+
+```{r}
+#| eval: false
+# Put all models in a named list
+models <- list(
+  All_variables = glm_fit,
+  No_studied_away = glm_fit_nostudaway,
+  No_took_summer_courses = glm_fit_nosumm,
+  No_num_plans = glm_fit_noplans,
+  No_num_students = glm_fit_noenroll,
+  Only_loadstat = glm_fit_loadstat,
+  Only_actload = glm_fit_actload,
+  Only_actunits = glm_fit_actunits,
+  Only_termunits = glm_fit_termunits,
+  No_interaction = glm_fit_inter
+)
+
+# Compute AIC and BIC for each model
+var_select <- tibble(
+  Model = names(models),
+  AIC = sapply(models, AIC),
+  BIC = sapply(models, BIC)
+) |>
+  arrange(AIC) |>
+  mutate(
+    delta_AIC = AIC - min(AIC),
+    delta_BIC = BIC - min(BIC)
+  )
+
+saveRDS(var_select, "smoteless/var_select_table.rds")
+```
+
+```{r}
+var_select <- readRDS("smoteless/var_select_table.rds")
+var_select
+```
+
+## Random effect
 
 ```{r}
 selected <- setdiff(selected_vars, c("term_units", "actual_units"))
@@ -1264,18 +1700,13 @@ glmer_fit <- glmer(
 )
 
 model_tidy <- tidy(glmer_fit, effects = "fixed", conf.int = TRUE)
-saveRDS(model_tidy, "smoteless/model_tidy.rds")
+saveRDS(model_tidy, "smoteless/glmm_coeff.rds")
 
 result <- model.frame(glmer_fit)
 saveRDS(result, "smoteless/model_resids.rds")
 ```
 
 ```{r}
-glmm_coeff <- kable(model_tidy, digits = 3, caption = "GLMM Fixed Effects") |>
-  kable_styling(full_width = FALSE) |>
-  column_spec(1, width = "10em")
-saveRDS(glmm_coeff, "smoteless/glmm_coeff.rds")
-
 result$pear <- residuals(glmer_fit, type = "pearson")
 result$fit <- fitted(glmer_fit)
 
@@ -1351,7 +1782,8 @@ brier <- brier_class(
 )
 
 # ROC / AUC
-rocauc <- roc_auc(test_results, truth = is_SU, .pred_1, estimator = "binary", event_level = "second")
+rocauc <- roc_auc(test_results, truth = is_SU, 
+                  .pred_1, estimator = "binary", event_level = "second")
 
 # PR-AUC
 prauc <- pr_auc(
@@ -1369,7 +1801,8 @@ overall_metrics <- tibble(
 )
 
 # Confusion matrix
-cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class)
+cm <- conf_mat(test_results, truth = is_SU, estimate = pred_class, 
+               event_level = "second")
 cm
 saveRDS(cm, "smoteless/glmm_cm.rds")
 
@@ -1412,7 +1845,7 @@ all_metrics <- all_metrics |>
     "Model Fit Statistics"
   )))
 all_metrics
-saveRDS(all_metrics, "smoteless/glmm_metrics.rds")
+saveRDS(all_metrics, "smoteless/glmm_all_metrics.rds")
 
 # Plot ROC
 roc_df <- roc_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
@@ -1425,7 +1858,6 @@ roc <- ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity)) +
     y = "True Positive Rate (Sensitivity)"
   ) +
   theme_minimal()
-ggsave("smoteless/glmm_roc_plot.png", roc)
 
 # Plot PR
 pr_df <- pr_curve(test_results, truth = is_SU, .pred_1, event_level = "second")
@@ -1437,7 +1869,8 @@ pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
     y = "Precision (PPV)"
   ) +
   theme_minimal()
-ggsave("smoteless/glmm_pr_plot.png", pr)
+roc_pr <- roc + pr + plot_layout(widths = c(1, 1))
+ggsave("smoteless/glmm_roc_pr_plot.png", roc_pr)
 
 # Calibration plot
 calibration_df <- test_results |>
