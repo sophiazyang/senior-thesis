@@ -1707,20 +1707,20 @@ saveRDS(result, "smoteless/model_resids.rds")
 ```
 
 ```{r}
-result$pear <- residuals(glmer_fit, type = "pearson")
+result$pear <- residuals(glmer_fit, type = "deviance")
 result$fit <- fitted(glmer_fit)
 
 png("smoteless/glmm_qq_plot.png", width = 6*300, height = 4*300, res = 300) 
 qqnorm(result$pear); qqline(result$pear, col = "red")
 dev.off()
 
-glmm_pearson <- ggplot(result, aes(x = fit, y = pear)) +
+glmm_deviance <- ggplot(result, aes(x = fit, y = pear)) +
   geom_point(alpha = 0.3) +
   geom_smooth(se = FALSE, color = "blue") +
   geom_hline(yintercept = 0, color = "red") +
-  labs(x = "Fitted values", y = "Pearson residuals",
+  labs(x = "Fitted values", y = "Deviance residuals",
        title = "Residuals vs Fitted Values")
-ggsave("smoteless/glmm_pearson_plot.png", plot = glmm_pearson, dpi = 300)
+ggsave("smoteless/glmm_deviance_plot.png", plot = glmm_deviance, dpi = 300)
 
 png("smoteless/glmm_binned_plot.png", width = 6*300, height = 4*300, res = 300) 
 binnedplot(result$fit, result$pear, xlab = "Predicted probability", 
@@ -1754,9 +1754,46 @@ model_fit_stats <- tibble(
 ```{r}
 # DHARMA
 sim <- simulateResiduals(fittedModel = glmer_fit, n = 300)
-png("smoteless/glmm_dharma_plot.png", width = 6*300, height = 4*300, res = 300) 
-plot(sim)
-dev.off()
+
+res <- sort(sim$scaledResiduals)
+exp <- (1:length(res)) / (length(res) + 1)
+qq_df <- data.frame(expected = exp, observed = res)
+dharma_qq <- ggplot(qq_df, aes(x = expected, y = observed)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  labs(title = "DHARMa QQ Plot",
+       x = "Expected Uniform(0,1)",
+       y = "Observed Residuals") +
+  theme_minimal(base_size = 14)
+
+pred_df <- data.frame(
+  predicted = sim$fittedPredictedResponse,
+  residuals = sim$scaledResiduals
+)
+dharma_resid <- ggplot(pred_df, aes(x = predicted, y = residuals)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  labs(title = "Residuals vs Predicted (DHARMa)",
+       x = "Predicted response",
+       y = "Scaled residual") +
+  theme_minimal(base_size = 14)
+
+dharma_plots <- dharma_qq + dharma_resid
+ggsave("smoteless/dharma_plots.png", dharma_plots,
+       width = 10, height = 5, units = "in", dpi = 300
+)
+
+out_ks         <- testUniformity(sim)
+out_disp       <- testDispersion(sim)
+ks_p       <- out_ks$p.value
+disp_p     <- out_disp$p.value
+
+dharma_stats <- tibble(
+  test = c("KS uniformity", "Dispersion"),
+  statistic = c(out_ks$statistic, out_disp$statistic),
+  p_value = c(out_ks$p.value, out_disp$p.value),
+)
+saveRDS(dharma_stats, "smoteless/dharma_stats.rds")
 ```
 
 ```{r}
@@ -1869,8 +1906,10 @@ pr <- ggplot(pr_df, aes(x = recall, y = precision)) +
     y = "Precision (PPV)"
   ) +
   theme_minimal()
-roc_pr <- roc + pr + plot_layout(widths = c(1, 1))
-ggsave("smoteless/glmm_roc_pr_plot.png", roc_pr)
+roc_pr <- roc + pr 
+ggsave("smoteless/glmm_roc_pr_plot.png", roc_pr,
+       width = 10, height = 5, units = "in", dpi = 300
+)
 
 # Calibration plot
 calibration_df <- test_results |>

@@ -124,11 +124,7 @@ In addition to adjustments in association of letter grades to adjectives, more f
 
 In Spring 2020, COVID-19 cases and concerns prevented a return to the classroom after spring break. In an email to faculty on March 18, the university announced a shift of all courses to S/U grading with the option of students opting back in to receiving a letter grade [@duke_coronavirus]. For Fall 2020, departments were allowed to convert any of its 199 or below level courses to a mandatory S/U grading basis. Throughout the 2021-2022 academic year, periods where in-person classes were prohibited persisted along with routine COVID-19 testing policies. Fall 2022 was the first full semester where classes were not interrupted by periods of remote learning. Masking, gathering, and other pandemic-era policies had been systematically loosened. In light of this historical context, I characterize the pandemic as ranging from Spring 2020 through Spring 2022. The periods before and after will be referred to as pre-pandemic and post-pandemic, respectively.
 
-All students in my dataset fall under the Trinity College's Curriculum 2000. To provide a brief overview, the general education requirement mandates that students take a minimum of two courses that fall under each of several categories. For instance, the five Areas of Knowledge (AOK) are: Arts, Literature, and Performance (ALP), Civilizations (CZ), Natural Sciences (NS), Quantitative Studies (QS), and Social Sciences (SS) [@trinity_cirriculum].
-
-How do u pass fail info requirements: insert words ....
-
-Undergraduate students matriculating in Fall 2025 and onward (outside the scope of my analysis) follow a new Arts & Sciences Curriculum [@cirriculum_2025].
+All students in my dataset fall under the Trinity College's Curriculum 2000. To provide a brief overview, the general education requirement mandates that students take a minimum of two courses that fall under each of several categories. For instance, the five Areas of Knowledge (AOK) are: Arts, Literature, and Performance (ALP), Civilizations (CZ), Natural Sciences (NS), Quantitative Studies (QS), and Social Sciences (SS) [@trinity_cirriculum]. Undergraduate students matriculating in Fall 2025 and onward (outside the scope of my analysis) follow a new Arts & Sciences Curriculum [@cirriculum_2025]. \[TODO: add clarification on which students and which classes can be taken S/U\]
 
 # Data
 
@@ -189,8 +185,6 @@ For more clarity on grade inflation at Duke University, I plot median and quanti
 ![Plot displaying trends in Trinity undergraduate students' weighted GPAs from Fall 2012 through Spring 2025. In black is the median semester weighted GPA from my dataset. The gray bands represent the 25th and 75th quantiles of weighted GPAs. Missing values for first semester students are not included in this figure. Overlaid in red are the historic cutoffs for Dean's List in Trinity. Dean's List was paused in Spring 2020, Fall 2020, and Spring 2021 due to pandemic era policies.](figures/gpa_plot.png){height="50%"}
 
 While the previous figures have been influential in showing trends in final grades across terms, they are somewhat uninformative in the sense that they have no distinction between voluntary and mandatory S/U grading. Figure 4 presents a summary of the proportion of all courses taken by Trinity undergraduates from Fall 2012 through Spring 2025 by their perceived grading status. As a reminder, I do not have information on whether or not a course is officially classified as "Graded Only" or "S/U required". Instead, if no students received grades A-F I classify the course as "S/U Required". If no students received grades S or U, I classify the course as "All Graded". Overall, there seems to be a growing proportion of courses in which some students receive S/U grades and a corresponding decline in the proportion of courses where only A-F grades are given. This is indicative of a rising number of courses in which students choose to voluntarily opt for S/U grading (the number of courses offered has remained relatively stable). However, this plot does not indicate or weight by the size of enrollment.
-
-**TO DO FIX THE COLORS/WEIGHT BY ENROLLMENT??**
 
 ![Line plot showing relative proportions of courses that are taken on varying grading bases. Rather than being based on if all grades are S/U, it instead checks if any of the grades are A-F in order to account for alternative grades such as W and AU. Overall, there is a declining trend of courses with no S/U grades and an increase in courses with S/U grades.](figures/grade_type_plot.png){height="40%"}
 
@@ -259,85 +253,101 @@ var_select |> kable(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-## Final Model
+## Final Models
 
 After addressing major modeling hurdles, I used the selected features and hyperparameters while adding a random effect on student ID using `lme4::lmer()`. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course.
 
-## Model Evaluation
+\[SUBJECT TO TIME CONSTRAINTS\] In order to answer more nuanced questions, I also fit a pair of generalized linear mixed models on a subset of my data. Specifically, I focus on the difference between the 2018-2019 academic year (right before pandemic) and the 2024-2025 academic year (furthest after pandemic). Naturally, this pair of models drops the timeperiod variable. For these models no additional hyperparameter tuning or variable selection is performed.
 
-### Logistic Regression without Student Effect
+# Results
+
+### Testing with SMOTENC
 
 When fitting the logistic regression without the random effect on student ID and using SMOTENC, the following diagnostics were generated. From Table 2, it is clear that SMOTENC did have an impact on the number of predictions of the minority class. When testing without SMOTENC, no observations of the minority class were made. However, the quality of the predictions still leaves much to be desired with an abundance of false positives (predicting S/U but S/U was not chosen). This issue of over prediction is also visible in from the calibration plot in Figure 9. For instance, when my model believes the probability of voluntary S/U is 0.1 the actual observed probability is only 0.013.
-
-Table 3 provides a more comprehensive view of model diagnostics. For model fit, there does not seem to be signs of significant under (\<1) or overdispersion (\>1). In terms of classification metrics, there is a relatively high ROC (Receiver Operating Characteristics) AUC (Area Under the Curve) of 0.825 which indicates good discrimination between positive and negative outcomes. A random model would score 0.5 while a perfect model would score 1.0. Given one positive and one negative case, the model will on average rank the positive one higher 82.5% of the time. The area under the PR (Precision-Recall) curve is an abyssal 0.086. However, due to only 2% of my data being of the positive class, the baseline PR AUC is 0.02; my model performs better than a random model. Finally, Brier Score is a supplement that measures how far predictions are from observations. A Brier Score of 0.764 is considered fairly high and is a negative signal of performance, related to the low PR AUC and specificity. Due to the relatively low number of On the otherhand, specificity is high as most observations are positive. F1 score serves as a balance between specificity and sensitivity....
 
 ```{r}
 #| echo: false
 cm <- readRDS("smotenc/glm_cm.rds")
 cm$table |>
-  kable(digits = 3, 
-        caption = " Confusion matrix from running SMOTENC without random effect") |>
+  kable(
+    digits = 3,
+    caption = "Confusion matrix from running SMOTENC without random effect",
+    align = "c",
+    booktabs = TRUE
+  ) |>
   add_header_above(c(" " = 1, "Predicted" = ncol(cm$table))) |>
   pack_rows("Actual", 1, nrow(cm$table)) |>
+  kable_styling(
+    latex_options = c("HOLD_position"),
+    position = "center",
+    full_width = FALSE
+  )
+```
+
+![Calibration plot from running logistic regression with SMOTENC without random effects. The dashed red line represents a perfect model while the solid blue line represents my model.](smotenc/glm_calibration_plot.png){height="40%"}
+
+After preliminary modeling without a random effect on student ID, mixed models were fit both with and without SMOTENC. However, SMOTENC did not appear to boost the minority class as neither model predicted any instances of S/U. This may be due to the inability for SMOTENC to understand the underlying hierarchical structure. SMOTE still treats the random effect as it does any other variable, synthesizing new student-course pairs. Unfortunately, there appears to be a gap in the literature regarding the impact of using SMOTENC on generalized linear mixed models. Due to the challenges of interpreting SMOTENC in the context of random effects as well as the evident overconfidence when using SMOTENC on the general linear model, I present results without the use of class imbalance techniques. While hyperparameters were re-tuned and did vary, in the end the same decision threshold and features were chosen.
+
+### Logistic Regression with Student Effect (No SMOTENC)
+
+```{r}
+#| echo: false
+cm <- readRDS("smoteless/glmm_cm.rds")
+cm$table |>
+  kable(
+    digits = 3,
+    caption = "Confusion matrix from running with random effect (no SMOTENC)",
+    align = "c",
+    booktabs = TRUE
+  ) |>
+  add_header_above(c(" " = 1, "Actual" = ncol(cm$table))) |>
+  pack_rows("Pred.", 1, nrow(cm$table)) |>
+  add_indent(1:nrow(cm$table)) |>
+  add_indent(1:nrow(cm$table)) |>
+  kable_styling(
+    latex_options = c("HOLD_position"),
+    position = "center",
+    full_width = FALSE
+  )
+```
+
+![Diagnostic plots generated using DHARMa and formatted using Ggplot2. Dotted lines represent ideal results.](smoteless/dharma_plots.png)
+
+![Calibration plot from running logistic regression with random effects on students (without SMOTENC). The dashed red line represents a perfect model while the solid blue line represents my model.](smoteless/glmm_calibration_plot.png){height="40%"}
+
+```{r}
+#| echo: false
+dharma_stats <- readRDS("smoteless/dharma_stats.rds")
+dharma_stats |> 
+  kable(
+  digits = 3,
+  caption = "DHARMa results from Kolmogorov-Smirnov (KS) and dispersion tests",
+  format = "latex", booktabs = TRUE
+) |> 
   kable_styling(latex_options = "HOLD_position")
 
-all_metrics <- readRDS("smotenc/glm_all_metrics.rds")
-all_metrics |> 
-  filter(!Metric %in% c("AIC", "BIC")) |>
+all_metrics <- readRDS("smoteless/glmm_all_metrics.rds")
+all_metrics |>
+  filter(!Metric %in% c("AIC", "BIC", "ICC_Conditional")) |>
+  filter(!Section=="Classification Metrics") |>
   mutate(
     Section = factor(Section,
            levels = c("Model Fit Statistics", 
-                "Overall Predictive Metrics", "Classification Metrics"))
+                "Overall Predictive Metrics"))
   ) |>
   arrange(Section) |>
   dplyr::select(-Section) |>
   kable(
     digits = 3,
-    caption = "Model Diagnostic Values from running SMOTENC without random effect"
+    caption = "Model diagnostic values from model with random effect (no SMOTENC)"
   ) |> 
   kable_paper("striped", full_width = F) |>
-  pack_rows("Model Fit", 1, 2) |>
-  pack_rows("Classification Metrics", 3, 5) |>
-  pack_rows("Predictive Metrics", 6, 9) |>
+  pack_rows("Model Fit", 1, 3) |>
+  pack_rows("Predictive Metrics", 4, 7) |>
   kable_styling(latex_options = "HOLD_position")
 ```
 
-![Calibration plot from running logistic regression with SMOTENC without random effects. The dashed red line represents a perfect model while the solid blue line represents my model.](smotenc/glm_calibration_plot.png){height="40%"}
-
-### Logistic Regression with Student Effect
-
-After preliminary modeling without a random effect on student ID, mixed models were fit both with and without SMOTENC. However, SMOTENC did not appear to boost the minority class as neither model predicted any instances of S/U. This may be due to the inability for SMOTENC to understand the underlying hierarchical structure. SMOTE still treats the random effect as it does any other variable, synthesizing new student-course pairs. Unfortunately, there appears to be a gap in the literature regarding the impact of using SMOTENC on generalized linear mixed models. To to the challenges of interpreting SMOTENC in the context of random effects as well as the evident overconfidence when using SMOTENC on the general linear model, I present results without the use of class imbalance techniques. While hyperparameters varied, the same decision threshold and features were chosen.
-
-```{r}
-#| echo: false
-cm <- readRDS("smoteless/glmm_cm.rds")
-cm$table |> kable(
-  digits = 3,
-  caption = "text."
-) |> 
-  kable_styling(latex_options = "HOLD_position")
-
-all_metrics <- readRDS("smoteless/glmm_all_metrics.rds")
-all_metrics |> kable(
-  digits = 3,
-  caption = "."
-) |> 
-  kable_styling(latex_options = "HOLD_position")
-```
-
-![Calibration shows under predicting](smoteless/glmm_calibration_plot.png){height="40%"}
-
-![text](smoteless/glmm_qq_plot.png){height="40%"}
-
-![text](smoteless/glmm_roc_pr_plot.png){height="40%"}
-
-![text](smoteless/glmm_pearson_plot.png){height="40%"}
-
-![text](smoteless/glmm_binned_plot.png){height="40%"}
-
-![text](smoteless/glmm_dharma_plot.png){height="40%"}
-
-# Results
+![ROC curve and precision-recall curves for the full generalized linear mixed model. Dotted gray line in ROC graph represents a random classifier.](smoteless/glmm_roc_pr_plot.png){height="40%"}
 
 ```{r, echo=FALSE}
 all_metrics <- readRDS("smoteless/glmm_coeff.rds")
@@ -345,11 +355,31 @@ all_metrics |>
   select(-effect, -statistic) |>
   kable(
   digits = 3,
-  caption = ".",
+  caption = "Fixed effects from full general linear mixed model",
   format = "latex", booktabs = TRUE
 ) |> 
   kable_styling(latex_options = "HOLD_position")
 ```
+
+## \[SUBJECT TO TIME CONSTRAINTS\] Comparing 2018-2019 vs 2024-2025
+
+TODO
+
+# Discussion
+
+## Model Fit
+
+DHARMa is specifically designed to checking model assumptions for generalized linear mixed models (natively supports `glmer`) by generating multiple simulations and scaling residuals so they can be interpreted easily. As opposed to binned residuals, DHARMa is aware of the underlying hierarchical structure of the random effects. Figure 10 shows the of diagnostic plots generated using DHARMa and Table 5 shows statistics and significance. On the left of Figure 10, the QQ plot checks for uniformity of scaled residuals and corresponds to the Kolmogorov-Smirnov (KS) uniformity test. A KS statistic of 0 represents perfect uniformity while (heuristically) values above 0.1 likely indicate model misfit. While the p-value is significant, it is important to note that it is extremely sensitive to large sample sizes. Hence, from the low KS statistic of 0.004 and the near ideal pattern in the QQ plot, I do not believe there were violations in uniformity of scaled residuals—a signal that errors are random and evenly distributed. On the right of Figure 10, the scaled residuals versus fitted values appears to be evenly distributed above and below the y-axis. Residuals appear heavily clustered at towards 0 with fewer observations above 0.10. This is a feature of the heavily imbalanced dataset and does not cause me great concern as my intent is to identify correlates with voluntary S/U rather than suggesting causation or predicting S/U.
+
+The second statistic in Table 4 is a test of dispersion using DHARMa while the corresponding values in Table 5 represent results from the `performance` package. Both produce comparable values of 0.891-0.892 which are close to the target of 1. Values greater than 1 would indicate overdispersion: the observed variance is greater than the statistical model expected. Here, this is not the case. Once again, note that the p-value is sensitive to my large sample size. Continuing with the `performance` package, Table 5 also includes estimates of intraclass correlation (ICC). Adjusted ICC measures the proportion of variation in the data explained by the random effect. In this case, 31.8% of variation can be explained by student ID.
+
+If my goal was to predict voluntary S/Us, my model performs poorly. Results in Table 3 show that my model never predicts the rare case of voluntary S/U. From the calibration plot in Figure 11, we see that the model systematically underestimates the positive class (choosing voluntary S/U). However, when compared with the preliminary trial without random effects but using SMOTENC, it appears that the oversampling of the minority class has the side-effect of over-prediction of S/Us—likely due to the misrepresentation of the true frequency of the event as an effect of oversampling. With the caveat that these are fundamentally two different models (one with random effects and one without), if I was to compare absolute deviance from the observed event rate the degree of over-prediction from oversampling using SMOTENC seems to be more severe than the under-prediction without oversampling.
+
+In addition to th
+
+From Table .... no signs of overdispersion... Intra-class correlation of .... indicates that .... of variation can be... Low PR...
+
+## Significant Covariates
 
 prev_semGPA higher the less likely to S/U
 
@@ -391,49 +421,45 @@ SS taking SS less likely su
 
 Smaller models....?
 
-# Discussion
-
 Based on model time period really matters...but not much else
 
 ## Changes in Student Well-Being
 
-S/U was supposed to help with mental health things -\> comparing with data from DUCkI it says... so i think ...
-
-say something about peer institutions?
+\[TODO supplementary data on student well-being, courtesy of Dr. Molly Weeks\]
 
 ## Limitations
 
-As with most studies, there are numerous limitations with this thesis. To begin, there is systematically missing data with the lack data satisfying my classification of post-pandemic (Fall 2022-Spring 2025). There are certainly errors in my imputation of student major divisions as well as a systematic underestimate in the number of academic plans students graduate with. In many cases, students realize later in their academic careers that they have the time to explore other interests. Additionally, I do not attempt to impute student's minors or certificates and hence their number of plans is likely an underestimate. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
+As with most studies, there are numerous limitations with this thesis. To begin, there is systematic missingness of academic plans for Fall 2022-Spring 2025. There are certainly errors in my imputation of student major divisions and for students still early in their academic career and unable to be imputed, the most common division (Social Sciences) was assigned. In many cases, students realize later in their academic careers that they have the time to explore other interests. As a result, I make no attempt to impute student's minors or certificates and hence their number of plans is likely an underestimate. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
 
 Missing data is not exclusive to after the pandemic. There was also missing data from the courses for which location was NA as well as no data on previous semesters for first semester students. The choice to systematically give all students a 4.0 as the baseline previous semester GPA for their first semester decreases the perceived significance of prior GPA in my model. There is no good solution to this as there is a the lack of knowledge of a student's prior academic performance in earlier education. This is exacerbated by the loss of the standardized test score application requirement for Duke University and would result in only the usage of high school GPAs which likely vary in rigor across schools. It is also worth emphasizing that while my engineered previous semester GPA does consider courses taken away from Durham, it ignores summer terms which do contribute to a student's overall GPA. My major imputation approach currently ignores both summer and study away courses.
 
-Beyond the variables I was provided, it is likely that ROTC, pre-med, athlete, and other statuses may have an impact on student behaviors. For instance, it makes sense to believe that ROTC and athlete students may be taking a disproportionate number of "Other" credits to fulfill program requirements. Students intending to apply for medical school have to take a significant number of courses in the natural sciences, but may not necessarily be majoring in the natural science division. Related to these unknowns is my systematic ignorance of student minors and certificates. It is certainly possible that minors in a separate division will fully account for all remaining graduation requirements.
+Beyond the variables I was provided, it is likely that ROTC, pre-med, athlete, and other statuses may have an impact on student behaviors. For instance, it makes sense to believe that ROTC and athlete students may be taking a disproportionate number of "Other" credits to fulfill program requirements. Students intending to apply for medical school have to take a significant number of courses in the natural sciences, but may not necessarily be majoring in the natural science division. Related to these unknowns is my systematic ignorance of student minors and certificates. It is certainly possible that minors in a separate division will fully account for all remaining graduation requirements. Other variables not captured in my dataset include other policies and policy changes that were not explicitly denoted in the Duke Bulletins or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom or am misinterpreting the language used by the Trinity College. I am aware that did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year [@unsatisfactory_satisfactory].
 
-Within the dataset, there are also some potentially suspect observations. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. Beyond that, it is also plausible that a course is cross-listed across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset only one of these divisions can be displayed.
+In the dataset I was given, there are also some potentially suspect observations and unclear methods. As mentioned in the Data section, there appear to be some errors in the recorded course enrollments as well as discrepancies between number of semesters and internal academic level calculations. The algorithm for computing a student's academic level also remains unknown to me. Beyond that, it is also plausible that a course is cross-listed across divisions. For instance, a course could be taught on the interaction of music (arts & humanities) and neuroscience (natural science), counting as an elective for both departments. Yet, in my dataset only one of these divisions is displayed.
 
-Other variables not captured in my dataset include other policy changes that were not explicitly denoted in the Duke Bulletins or otherwise made aware to me. It is possible that I neglected changes in which courses are allowed to be taken voluntary S/U and by whom. I may also be misinterpreting the language used by the Trinity College. One conscious mistake is that I did not verify that all student-course pairs used in my model satisfy the requirement of four 1.0 credit courses, as currently stated for the 2025-2026 academic year [@unsatisfactory_satisfactory].
-
-Some areas of this thesis are rather arbitrary for sake of simplicity. For instance, the labeling of "traditional" students and "academic" courses are based on personal beliefs. Perhaps I have unconscious biases against Arts & Humanities by removing half-credit music courses. However, I also believe there are systematic biases through the classification of departments into divisions. As mentioned in my methodology, the classification of African & African American Studies as a social science but the classification of Asian & Middle Eastern Studies as an arts & humanities department seems to neglect the interdisciplinary nature of many fields.
-
-In terms of actual modeling approach, I make assumptions in order to fit the logistic regression. Notably, I assume that predictors are linear with the log odds of the outcome (choice of voluntary S/U). Based on ridge regression's inclusion of both course units and the categorical load as well as the clear patterns in my residual plots, there is evidence that there may be nonlinearity. Additionally, the synthetic data from SMOTE may not adequately match the actual distribution of the minority class, nor did I verify the distribution of these synthetic data.
+Some methods used of this thesis are chosen for sake of simplicity rather than having a clear motive. For instance, the labeling of "traditional" students and "academic" courses are based on personal beliefs. Perhaps I have unconscious biases against Arts & Humanities by removing half-credit music courses. However, I also believe there are systematic biases through the classification of departments into divisions. As mentioned in my methodology, the classification of African & African American Studies as a social science but the classification of Asian & Middle Eastern Studies as an arts & humanities department seems to neglect the interdisciplinary nature of many fields. In terms of actual modeling approach, I make assumptions in order to fit the logistic regression. Notably, I assume that predictors are linear with the log odds of the outcome (choice of voluntary S/U). Yet, based on ridge regression's inclusion of both course units and the categorical load, there may be some areas of nonlinearity.
 
 Finally, since my model seeks to determine student-level behavior rather than course-level behavior, I do not include course IDs in my model. Hence, I do not take into consideration the potential for some courses to be known within the student population as a popular course for graduation requirements. For instance, ECS 101 is known as "Rocks for Jocks" among the student community and could therefore have a disproportionate proportion of S/Us when compared to ENVIRON 101, a course which would likely have identical values in my dataset (excluding total enrollment). Similarly, it is plausible that a specific instructor and/or a specific course has a different stance towards requirements for S/U and grade cutoffs than their peers.
 
 # Conclusion
 
-Based on my model, there is clear evidence that students were more likely to ... Factors such as .... also impact students' decisions to chose S/U grading... There does not seem to be sufficient evidence that students' major divisions ...
+What my contributions to literature is:
+
+High level takeaway + implications: Based on my model, there is clear evidence that students were more likely to ... Factors such as .... also impact students' decisions to chose S/U grading... There does not seem to be sufficient evidence that students' major divisions ...
 
 ## Future Work
 
-class component, tune decision threshold with other hyperparm, tune neighbors, use of model better suited for imbalance (random forest), glmmTMB, instead of SMOTE use ... interaction terms
+For the improvement of the work carried out in this thesis, a couple items come into mind. To begin, some directly implementable actions relevant to this thesis could include the tuning of additional hyperparameters such as the number of neighbors used for SMOTE, further feature engineering (overall cumulative GPA instead of previous semester GPA), exploration of variable transformations and interaction terms, and experimentation with other packages such as `glmmTMB`. More complex adjustments include exploration of an even more complex hierarchical structure (perhaps with a Bayesian approach) that allows variation in student behavior at the the division level, the department level, and at the individual level.
 
-For the improvement of the work carried out in this thesis, a couple items come into mind. First, it may be worth exploring a hierarchical structure where-in there is some level of variation in student behavior expected at the the division level, the department level, and at the individual level. Other nitpicks include the potential benefit of capturing specific course ID level effects and the use of overall cumulative GPA instead merely looking at previous semester GPAs. One of the major obstacles in this thesis was the lack of post-pandemic data. I believe that future studies using actual student majors and using longer term data may be able to provide a more accurate framework for evaluating factors influencing student behavior towards voluntary S/U. Moving even further forward, a retrospective analysis of how the shift to opt-in S/U grading on the instructor side and its utilization may also be worth noting. Similarly, the shift to the newest Duke undergraduate curriculum beginning in Fall 2025 should also be evaluated for its intersection with student behaviors.
+Most distal extensions to this thesis may consist of the use of different methods to address class imbalance and imputation. For class imbalance, techniques may include: weights, alternative variations of SMOTE, models resistant to imbalance (e.g. random forest), propensity score matching, and other approaches—and their hybrids. Progress on methods for class imbalance likely also have extensions in a variety of other fields as well. For major imputation (or prediction), the problem has been explored in more depth by others such as [@lang_2022]. It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. A related problem is the inconsistent and somewhat arbitrary categorization of majors into divisions. It is impossible to categorize all of human knowledge into distinct, disjoint departments. One method for doing so could be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes [@cosine_similarity].
 
-In my thesis, I briefly explored the problem of major prediction based on prior course history. This is a problem that has been explored more in depth by others such as [@lang_2022]. It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. Similarly, past work has examined differences in grading standards across departments. My thesis was only able to operate on the level of divisions, but a fine-grained internal investigation at the departmental level could be fruitful. An evaluation of how various departments at Duke compare to each other could increase enrollment in less popular departments through calibrating grading scales and workloads to match more attractive courses, or by modifying courses deemed to have disproportionately relaxed standards for their catalog level. A related problem is the inconsistent categorization of majors into divisions. It is understandably hard to categorize all of human knowledge into distinct, disjoint departments. I am curious as to how associated each major, department or institute is interconnected and which are more similar with others in their division and which are more interdisciplinary. One way doing so, I would propose, may be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes [@cosine_similarity].
+## Recommendations
 
-Many factors were inaccessible for my analysis such as student demographics, extracurricular, scholarships, and health conditions. Future work could examine correlation between these factors and grading policies to contribute the the growing body of literature on whether or not S/U improves student well-being or increases the amount of time students have for extracurricular commitments. A more specific feature of interest, would be course attributes associated with individual classes. These attributes directly correspond to graduation requirements under Curriculum 2000. At the root, the reason why I was interested in specific academic programs (majors, minors, certificates) was that some programs lack courses that satisfy certain requirements. For instance, I do not believe there has been a course listed in the statistical science department that has had the code for Arts, Literature, and Performance (ALP), at least not for the past several years. Yet, I believe it would be quite feasible to have an applied statistics course on something such as learning natural language processing techniques and applying them to literature. Even with the retirement of Curriculum 2000, a summary of the proportion of courses and their associated Areas of Knowledge or Modes of Inquiry listed in each department could help identify interdisciplinary gaps to be filled–a similar initiative could also be done using the new latest curriculum's codes.
+One of the major obstacles in this thesis was the lack of post-pandemic data. I believe that future studies using actual student majors and using longer term data may be able to provide a more accurate framework for evaluating factors influencing student behavior towards voluntary S/U. Moving even further forward, a retrospective analysis of how the shift to opt-in S/U grading on the instructor side and its utilization may also be worth noting. Similarly, the shift to the newest Duke undergraduate curriculum beginning in Fall 2025 should also be evaluated for its intersection with student behaviors.
 
-Beyond flexible grading policies, another common method used to promote academic exploration is the option of auditing courses. From what I could find in the historic Duke bulletins, the Trinity College of Arts and Sciences has been allowing audits in 1960 and then introduced flexible grading with the pass-fail system in 1966 [@duke_bulletin]. For administrators it may be worth weighing the trade offs and use-cases for flexible grading versus audits. Audits are known for ....pros.... cons...
+While factors such student demographics, extracurricular, scholarships, and health conditions are likely to remain inaccessible due to privacy and safety concerns, less sensitive features to explore may include course attributes associated with individual classes and the departments in which courses belong. At the root, the reason for my interest in specific academic programs (majors, minors, certificates) was that some programs lack courses that satisfy certain requirements under Curriculum 2020. For instance, I do not believe there has been a recent course listed in the statistical science department that has had the code for Arts, Literature, and Performance (ALP). Yet, I believe it would be quite feasible to have an applied statistics course on something such as learning natural language processing techniques and applying them to literature. A summary of the proportion of courses and their associated curriculum codes listed in each department could help identify interdisciplinary gaps to be filled. Additionally, there has been speculation that departments with higher average GPAs tend to attract more students than they would otherwise [@sabot_wakemanlinn_1991]. A summary of department level GPAs could help calibrate the difficulty of coursework to be more balanced across divisions and course levels.
+
+Beyond flexible grading policies, I would also recommend that research be conducted on the usage of audits. From historic Duke Bulletins, the Trinity College of Arts and Sciences began permitting academic audits in 1960 [@duke_bulletin]. It was only in 1966 that flexible grading was introduced with the pass-fail system. Audits serve a similar purpose of allowing academic exploration with even lower risk than flexible grading. However, they do not count towards course credit and hence do not necessarily decrease a student's overall workload—nor do they intuitively seem to be a cause of grade inflation. For administrators and educators, it may be worth analyzing patterns in audit usage in order to weigh the trade offs and use-cases for flexible grading versus audits.
 
 # Code Availability
 
