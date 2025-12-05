@@ -22,6 +22,7 @@ library(patchwork)
 
 ```{r}
 #| label: load-data
+#| eval: false
 
 file1 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sophia/exported data for project, terms 1080 to 1570 V2.xlsx", 
                     guess_max = 1000000)
@@ -30,6 +31,12 @@ file2 <- read_excel("J:/Individual Working Folders/Research Assistants/Yang, Sop
                     guess_max = 10000)
 
 combined_df <- rbind(file1, file2)
+```
+
+```{r}
+#| echo: false
+library(here)
+combined_df <- readRDS(here("data", "1-combined.rds"))
 ```
 
 ```{r}
@@ -1009,6 +1016,17 @@ model_df <- final_with_estimates |>
 ```
 
 ```{r}
+#| label: missingness
+
+# number of plans is discrete, 0 plans is impossible -> claim 1
+model_df$num_plans <- factor(
+  ifelse(model_df$num_plans == 0, 1, model_df$num_plans),
+  levels = c(1, 2, 3),
+  ordered = TRUE
+)
+```
+
+```{r}
 #| label: class-imbalance
 
 # Imbalance of S/U vs A-F
@@ -1106,4 +1124,3 @@ missing_final <- model_df |>
           
 print(missing_final, n = Inf)
 ```
-
