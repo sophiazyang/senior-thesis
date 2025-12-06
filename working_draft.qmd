@@ -12,6 +12,7 @@ csl: apa.csl
 #| message: false
 #| warning: false
 library(tidyverse)
+library(readxl)
 library(kableExtra)
 options(knitr.table.format = "latex")
 ```
@@ -227,6 +228,7 @@ To ensure that this imputation strategy is not dependent on when a student is en
 ![Results from running imputation separately on each student group reveal only slight changes in the best threshold and resulting minimum error rates. There does not immediately appear to be trends across student groups.](figures/impute_by_year.png){height="35%"}
 
 ```{r}
+#| echo: false
 pred_div <- readRDS("figures/predicted_majors.rds")
 
 pred_div |> kable(
@@ -380,11 +382,73 @@ From my model estimates (Table 6) I find several covariates to be statistically 
 
 My primary interest is in how COVID-19 induced policy changes impacted student choice of voluntary S/U. From my model estimates in Table 6, I find that all levels of time period are statistically significant. The baseline represents the pre-pandemic period (Fall 2015-Fall 2019). During the pandemic (Spring 2020-Spring 2022), there is a 7.253 \[6.530, 8.057\] factor increase in odds of voluntary S/U relative to the baseline. For the post-pandemic period (Fall 2022-Spring 2025), there is an associated 5.196 \[4.630, 5.832\] factor increase in odds of voluntary S/U relative to the baseline. These results match my expectation from my exploratory analysis (Figures 1 and 2) which seemed to indicate a low proportion of S/Us pre-pandemic, a drastic increase in S/U grades during the pandemic, and a slight decline in S/U grades after the pandemic—although still higher than pre-pandemic rates.
 
-\[TODO supplementary data on student well-being, courtesy of Dr. Molly Weeks\]
+Without having a casual study, it is not possible to make any conclusion regarding the efficacy of voluntary S/U as a policy on student well-being. However, I attempt to put changes in voluntary S/U into the broader context of student well-being at Duke University. Figure 13 provides a high level summary of statistics provided by Dr. Molly Weeks from Duke's Office of Institutional Research [@weeks_2025]. Note that the data comes from three different studies and survey response rates ranged from 15.4% to 26.7% per year, potentially under-representing certain groups. For the sake of this analysis, I consider the SRWBP [@hoyle_weeks_2021] as a pre-pandemic baseline and DUCkl data from Fall 2024 as the post-pandemic reference level. From Figure 13, it appears that there was not a statistically significant change in belonging at Duke, academic engagement, or loneliness over time, with the exception of gradual pandemic recovery. However, there does seem to be a statistically significant decrease in perceived stress between SRWBP and DUCkl (Fall 2024). While impossible to say what this decrease can be attributed to, there is a small possibility that the increase in voluntary S/Us may have contributed to this decrease in stress. Overall, there does not seem to be evidence that the change in post-pandemic voluntary S/U is associated with better student well-being as measured by belonging at Duke, academic engagment, or loneliness in context.
+
+```{r}
+#| echo: false
+#| eval: false
+wellness_df <- read_excel("wellness_data.xlsx")
+well_long <- wellness_df |> 
+  janitor::clean_names() |> 
+  pivot_longer(
+    cols = ends_with("mean") | ends_with("sd"),
+    names_to = c("metric", ".value"),
+    names_pattern = "(.*)_(mean|sd)"
+  ) |>
+  mutate(
+    se = sd / sqrt(number_of_respondents),
+    ci_lower = mean - 1.96 * se,
+    ci_upper = mean + 1.96 * se,
+    metric = recode(metric,
+      "loneliness" = "Loneliness",
+      "stress" = "Stress",
+      "symptoms" = "Symptoms",
+      "belonging" = "Belonging",
+      "engagement" = "Engagement"
+    ),
+    year = str_extract(term, "\\d{4}") |> as.integer(),
+    term_short = substr(year, 3, 4),
+    term_short = as.numeric(term_short),
+    academic_level = factor(academic_level, 
+                      levels = c("First Year", "Sophomore", 
+                               "Junior", "Senior"))
+  ) |>
+  filter(metric != "Symptoms")
+
+wellness_plot <- ggplot(well_long,
+       aes(x = term_short, y = mean, group = metric, fill = study)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15) +
+  facet_grid(academic_level ~ metric) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    plot.caption = element_text(hjust = 0.5, size = 10)
+  ) +
+  scale_fill_viridis_d() +
+  scale_x_continuous(
+    breaks = seq(
+      from = min(well_long$term_short, na.rm = TRUE),
+      to = max(well_long$term_short, na.rm = TRUE),
+      by = 2
+    )
+  ) +
+  labs(
+    x = "Academic Term",
+    y = "Mean Score",
+    title = "Student Wellness Metrics Over Time",
+    fill = "Study",
+    caption = "Belonging (at Duke) is adapted from Asher & Weeks, 2014.\n(Academic) engagement is from Asher & Weeks, 2016.\nLoneliness (in Context) is adapted from Weeks & Asher, 2012.\n(Perceived) Stress (Scale Sum) is derived from the PSS 4\n(Cohen, Kamarck, & Mermelstein, 1983; Cohen & Williamson, 1988)."
+  )
+ggsave("figures/wellness_plot.png", wellness_plot, dpi = 300,
+       height = 7, width = 9)
+```
+
+![Faceted bar chart using data provided by Dr. Molly Weeks from Duke's Office of Institutional Research. Rows are different metrics while columns are student academic levels. In each plot, the x-axis represents data collected in Fall of that year. Bars show mean scores, 95% confidence intervals are drawn, and colors indicate the source study for data points.](figures/wellness_plot.png){width="95%"}
 
 ### Summer Courses
 
-Having taken summer courses is associated with a 1.065 \[1.011, 1.121\] increase in odds of voluntary S/U. Reasons for taking summer courses vary widely but may include retaking a course, not having alternative summer plans, and to wanting to dedicate time to a challenging course. For any of these cases, the ultimate outcome is that, assuming passing grades, the student has less credits left to fulfill for graduation requirements. By default, without transfer credits, Trinity students must overload in order to meet the 34.0 credit graduation requirement (4.0 per semester for 8 semesters = 32.0 credits). One hypothesis for this effect is that having received some credits over the summer hence may open the doors for these students to take fewer credits during spring and fall terms. If this is the case, students may be less incentivized to opt for S/U as their courseload is more manageable than if they were to have been enrolled in an overload. Alternatively, perhaps taking summer courses is indicative of a different factor not captured in my dataset such as financial aid or pre-med status. However, my methodology is insufficient to determine causality and more work will have to be done to make a conclusion as to causal relationships, these are merely ideas.
+Having taken summer courses is associated with a 1.065 \[1.011, 1.121\] increase in odds of voluntary S/U. Reasons for taking summer courses vary widely but may include retaking a course, not having alternative summer plans, and to wanting to dedicate time to a challenging course. For any of these cases, the ultimate outcome is that, assuming passing grades, the student has less credits left to fulfill for graduation requirements. By default, without transfer credits, Trinity students must overload in order to meet the 34.0 credit graduation requirement (4.0 per semester for 8 semesters = 32.0 credits). One hypothesis for this effect is that having received some credits over the summer hence may open the doors for these students to take fewer credits during spring and fall terms. If this is the case, students may be less incentivized to opt for S/U as their course load is more manageable than if they were to have been enrolled in an overload. Alternatively, perhaps taking summer courses is indicative of a different factor not captured in my dataset such as financial aid or pre-med status. However, my methodology is insufficient to determine causality and more work will have to be done to make a conclusion as to causal relationships, these are merely ideas.
 
 ### Course Load
 
