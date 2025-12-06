@@ -260,11 +260,9 @@ var_select |> kable(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-## Final Models
+## Final Model
 
 After addressing major modeling hurdles, I used the selected features and hyperparameters while adding a random effect on student ID using `lme4::glmer()`. The random effect serves to address violations of independence due to the repetition of students across the dataset. For instance, voluntary S/U courses are capped at 4.0 credits to count towards graduation requirements and students can only request voluntary for a single 1.0 credit course.
-
-\[TODO SUBJECT TO TIME CONSTRAINTS\] In order to answer more nuanced questions, I also fit a pair of generalized linear mixed models on a subset of my data. Specifically, I focus on the difference between the 2018-2019 academic year (right before pandemic) and the 2024-2025 academic year (furthest after pandemic). Naturally, this pair of models drops the timeperiod variable. For these models no additional hyperparameter tuning or variable selection is performed.
 
 # Results
 
@@ -352,10 +350,6 @@ coeff_OR |>
   kable_styling(latex_options = "HOLD_position")
 ```
 
-## \[SUBJECT TO TIME CONSTRAINTS\] Comparing 2018-2019 vs 2024-2025
-
-TODO
-
 # Discussion
 
 ## Model Fit
@@ -372,11 +366,9 @@ My primary interest is in how COVID-19 induced policy changes impacted student c
 
 These results match my expectation from my exploratory analysis (Figures 1 and 2) which seemed to indicate a low proportion of S/Us pre-pandemic, a drastic increase in S/U grades during the pandemic, and a slight decline in S/U grades after the pandemic—although still higher than pre-pandemic rates.
 
-Limitation:
+Limitation...
 
 exclusion of courses where no students received A-F grades. Perhaps the majority of S/Us truly come from an increase in mandatory S/Us courses, yet from Figure 4 the proportion of such courses appears to be very small. However, these figures did not capture or weight by the size of enrollment and could be misleading in this sense. Another possibility is that for some courses the decision to drop them may have been invalid and that a course may have allowed S/U and all students opted for that option. While this is not very plausible for large classes, perhaps this is an indicator that it is the smaller courses which may be dropped could have more but scattered voluntary S/Us. Taking the estimates at face value, perhaps students are truly not taking more voluntary S/Us than they were prior to the S/U policy change. The perceived prevalence of S/U grading may be isolated to a small subgroup or is disproportionately brought up in conversations. + MICE and imputation words
-
-\[TODO Comparing 2018-2019 vs 2024-2025\]
 
 ## Other Significant Covariates
 

@@ -551,6 +551,7 @@ gpa_plot <- ggplot() +
     data = deans_list,
     aes(x = term_enrolled, y = `Dean's List`, group = 1),
     color = "red",
+    linetype = "dashed",
   ) +
   labs(
     title = "Semester GPA Quantiles and Dean’s List Rate Over Time",
@@ -558,7 +559,10 @@ gpa_plot <- ggplot() +
     y = "Weighted GPA",
   ) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  annotate("text", y = 3.4, x = "Spring 2021", 
+           label = "Red = Dean's List Cutoff \nBlack = Previous Semester GPA",
+           size = 3)
 gpa_plot
 
 ggsave("figures/gpa_plot.png", plot = gpa_plot, dpi = 300)

@@ -56,7 +56,8 @@ prop_su_plot <- ggplot(prop_df,
   theme(legend.position = "none") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 prop_su_plot
-ggsave("figures/prop_su_plot.png", plot = prop_su_plot, dpi = 300)
+ggsave("figures/prop_su_plot.png", plot = prop_su_plot, dpi = 300,
+       height = 5, width = 8)
 
 ggplot(count_df, 
        aes(x = term_enrolled, y = passfail_count, fill = highlight)
@@ -157,23 +158,23 @@ total_su_plot <- ggplot(df_props, aes(
   geom_point() +
   scale_linetype_manual(
     values = c("Continuing" = "dashed", "Graduated" = "solid"),
-    name = "Graduation Status"
+    name = "Status"
   ) +
   scale_x_continuous(breaks = unique(df_props$student_group)) +
+  scale_color_viridis(discrete = TRUE, direction = -1) +
   labs(
     title = "Proportion of Students by Group and Total S/U Courses",
     x = "Student Group",
     y = "Proportion",
-    color = "Total # of S/U Courses"
+    color = "Total # of \nS/U Courses"
   ) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
     plot.title = element_text(hjust = 0.5)
   )
 total_su_plot
 ggsave("figures/total_su_plot.png", plot = total_su_plot, 
-       dpi = 300, width = 7, height = 4)
+       dpi = 300, width = 8, height = 4)
 ```
 
 ```{r}
