@@ -145,7 +145,7 @@ While these data come from official records, there are some aspects that I remai
 
 ## Data Cleaning
 
-Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution. Additionally, my focus is on the "typical" student of which I define as a student who graduates in exactly eight Fall/Spring semesters. For students who matriculated in 2022 and onwards and hence have not had the opportunity to enroll in eight semesters, I assume all students will graduate in eight semesters (although this is not the case).
+The original dataset I was provided included records ranging from Fall 2006 to Spring 2025. However, S/U grading only began in Fall 2012. Hence, I drop all observations prior to Fall 2012. Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution. Additionally, my focus is on the "typical" student of which I define as a student who graduates in exactly eight Fall/Spring semesters. For students who matriculated in 2022 and onwards and hence have not had the opportunity to enroll in eight semesters, I assume all students will graduate in eight semesters (although this is not the case).
 
 In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all less than full credit courses from GPA and course load calculations due to the existence of courses which give credit to labs and other mandatory courses such as the half-credit STA 211 which was required for the major in Statistical Science.
 
@@ -157,7 +157,11 @@ A major roadblock I faced is the possibility of S/U only and graded only courses
 
 ## Feature Engineering
 
-In addition to constructing variables for major divisions and time period relative to COVID-19, I also engineered several other variables as I describe below:
+I engineered several variables as I describe below:
+
+-   `timeperiod` is defined relative to COVID-19 policies with Fall 2012-Spring 2020 labeled as pre-pandemic, Spring 2020-Spring 2022 as during pandemic, and Fall 2022-Spring 2025 as post-pandemic
+
+-   `is_art_humanity`, `is_natural_sci`, `is_social_sci` are each binary indicators for whether or not a student has a major that falls under the division
 
 -   `prev_semGPA` is the weighted GPA from the semester prior (or 4.0 if this is their first semester), only A-F grades count towards GPA
 
