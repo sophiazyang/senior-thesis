@@ -1,6 +1,7 @@
 ---
 title: "Assessing Long-Term Effects of COVID-19–Induced Grading Policy Changes on Voluntary S/U Behavior"
 format: pdf
+number-sections: true
 editor: visual
 author: Sophia Yang
 bibliography: references.bib
@@ -17,11 +18,11 @@ library(kableExtra)
 options(knitr.table.format = "latex")
 ```
 
-# Acknowledgements
+# Acknowledgements {.unnumbered}
 
 I am deeply grateful to Professor Mine Çetinkaya-Rundel, my advisor, instructor, and Director of Undergraduate Studies in Statistical Science whose guidance, mentorship, and support shaped every stage of this project. I would also like to thank Professor Edwin Iversen and Professor Jerome Reiter for serving on my defense committee, instructing me during my undergraduate studies, and providing the statistical expertise and insights that informed many of the methods used in this thesis. I am especially grateful to Dr. Jennifer Hill for providing the dataset that made this research possible, as well as for your subject-matter expertise and guidance on the framing of research questions and ethical considerations. Finally, I extend my appreciation to Dr. Joan Durso for logistical assistance and the coordination of workshops in which I met Dr. Costanza Bosone who provided support in developing my research proposal.
 
-# Abstract
+# Abstract {.unnumbered}
 
 In response to the COVID-19 pandemic, many universities adopted temporary flexible grading policies. At Duke University, these included permitting Satisfactory/Unsatisfactory (S/U) grading to count toward additional degree requirements. Five years later, some pandemic-era policies have been reversed while others remain, raising questions about their lasting influence on student behavior. This thesis evaluates how COVID-19–induced changes to Duke’s S/U policy affected voluntary S/U usage using administrative data from the Duke Assessment Office. I model students’ likelihood of selecting S/U grading for a course using a logistic mixed-effects model with student-level random intercepts. Significant predictors include period relative to the pandemic, previous-term GPA, course level, course division, course load, and students’ academic level. The results provide evidence of persistent post-pandemic changes in voluntary S/U behavior and offer insights to guide future academic policy decisions.
 
@@ -153,6 +154,7 @@ My goal is to model student choice of S/U over A-F grading. Hence, I drop all wi
 
 A major roadblock I faced is the possibility of S/U only and graded only courses in which students have no say in what grading method is used. Again, I lack this data and once again make assumptions. For classes that have 99% of all students receiving non-letter grades (i.e. S, U, withdrawal), I assume they are S/U required courses like ECON 101. I believe this is reasonable in most cases as it is unlikely for all students to make the same decision, unless the class size is small. These mandatory courses are dropped from my model. However, I do not assume the converse is true. If all students in a course receive an A-F (or withdrawal, etc.), I choose not to assume the course is graded only. My belief is that in the majority of cases, students would rather take a course on a graded basis as Trinity only allows 4.0 credits taken S/U to count towards graduation requirements. However, I do acknowledge that this means it is likely that my model will underestimate how likely a student is to take a course S/U in cases where the instructor prohibits S/U.
 
+\newpage
 ## Feature Engineering
 
 I engineered several variables as I describe below:
@@ -520,7 +522,7 @@ While factors such as student demographics, extracurricular, scholarships, and h
 
 Beyond flexible grading policies, I would also recommend that research be conducted on the use of audits. From historic Duke Bulletins, the Trinity College of Arts and Sciences began permitting academic audits in 1960 [@duke_bulletin]. It was only in 1966 that flexible grading was introduced with the pass/fail system. Audits serve a similar purpose of allowing academic exploration with even lower risk than flexible grading. However, they do not count towards course credit and hence do not necessarily decrease a student's overall workload—nor do they intuitively seem to be a cause of grade inflation. For administrators and educators, it may be worth analyzing patterns in audit usage in order to weigh the trade-offs and use-cases for flexible grading versus audits.
 
-# Code Availability
+# Code Availability {.unnumbered}
 
 Code used for this thesis can be found at <https://github.com/sophiazyang/senior-thesis>.
 
