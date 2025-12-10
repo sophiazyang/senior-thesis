@@ -17,19 +17,21 @@ library(kableExtra)
 options(knitr.table.format = "latex")
 ```
 
+# Acknowledgements
+
+I am deeply grateful to Professor Mine Çetinkaya-Rundel, my advisor, instructor, and Director of Undergraduate Studies in Statistical Science whose guidance, mentorship, and support shaped every stage of this project. I would also like to thank Professor Edwin Iversen and Professor Jerome Reiter for serving on my defense committee, instructing me during my undergraduate studies, and providing the statistical expertise and insights that informed many of the methods used in this thesis. I am especially grateful to Dr. Jennifer Hill for providing the dataset that made this research possible, as well as for your subject-matter expertise and guidance on the framing of research questions and ethical considerations. Finally, I extend my appreciation to Dr. Joan Durso for logistical assistance and the coordination of workshops in which I met Dr. Costanza Bosone who provided support in developing my research proposal.
+
 # Abstract
 
-In response to the COVID-19 pandemic, many universities implemented flexible grading policies. Five years later, some of these policies have been rolled back, while others remain in place. While prior work has examined these policies during the pandemic, less is known about their longer-term effects on student behavior. This thesis evaluates how COVID-19 induced changes to Duke University’s Satisfactory/Unsatisfactory (S/U) policy affected voluntary S/U usage, using data from the Duke Assessment Office. I model the likelihood that a student voluntarily selects S/U grading for a course using logistic regression with student-level random effects. My findings identify significant covariates including time period relative to the pandemic, previous-term GPA, course level, course division, course load, and students’ academic level. Overall, this thesis provides empirical evidence of post-pandemic changes in voluntary S/U usage and offers insights that may guide future research and inform policy decisions.
+In response to the COVID-19 pandemic, many universities adopted temporary flexible grading policies. At Duke University, these included permitting Satisfactory/Unsatisfactory (S/U) grading to count toward additional degree requirements. Five years later, some pandemic-era policies have been reversed while others remain, raising questions about their lasting influence on student behavior. This thesis evaluates how COVID-19–induced changes to Duke’s S/U policy affected voluntary S/U usage using administrative data from the Duke Assessment Office. I model students’ likelihood of selecting S/U grading for a course using a logistic mixed-effects model with student-level random intercepts. Significant predictors include period relative to the pandemic, previous-term GPA, course level, course division, course load, and students’ academic level. The results provide evidence of persistent post-pandemic changes in voluntary S/U behavior and offer insights to guide future academic policy decisions.
 
 \newpage
 
 # Introduction
 
-In the wake of the COVID-19 pandemic, the Trinity College of Arts and Sciences at Duke University introduced academic policy changes. During the Spring 2020 semester, all courses were switched to Satisfactory/Unsatisfactory (S/U) grading as opposed to the traditional graded (A- F) scale. While this was the only semester where all courses were allowed to be S/U and count for all requirements, other policy changes during the pandemic regarding S/U still remain.
+The COVID-19 pandemic prompted rapid and unprecedented changes in higher education. At Duke University, one of the most visible disruptions was the shift to flexible grading policies. During Spring 2020, all undergraduate courses were graded on a Satisfactory/Unsatisfactory (S/U) basis. Although this universal flexibility was temporary, several related policy changes remain in effect. As the university reconsiders which pandemic-era academic policies should persist (e.g., switching policy defaults so that instructors have to opt-in to allow voluntary S/U) [@halper_2025], it is essential to understand whether the pandemic experience has produced lasting changes in student grading behavior.
 
-Referencing Duke University Undergraduate Bulletins [@duke_bulletin], prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements. Some faculty members have noted an increase in student usage of S/U and departments are moving towards assigning courses to be graded (A-F) only. The most recent of several proposed changes has been the approval of a proposal to switch in policy defaults such that instructors have to opt-in for allowing S/U, rather than having to specifically opt-out of allowing S/U [@halper_2025]. With the rollback of most pandemic-era policies such as masking and social distancing long gone, this raises the question of whether the S/U policy should return to its pre-pandemic form.
-
-A growing body of literature has examined the impact of the pandemic on student learning and a plethora of studies have been done on pass/fail grading in post-secondary education (although primarily in medical school). Rather than exploring impacts on student outcomes, this thesis seeks to determine how the changes in flexible grading policy have impacted student behaviors with the goal of better informing educators and administrators.
+Prior research has examined flexible grading during the height of the pandemic, yet relatively little is known about its long-term effects. In addition, pandemic-era grading occurred alongside substantial disruptions to instruction, assessment, and student well-being, making it challenging to distinguish between temporary behavioral shifts and more enduring ones. This thesis investigates whether student use of voluntary S/U grading at Duke changed in the years following the pandemic and identifies the factors most strongly associated with S/U selection. Using administrative data from the Duke University Assessment Office, I model the probability that a student chooses S/U grading for a particular course, taking into account both student and course-level characteristics. My goal is to provide empirical evidence about the persistence of pandemic-induced behavioral changes and to inform ongoing policy discussions surrounding grading flexibility in the post-pandemic era.
 
 # Background and Context
 
@@ -119,19 +121,15 @@ The focus of this thesis is the impact of the pandemic on flexible grading polic
 
 While a couple studies do examine the interaction between pandemic policies and flexible grading on student outcomes, their timeframes struggle to capture post-pandemic changes as the pandemic was not officially declared over until May 2023. While changes in behavior occurred in the height of the pandemic, it is unclear whether or not they persisted as education returned to pre-pandemic trends or if they will stabilize at a new norm. Additionally, both @rodriguez-planas_2022 and @mostafa_2023 used data from only moderately selective, affordable, and large public universities. There is a lack of research on impacts of pandemic policies on flexible grading on highly selective, prestigious, expensive, or private universities.
 
-## Purpose of this Thesis
-
-As students during the pandemic have begun and continue to graduate and enter the workforce, it is important to understand how pandemic policies have impacted them. For administrators, it is time to evaluate if changes in policies continue to be supportive in a post-pandemic world. With more disasters possible in the future, it’s critical to understand the impact of the pandemic on settings including that of higher education. Hence, this thesis aims to determine whether or not there is evidence to suggest a change in student behavior under persisting pandemic changes. If so, I hope to identify patterns of change.
-
 # Institution of Study
 
-Duke is a private, non-profit university located in Durham, NC. It is a highly prestigious and selective with an overall acceptance rate of 4.8% for the most recent Class of 2029 [@duke_today_2025]. Duke University has roots beginning in the 19th century, but was officially established in 1924 [@duke_history_2020]. Over the past 100 years, grading policies have shifted with the times. I am uncertain when letter grades began usage at Duke University, but the language referring to each letter fluctuated in the Undergraduate Instruction Bulletins in the mid-1950s to the late 1960s. For instance, in the 1955-1956 academic year, a C was described as "medium" and a D as "passing". Yet in the following year, Cs were "average" and Ds were "inferior". Throughout the 1960s, Ds denoted "low pass".
+Duke is a private, non-profit university located in Durham, NC. It is highly prestigious and selective with an overall acceptance rate of 4.8% for the most recent Class of 2029 [@duke_today_2025]. Duke University has roots beginning in the 19th century, but was officially established in 1924 [@duke_history_2020]. Over the past 100 years, grading policies have shifted with the times. I am uncertain when letter grades began usage at Duke University, but the language referring to each letter fluctuated in the Undergraduate Instruction Bulletins in the mid-1950s to the late 1960s [@duke_bulletin]. For instance, in the 1955-1956 academic year, a C was described as "medium" and a D as "passing". Yet in the following year, Cs were "average" and Ds were "inferior". Throughout the 1960s, Ds denoted "low pass".
 
 In addition to adjustments in association of letter grades to adjectives, more fundamental policy changes began to take root. In 1960, the first mentions of auditing can be found in the undergraduate bulletins. When a student audits a course, it shows up on their transcript but no grade or credit is given. They have the option to complete assignments and take exams. In 1966, + and - grades were introduced and associated with numeric "quality points" (equivalent to GPA thresholds). In the same academic year, historical bulletins show the introduction of pass-fail grading. Since then, grading policies have remained relatively consistent except for a shift from pass-fail to satisfactory-unsatisfactory which allows students to S/U before major declaration (P/F and S/U thresholds are identical).
 
-At Duke University, the cutoff for receiving an S is a C- so all grades D+, D, D-, and F correspond to a U [@unsatisfactory_satisfactory]. S/U grading can appears in two contexts: involuntary or voluntary. The type of S/U allowed is dictated by the course instructor; if a course is S/U required, all students irregardless of status will be graded S/U. Voluntary S/Us must be requested before the withdrawal deadline and approval is required for the student's academic Dean. In order to apply for voluntary S/U, the student must also be enrolled in "at least 4 x 1.0 credit" courses. The decision to switch to voluntary S/U also depends on whether or not the student's academic programs allow S/U courses to count towards their degree and how many of the four voluntary S/U credits permitted to count towards graduation requirements are left. However, there are notable pandemic related exceptions.
+At Duke University, the cutoff for receiving an S is a C- so all grades D+, D, D-, and F correspond to a U [@unsatisfactory_satisfactory]. S/U grading can appears in two contexts: involuntary or voluntary. The type of S/U allowed is dictated by the course instructor; if a course is S/U required, all students regardless of status will be graded S/U. Voluntary S/Us must be requested before the withdrawal deadline and approval is required for the student's academic Dean. In order to apply for voluntary S/U, the student must also be enrolled in "at least 4 x 1.0 credit" courses. The decision to switch to voluntary S/U also depends on whether or not the student's academic programs allow S/U courses to count towards their degree and how many of the four voluntary S/U credits permitted to count towards graduation requirements are left. However, there are notable pandemic related exceptions.
 
-In Spring 2020, COVID-19 cases and concerns prevented a return to the classroom after spring break. In an email to faculty on March 18, the university announced a shift of all courses to S/U grading with the option of students opting back in to receiving a letter grade [@duke_coronavirus]. For Fall 2020, departments were allowed to convert any of its 199 or below level courses to a mandatory S/U grading basis. Throughout the 2021-2022 academic year, periods where in-person classes were prohibited persisted along with routine COVID-19 testing policies. Fall 2022 was the first full semester where classes were not interrupted by periods of remote learning. Masking, gathering, and other pandemic-era policies had been systematically loosened. In light of this historical context, I characterize the pandemic as ranging from Spring 2020 through Spring 2022. The periods before and after will be referred to as pre-pandemic and post-pandemic, respectively.
+In Spring 2020, COVID-19 cases and concerns prevented a return to the classroom after spring break. In an email to faculty on March 18, the university announced a shift of all courses to S/U grading with the option of students opting back in to receiving a letter grade [@duke_coronavirus]. For Fall 2020, departments were allowed to convert any of its 199 or below level courses to a mandatory S/U grading basis. Throughout the 2021-2022 academic year, periods where in-person classes were prohibited persisted along with routine COVID-19 testing policies. Fall 2022 was the first full semester where classes were not interrupted by periods of remote learning. Masking, gathering, and other pandemic-era policies had been systematically loosened. In light of this historical context, I define the pandemic as ranging from Spring 2020 through Spring 2022. The periods before and after will be referred to as pre-pandemic and post-pandemic, respectively.
 
 All students in my dataset fall under the Trinity College's Curriculum 2000. To provide a brief overview, the general education requirement mandates that students take a minimum of two courses that fall under each of several categories. For instance, the five Areas of Knowledge (AOK) are: Arts, Literature, and Performance (ALP), Civilizations (CZ), Natural Sciences (NS), Quantitative Studies (QS), and Social Sciences (SS) [@trinity_cirriculum]. Undergraduate students matriculating in Fall 2025 and onward (outside the scope of my analysis) follow a new Arts & Sciences Curriculum [@cirriculum_2025]. Prior to Spring 2020, S/U grading was only permitted to count towards total graduation credits. After Spring 2020, S/U grading has additionally been permitted to count towards general education requirements.
 
@@ -147,7 +145,7 @@ While these data come from official records, there are some aspects that I remai
 
 The original dataset I was provided included records ranging from Fall 2006 to Spring 2025. However, S/U grading only began in Fall 2012. Hence, I drop all observations prior to Fall 2012. Since my interest is in the impact of COVID-19 policy changes within the Trinity School of Arts and Sciences, only students who graduated from or intend to graduate from the Trinity School of Arts and Sciences will be included in this thesis. There may be a number of current students who later decide to transfer into Trinity or transfer into Pratt but I do not expect this number to be significant enough to be of concern. I also exclude any students who transferred to Duke University from other institution. Additionally, my focus is on the "typical" student of which I define as a student who graduates in exactly eight Fall/Spring semesters. For students who matriculated in 2022 and onwards and hence have not had the opportunity to enroll in eight semesters, I assume all students will graduate in eight semesters (although this is not the case).
 
-In addition to dropping the small fraction of courses that were unable to be matched (NAs for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all less than full credit courses from GPA and course load calculations due to the existence of courses which give credit to labs and other mandatory courses such as the half-credit STA 211 which was required for the major in Statistical Science.
+In addition to dropping the small fraction of courses that were unable to be matched (missing values for division, catalog level, and other course-specific attributes), I dropped courses belonging to the division of "Other". Broadly speaking, "Other" includes courses such as those for ROTC, Robertson Scholars, music lessons, and house courses. These courses are typically not taken purely for an "academic" purpose, and hence I do not consider them as qualifying a student to be in a true academic overload. In my opinion, half-credit music, dance, and PE courses also fall in a similar category as more of an extracurricular activity. I refrained from dropping all less than full credit courses from GPA and course load calculations due to the existence of courses which give credit to labs and other mandatory courses such as the half-credit STA 211 which was required for the major in Statistical Science.
 
 For modeling, my dataset has also been filtered to only contain courses taught online or at Duke's campus at Durham during either the Fall or Spring semester. This removes the impact of differences in environment, pace of instruction, grading institution, and other factors that confound these semesters and courses. Online courses are kept due to their prevalence during COVID-19 and their persistence for niche courses such those in the Cherokee Language Program. For courses where location was not recorded (17.6% of student-course pairs), I assume they were taken at Durham. This may result in an underestimate of students who study away.
 
@@ -237,9 +235,10 @@ pred_div <- readRDS("figures/predicted_majors.rds")
 
 pred_div |> kable(
   digits = 0,
-  caption = "Imputed student major divisions for students matriculating in 2022 and 2023"
+  caption = "Imputed student major divisions for students matriculating in 2022 and 2023",
+  format = "latex", booktabs = TRUE
 ) |> 
-  kable_styling(latex_options = "HOLD_position")
+  kable_styling(latex_options = c("HOLD_position", "striped"))
 ```
 
 The distribution of imputed majors is shown in Table 1. While my method of imputation successfully imputed nearly half of all missing major divisions, 9.7% of all observations still had NAs for division. For these values I resorted to the simple solution of filling with the mode for each of the three indicators. The result is a baseline of a Natural Science and Social Science major(s). Unfortunately, this adds systematic error to my dataset, although I deem the data I would have otherwise lost as of greater importance. At this point, no missing values remain.
@@ -262,7 +261,7 @@ All tuning of hyperparameters was done with 5-fold cross-validation. Over ratio 
 
 ## Feature Selection
 
-There are some variables provided that I did not include in my model. There was an indicator for whether or not a course was cross-listed that I dropped due to an inability to determine the nature of the crosslist (within-division, outside-division, outside Trinity). Instead of including the sparse data on specific majors, minors, and certificates, I engineered features (number of academic plans and division of major) as described previously in the Feature Engineering section. While I used class component to filter out courses, I opted to exclude it from modeling due to the lack of clarity I have on consistency across divisions and how credits are distributed for courses with a required lab. Additionally, what is a discussion section in one department could be equivalent to a lab in another. While there are additional specifications for a course to qualify as a seminar, I believe that a significant portion of that information comes from the number of students enrolled. I expect variation in class components to result in difficult to interpret results and leave this as an area of future study. Similarly, I did not explore the addition of interaction terms and transformations with one exception: the interaction between a student's major division and a course's division. This interaction term is critical to my analysis in particular as whether or not a student is taking a course as part of their major likely influences choice of grading![](data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==)—most majors do not permit courses taken S/U to fulfill major requirements.
+There are some variables provided that I did not include in my model. There was an indicator for whether or not a course was cross-listed that I dropped due to an inability to determine the nature of the crosslist (within-division, outside-division, outside Trinity). Instead of including the sparse data on specific majors, minors, and certificates, I engineered features (number of academic plans and division of major) as described previously in the Feature Engineering section. While I used class component to filter out courses, I opted to exclude it from modeling due to the lack of clarity I have on consistency across divisions and how credits are distributed for courses with a required lab. Additionally, what is a discussion section in one department could be equivalent to a lab in another. While there are additional specifications for a course to qualify as a seminar, I believe that a significant portion of that information comes from the number of students enrolled (cutoff at 18 students). I expect variation in class components to result in difficult to interpret results and leave this as an area of future study. Similarly, I did not explore the addition of interaction terms and transformations with one exception: the interaction between a student's major division and a course's division. This interaction term is critical to my analysis in particular as whether or not a student is taking a course as part of their major likely influences choice of grading![](data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==)—most majors do not permit courses taken S/U to fulfill major requirements.
 
 At this point, I believe that all remaining variables in my modeling dataset have some relevance to student behavior. To confirm this belief, I turn towards feature selection strategies. Common techniques for variable selection include all-subset selection, step-wise AIC/BIC, LASSO, ridge regression, and elastic search. For this thesis, I did not explore all-subset selection or step-wise methods. All-subset selection would require high computational resources to compare each combination of features (2^p^); step-wise methods are flawed due to their greedy approach being dependent on starting values and the lack of guarantee of an optimal solution. Hence, here I focus on elastic-net regression, a combination of LASSO and ridge regression. In addition to elastic–net, I isolated several predictors for which I was skeptical. I tested nested models with and without study away status (significant number of NAs filled with FALSE), summer course status, number of academic plans (flaws in imputation for post-pandemic students), and my interaction terms. For the four colinear variables representing course load, I opted to compare AIC (metric of the predictive accuracy) and BIC (how likely the model is to be the "true" model) for the full model with only one of the load variables.
 
@@ -270,12 +269,32 @@ From my run of elastic-net, all variables were kept. Similarly, the likelihood r
 
 ```{r}
 #| echo: false
+#| warning: false
 var_select <- readRDS("smotenc/var_select_table.rds")
-var_select |> kable(
+
+rownames(var_select) <- c(
+    "Model with all variables",
+    "Without took_summer_courses",
+    "Without num_students",
+    "Without studied_away",
+    "Without interaction terms",
+    "Without num_plans",
+    "Actual load",
+    "Actual units",
+    "Academic units",
+    "Academic load"
+  ) 
+
+var_select |>
+  kable(
   digits = 0,
-  caption = "AIC and BIC metrics excluding select variables with SMOTENC, results are comparable without. Inclusion of all variables improves model fit."
-) |> 
-  kable_styling(latex_options = "HOLD_position")
+  caption = "AIC and BIC metrics excluding select variables with SMOTENC, results are comparable without. Inclusion of all variables improves model fit.",
+  format = "latex", booktabs = TRUE
+) |>   
+  pack_rows("Full Model", 1, 1) |>  
+  pack_rows("Testing Questionable Variables", 2, 6) |>  
+  pack_rows("Testing for Load Variable(s)", 7, 10) |>  
+  kable_styling(latex_options = c("HOLD_position", "striped"))
 ```
 
 ## Final Model
@@ -313,9 +332,15 @@ After preliminary modeling without a random effect on student ID, mixed models w
 
 ## Logistic Regression with Student Effect (No SMOTENC)
 
-![Diagnostic plots generated using DHARMa and formatted using Ggplot2. Dotted lines represent ideal results.](smoteless/dharma_plots.png)
+DHARMa is specifically designed to checking model assumptions for generalized linear mixed models (natively supports `glmer`) by generating multiple simulations and scaling residuals so they can be interpreted easily. As opposed to binned residuals, DHARMa is aware of the underlying hierarchical structure of the random effects. Figure 10 shows the of diagnostic plots generated using DHARMa and Table 4 shows statistics and significance. On the left of Figure 10, the QQ plot checks for uniformity of scaled residuals and corresponds to the Kolmogorov-Smirnov (KS) uniformity test (Table 4). A KS statistic of 0 represents perfect uniformity while (heuristically) values above 0.1 likely indicate model misfit. While the p-value is significant, it is important to note that it is extremely sensitive to large sample sizes. Hence, from the low KS statistic of 0.004 and the near ideal pattern in the QQ plot, I do not believe there were violations in uniformity of scaled residuals—a signal that errors are random and evenly distributed. On the right of Figure 10, the scaled residuals versus fitted values appears to be evenly distributed above and below the y-axis. Residuals appear heavily clustered at towards 0 with fewer observations above 0.10. This is a feature of the heavily imbalanced dataset and does not cause me great concern as my intent is to identify correlates with voluntary S/U rather than suggesting causation or predicting S/U. Using the `performance` package, Table 4 also includes an estimate of intraclass correlation (ICC). Typically adjusted ICC measures the proportion of variation in the data explained by the random effect. Assuming that ICC can be interpreted in the same way for GLMMs, 31.8% of observed variation can be explained by student ID.
 
-![Calibration plot from running logistic regression with random effects on students (without SMOTENC). The dashed red line represents a perfect model, the solid blue line representsmy model, and in gray are 95% confidence intervals.](smoteless/glmm_calibration_plot.png){height="40%"}
+If my goal was to predict voluntary S/Us, my model performs poorly. Results in Table 5 show that my model never predicts the rare case of voluntary S/U. From the calibration plot in Figure 11, we see that the model systematically underestimates the positive class (choosing voluntary S/U). However, when compared with the preliminary trial without random effects but using SMOTENC (Figure 9), it appears that the oversampling of the minority class has the side-effect of over-prediction of S/Us—likely due to the misrepresentation of the true frequency of the event as an effect of oversampling. With the caveat that these are fundamentally two different models (one with random effects and one without), if I was to compare absolute deviance from the observed event rate the degree of over-prediction from oversampling using SMOTENC seems to be more severe than the under-prediction without oversampling. Returning to the calibration plot in Figure 11, there does appear to be some non-linearity. For probabilities near zero the model may be slight over-predicting before under-predicting (0.01 to 0.035). Towards 0.06, the model appears to begin returning back in the direction of over-prediction. This could be a result of non-linearity in some numeric predictors. For instance, perhaps the difference between having zero overloads and having one overload is different from the difference between three and four overloads.
+
+As a supplement, I also plot ROC and PR curves (Figure 12) and compute the area under the curves (AUC) (Table 4). The ROC and its associated AUC support my model (PR AUC = 0.823) as it clearly performs better than a random model would (PR AUC = 0.5). While the PR curve and its associated AUC are very low (PR AUC = 0.083), the baseline for PR AUC is relative to the positive class's prevalence. A completely random model would have a baseline performance of 0.02. Thus, while a low bar, my model performs better than random—despite never predicting a positive. Due to the lack of positive predictions, I omit the typical analysis of precision, recall, specificity, and F1 score.
+
+![Model diagnostic plots where dotted lines represent ideal results.](smoteless/dharma_plots.png)
+
+![Calibration plot from running logistic regression with random effects on students (without SMOTENC). The dashed red line represents a perfect model, the solid blue line represents my model, and in gray are 95% confidence intervals.](smoteless/glmm_calibration_plot.png){height="40%"}
 
 ```{r}
 #| echo: false
@@ -324,9 +349,10 @@ all_metrics <- readRDS("smoteless/glmm_all_metrics.rds")
 all_metrics |>
   kable(
     digits = 3,
-    caption = "Model statistics from model with random effect (DHARMa, performance, and yardstick packages)"
+    caption = "Model statistics from model with random effect (DHARMa, performance, and yardstick packages)",
+    format = "latex", booktabs = TRUE
   ) |> 
-  kable_styling(latex_options = "HOLD_position")
+  kable_styling(latex_options = c("HOLD_position", "striped"))
 
 cm <- readRDS("smoteless/glmm_cm.rds")
 cm$table |>
@@ -349,106 +375,15 @@ cm$table |>
 
 ![ROC curve and precision-recall curves for the full generalized linear mixed model. Dotted gray line in ROC graph represents a random classifier.](smoteless/glmm_roc_pr_plot.png){height="40%"}
 
-```{r, echo=FALSE}
-coeff <- readRDS("smoteless/glmm_coeff.rds")
-coeff_OR <- coeff |>
-  mutate(
-    OR = exp(estimate),
-    OR_low = exp(conf.low),
-    OR_high = exp(conf.high)
-  ) |>
-  dplyr::select(term, estimate, OR, OR_low, OR_high, p.value)
-
-coeff_OR |> 
-  kable(
-  digits = 3,
-  caption = "Fixed effects from full general linear mixed model",
-  format = "latex", booktabs = TRUE
-) |> 
-  kable_styling(latex_options = c("HOLD_position", "striped"))
-```
+\newpage
 
 # Discussion
-
-## Model Fit
-
-DHARMa is specifically designed to checking model assumptions for generalized linear mixed models (natively supports `glmer`) by generating multiple simulations and scaling residuals so they can be interpreted easily. As opposed to binned residuals, DHARMa is aware of the underlying hierarchical structure of the random effects. Figure 10 shows the of diagnostic plots generated using DHARMa and Table 4 shows statistics and significance. On the left of Figure 10, the QQ plot checks for uniformity of scaled residuals and corresponds to the Kolmogorov-Smirnov (KS) uniformity test. A KS statistic of 0 represents perfect uniformity while (heuristically) values above 0.1 likely indicate model misfit. While the p-value is significant, it is important to note that it is extremely sensitive to large sample sizes. Hence, from the low KS statistic of 0.004 and the near ideal pattern in the QQ plot, I do not believe there were violations in uniformity of scaled residuals—a signal that errors are random and evenly distributed. On the right of Figure 10, the scaled residuals versus fitted values appears to be evenly distributed above and below the y-axis. Residuals appear heavily clustered at towards 0 with fewer observations above 0.10. This is a feature of the heavily imbalanced dataset and does not cause me great concern as my intent is to identify correlates with voluntary S/U rather than suggesting causation or predicting S/U. Using the `performance` package, Table 4 also includes an estimate of intraclass correlation (ICC). Typically adjusted ICC measures the proportion of variation in the data explained by the random effect. Assuming that ICC can be interpreted in the same way for GLMMs, 31.8% of observed variation can be explained by student ID.
-
-If my goal was to predict voluntary S/Us, my model performs poorly. Results in Table 5 show that my model never predicts the rare case of voluntary S/U. From the calibration plot in Figure 11, we see that the model systematically underestimates the positive class (choosing voluntary S/U). However, when compared with the preliminary trial without random effects but using SMOTENC (Figure 9), it appears that the oversampling of the minority class has the side-effect of over-prediction of S/Us—likely due to the misrepresentation of the true frequency of the event as an effect of oversampling. With the caveat that these are fundamentally two different models (one with random effects and one without), if I was to compare absolute deviance from the observed event rate the degree of over-prediction from oversampling using SMOTENC seems to be more severe than the under-prediction without oversampling. Returning to the calibration plot in Figure 11, there does appear to be some non-linearity. For probabilities near zero the model may be slight over-predicting before under-predicting (0.01 to 0.035). Towards 0.06, the model appears to begin returning back in the direction of over-prediction. This could be a result of non-linearity in some numeric predictors. For instance, perhaps the difference between having zero overloads and having one overload is different from the difference between three and four overloads.
-
-As a supplement, I also plot ROC and PR curves (Figure 12) and compute the area under the curves (AUC) and Brier Score (Table 4). The ROC and its associated AUC support my model (PR AUC = 0.823) as it clearly performs better than a random model would (PR AUC = 0.5). While the PR curve and its associated AUC are very low (PR AUC = 0.083), the baseline for PR AUC is relative to the positive class's prevalence. A completely random model would have a baseline performance of 0.02. Thus, while a low bar, my model performs better than random—despite never predicting a positive. Due to the lack of positive predictions, I omit the typical analysis of precision, recall, specificity, and F1 score.
-
-## Model Interpretation
 
 From my model estimates (Table 6) I find several covariates to be statistically significant (p-value \< 0.05). Levels of variables are ordinal and can be interpreted in order. For catalog level, note that they range from 0-99 to 400-499. The baseline represents a senior with a single major taking a 400-499 level course in Arts & Humanities before the pandemic. While unrealistic, they have not taken summer courses and have zeros for numeric variables (previous semester GPA, number of overloads, etc).
 
 ### Time Period Relative to COVID-19
 
 My primary interest is in how COVID-19 induced policy changes impacted student choice of voluntary S/U. From my model estimates in Table 6, I find that all levels of time period are statistically significant. The baseline represents the pre-pandemic period (Fall 2015-Fall 2019). During the pandemic (Spring 2020-Spring 2022), there is a 7.253 \[6.530, 8.057\] factor increase in odds of voluntary S/U relative to the baseline. For the post-pandemic period (Fall 2022-Spring 2025), there is an associated 5.196 \[4.630, 5.832\] factor increase in odds of voluntary S/U relative to the baseline. These results match my expectation from my exploratory analysis (Figures 1 and 2) which seemed to indicate a low proportion of S/Us pre-pandemic, a drastic increase in S/U grades during the pandemic, and a slight decline in S/U grades after the pandemic—although still higher than pre-pandemic rates.
-
-Without having a casual study, it is not possible to make any conclusion regarding the efficacy of voluntary S/U as a policy on student well-being. However, I attempt to put changes in voluntary S/U into the broader context of student well-being at Duke University. Figure 13 provides a high level summary of statistics provided by Dr. Molly Weeks from Duke's Office of Institutional Research [@weeks_2025]. Note that the data comes from three different studies and survey response rates ranged from 15.4% to 26.7% per year, potentially under-representing certain groups. For the sake of this analysis, I consider the SRWBP [@hoyle_weeks_2021] as a pre-pandemic baseline and DUCkl data from Fall 2024 as the post-pandemic reference level. From Figure 13, it appears that there was not a statistically significant change in belonging at Duke, academic engagement, or loneliness over time, with the exception of gradual pandemic recovery. However, there does seem to be a statistically significant decrease in perceived stress between SRWBP and DUCkl (Fall 2024). While impossible to say what this decrease can be attributed to, there is a small possibility that the increase in voluntary S/Us may have contributed to this decrease in stress. Overall, there does not seem to be evidence that the change in post-pandemic voluntary S/U is associated with better student well-being as measured by belonging at Duke, academic engagment, or loneliness in context.
-
-```{r}
-#| echo: false
-#| eval: false
-wellness_df <- read_excel("wellness_data.xlsx")
-well_long <- wellness_df |> 
-  janitor::clean_names() |> 
-  pivot_longer(
-    cols = ends_with("mean") | ends_with("sd"),
-    names_to = c("metric", ".value"),
-    names_pattern = "(.*)_(mean|sd)"
-  ) |>
-  mutate(
-    se = sd / sqrt(number_of_respondents),
-    ci_lower = mean - 1.96 * se,
-    ci_upper = mean + 1.96 * se,
-    metric = recode(metric,
-      "loneliness" = "Loneliness",
-      "stress" = "Stress",
-      "symptoms" = "Symptoms",
-      "belonging" = "Belonging",
-      "engagement" = "Engagement"
-    ),
-    year = str_extract(term, "\\d{4}") |> as.integer(),
-    term_short = substr(year, 3, 4),
-    term_short = as.numeric(term_short),
-    academic_level = factor(academic_level, 
-                      levels = c("First Year", "Sophomore", 
-                               "Junior", "Senior"))
-  ) |>
-  filter(metric != "Symptoms")
-
-wellness_plot <- ggplot(well_long,
-       aes(x = term_short, y = mean, group = metric, fill = study)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15) +
-  facet_grid(academic_level ~ metric) +
-  theme_minimal() +
-  theme(
-    strip.text = element_text(face = "bold"),
-    plot.caption = element_text(hjust = 0.5, size = 10)
-  ) +
-  scale_fill_viridis_d() +
-  scale_x_continuous(
-    breaks = seq(
-      from = min(well_long$term_short, na.rm = TRUE),
-      to = max(well_long$term_short, na.rm = TRUE),
-      by = 2
-    )
-  ) +
-  labs(
-    x = "Academic Term",
-    y = "Mean Score",
-    title = "Student Wellness Metrics Over Time",
-    fill = "Study",
-    caption = "Belonging (at Duke) is adapted from Asher & Weeks, 2014.\n(Academic) engagement is from Asher & Weeks, 2016.\nLoneliness (in Context) is adapted from Weeks & Asher, 2012.\n(Perceived) Stress (Scale Sum) is derived from the PSS 4\n(Cohen, Kamarck, & Mermelstein, 1983; Cohen & Williamson, 1988)."
-  )
-ggsave("figures/wellness_plot.png", wellness_plot, dpi = 300,
-       height = 7, width = 9)
-```
-
-![Faceted bar chart using data provided by Dr. Molly Weeks from Duke's Office of Institutional Research. Rows are different metrics while columns are student academic levels. In each plot, the x-axis represents data collected in Fall of that year. Bars show mean scores, 95% confidence intervals are drawn, and colors indicate the source study for data points.](figures/wellness_plot.png){width="95%"}
 
 ### Summer Courses
 
@@ -476,11 +411,82 @@ When looking at the interaction between student and course divisions, I expected
 
 While holding all other features constant, for every one unit (1.0) increase in previous term GPA, the odds of a student electing to take a course voluntary S/U decreases by a factor of 0.942 \[0.904, 0.980\]. This relationship may indicate that having a better GPA in the previous semester decreases incentive to resort to more lenient S/U grading in the following semester.
 
-In terms of number of academic plans, my model suggests that the difference between having a single major and having a single major in addition to another plan (major, minor, or certificate) is on average an increase in odds of voluntary S/U by a factor of 1.166 \[1.091, 1.246\]. Although, this should be taken with a degree of skepticism as there is likely a disproportionately low number of plans in my dataset as some students have not graduated and may chose to add plans later in their Duke experience. The non-significant and negligible difference in having three academic plans may similarly be a result of a lack of observations.
+In terms of number of academic plans, my model suggests that the difference between having a single major and having a single major in addition to another plan (major, minor, or certificate) is on average associated with an increase in odds of voluntary S/U by a factor of 1.166 \[1.091, 1.246\]. Although, this should be taken with a degree of skepticism as there is likely a disproportionately low number of plans in my dataset as some students have not graduated and may chose to add plans later in their Duke experience. The non-significant and negligible difference in having three academic plans may similarly be a result of a lack of observations.
+
+```{r, echo=FALSE}
+coeff <- readRDS("smoteless/glmm_coeff.rds")
+coeff_OR <- coeff |>
+  mutate(
+    OR = exp(estimate),
+    OR_low = exp(conf.low),
+    OR_high = exp(conf.high)
+  ) |>
+  dplyr::select(term, OR, OR_low, OR_high, p.value) |>
+  rename(
+    `Odds Ratio (OR)` = OR,
+    `P-Value` = p.value
+  ) |>
+  mutate(
+    term = case_when(
+      term == "load_status_1" ~ "load_status_underload",
+      term == "load_status_3" ~ "load_status_overload",
+      term == "actual_load_2" ~ "actual_load_overload",
+      term == "timeperiod_2" ~ "timeperiod_dur_covid",
+      term == "timeperiod_3" ~ "timeperiod_post_covid",
+      term == "academic_level_bot_1" ~ "academic_level_first_year",
+      term == "academic_level_bot_2" ~ "academic_level_sophomore",
+      term == "academic_level_bot_3" ~ "academic_level_junior",
+      term == "catalog_level_1" ~ "catalog_level_0-99",
+      term == "catalog_level_2" ~ "catalog_level_100s",
+      term == "catalog_level_3" ~ "catalog_level_200s",
+      term == "catalog_level_4" ~ "catalog_level_300s",
+      TRUE ~ term
+    )
+  )
+
+desired_order <- c("(Intercept)", 
+                   "timeperiod_dur_covid", "timeperiod_post_covid", 
+                   "load_status_underload", "load_status_overload", 
+                   "actual_load_overload", "num_overloads",
+                   "academic_level_first_year", "academic_level_sophomore", "academic_level_junior",
+                   "catalog_level_0-99", "catalog_level_100s",
+                   "catalog_level_200s", "catalog_level_300s",
+                   "is_art_humanity", "is_social_sci", "is_natural_sci",
+                   "division_Natural.Sciences", "division_Social.Sciences",
+                   "is_natural_sci_x_division_Arts...Humanities",
+                    "division_Social.Sciences_x_is_social_sci",
+                   "is_natural_sci_x_division_Natural.Sciences",
+                   "division_Arts...Humanities_x_is_art_humanity",
+                   "division_Arts...Humanities_x_is_social_sci",
+                   "division_Natural.Sciences_x_is_art_humanity",
+                   "prev_semGPA", "took_summer_courses",
+                   "num_plans_2", "num_plans_3",
+                   "num_students"
+                   )
+
+coeff_OR$term <- factor(coeff_OR$term, levels = desired_order, ordered = TRUE)
+
+coeff_OR |> 
+  arrange(term) |>
+  kable(
+  digits = 3,
+  caption = "Fixed effects from final model",
+  format = "latex", booktabs = TRUE
+) |> 
+  pack_rows("Time Period", 2, 3) |>  
+  pack_rows("Course Load", 4, 7) |>  
+  pack_rows("Student Level", 8, 10) |>  
+  pack_rows("Course Level", 11, 14) |>  
+  pack_rows("Student Division", 15, 17) |>  
+  pack_rows("Course Division", 18, 19) |> 
+  pack_rows("Division Interactions", 20, 25) |> 
+  pack_rows("Miscellaneous", 26, 29) |>  
+  kable_styling(latex_options = c("HOLD_position", "striped"))
+```
 
 ## Limitations
 
-As with most studies, there are numerous limitations with this thesis. To begin, there is systematic missingness of academic plans for Fall 2022-Spring 2025. There are certainly errors in my imputation of student major divisions and for students still early in their academic career and unable to be imputed, the most common value was assigned for each of the three major division indivators. Thankfully, the result was a Social Science and Natural Science majors. However, my model does not know the underlying restriction that a student cannot have all three major divisions—you cannot do an interdepartmental major along with a second major. In many cases, students realize later in their academic careers that they have the time to explore other interests. As a result, I make no attempt to impute student's minors or certificates and hence their number of plans is likely an underestimate. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
+As with most studies, there are numerous limitations with this thesis. To begin, there is systematic missingness of academic plans for Fall 2022-Spring 2025. There are certainly errors in my imputation of student major divisions and for students still early in their academic career and unable to be imputed, the most common value was assigned for each of the three major division indicators. Thankfully, the result was a Social Science and Natural Science majors. However, my model does not know the underlying restriction that a student cannot have all three major divisions—you cannot do an interdepartmental major along with a second major. In many cases, students realize later in their academic careers that they have the time to explore other interests. As a result, I make no attempt to impute student's minors or certificates and hence their number of plans is likely an underestimate. Since these students have not had four academic years, it is also impossible to know if they will drop out or graduate early/late.
 
 Missing data is not exclusive to after the pandemic. There was also missing data from the courses for which location was NA as well as no data on previous semesters for first semester students. The choice to systematically give all students a 4.0 as the baseline previous semester GPA for their first semester decreases the perceived significance of prior GPA in my model. There is no good solution to this as there is a the lack of knowledge of a student's prior academic performance in earlier education. This is exacerbated by the loss of the standardized test score application requirement for Duke University and would result in only the usage of high school GPAs which likely vary in rigor across schools. It is also worth emphasizing that while my engineered previous semester GPA does consider courses taken away from Durham, it ignores summer terms which do contribute to a student's overall GPA. My major imputation approach currently ignores both summer and study away courses.
 
@@ -494,13 +500,15 @@ Finally, since my model seeks to determine student-level behavior rather than co
 
 # Conclusion
 
-This thesis sought to fill the gap in literature on long-term effects of pandemic-motivated policy changes on student behaviors, with a specific focus focused on voluntary S/U at Duke University. Through my logistic regression with random effects, this thesis has determined the relationship between voluntary S/Us and various other course and student level variables. My observational study provides empirical evidence of a growing usage of voluntary S/U after the pandemic, while holding other features constant.
+The COVID-19 pandemic precipitated profound disruptions in higher education, prompting rapid and, in many cases, unprecedented changes to academic policies. Among these was the expansion of flexible grading options, including the temporary broadening of Satisfactory/Unsatisfactory (S/U) grading at Duke University. Although originally implemented as an emergency response, the durability of certain components of these policies has raised questions regarding their long-term implications for student behavior. This thesis provides empirical evidence that the pandemic-era shift in grading policy has had sustained effects on students’ voluntary use of S/U grading.
 
-In summary, based on my model, there is sufficient evidence to suggest that the following factors are associated with lower odds of voluntary S/U, relative to the baseline (senior, single major, 400-499 level course in Arts & Humanities, no summer courses, before the pandemic): higher previous term GPA, having taken summer courses, majoring in the natural sciences, having taken more overloads, enrollment in an academic underload, academic level of below senior, and majoring and enrolling in a Social Science course. Higher odds of voluntary S/U were associated with the following covariates: time period during and after the pandemic, lower course levels, taking a course in Natural Science, taking a course in Social Science, having two academic plans, and majoring in Natural Science and enrolling in a Arts & Humanities course.
+Drawing on administrative records from the Duke University Assessment Office, I employed a logistic mixed-effects modeling framework to examine student decisions regarding voluntary S/U grading across nearly a decade of academic terms. After accounting for course characteristics, student academic history, and individual-level heterogeneity, the analysis reveals a statistically meaningful increase in voluntary S/U selection in the post-pandemic period relative to pre-pandemic norms. The findings suggest that exposure to the exceptional grading environment of Spring 2020 and the subsequent pandemic-affected semesters may have altered patterns of student decision-making in ways that persist even under largely restored instructional conditions.
+
+The significance of predictors such major division, course division, overload status, course level, student academic level, previous term GPA, and having taken summer courses indicate the multifaceted nature of voluntary S/U usage. Even so, the persistent effect of the post-pandemic indicator suggests that structural conditions alone cannot fully account for the observed behavioral shift. These results carry implications for ongoing institutional deliberations regarding the future of flexible grading. If voluntary S/U usage is now embedded in student behavior rather than merely a temporary artifact of crisis conditions, then policy frameworks created for pre-pandemic educational environments may be insufficiently aligned with current practices. As departments reconsider whether and how S/U grading should be permitted, the evidence presented here may assist in evaluating the trade-offs among flexibility, academic rigor, signaling value, and student well-being.
 
 ## Future Work
 
-For the improvement of the work carried out in this thesis, a couple items come into mind. To begin, some directly implementable actions relevant to this thesis could include the tuning of additional hyperparameters such as the number of neighbors used for SMOTE, further feature engineering (overall cumulative GPA instead of previous semester GPA), exploration of variable transformations and interaction terms, and experimentation with other packages such as `glmmTMB`. It may also be worth modeling on a smaller, more specific dataset that could have less imbalance. There are also many alternative approaches to missing data that could be experimented with. For instance, my current major imputation approach only considers the proportion of courses a student takes in each division above 199. An alternative could be to use a package like `mice` (Multivariate Imputation by Chained Equations) which could capture other informative covariates for major [@mice_2011]. Additionally, my methodology lacks the enforcement of constraints such as the impossibility of a student majoring in all three divisions. More complex adjustments include exploration of an even more complex yet more precise hierarchical structure (perhaps with a Bayesian approach) that allows variation in student behavior at the the division level, the department level, and at the individual level.
+This study also highlights the need for further research. For the improvement of the work carried out in this thesis, a couple items come into mind. To begin, some directly implementable actions relevant to this thesis could include the tuning of additional hyperparameters such as the number of neighbors used for SMOTE, further feature engineering (overall cumulative GPA instead of previous semester GPA), exploration of variable transformations and interaction terms, and experimentation with other packages such as `glmmTMB`. It may also be worth modeling on a smaller, more specific dataset that could have less imbalance. There are also many alternative approaches to missing data that could be experimented with. For instance, my current major imputation approach only considers the proportion of courses a student takes in each division above 199. An alternative could be to use a package like `mice` (Multivariate Imputation by Chained Equations) which could capture other informative covariates for major [@mice_2011]. Additionally, my methodology lacks the enforcement of constraints such as the impossibility of a student majoring in all three divisions. More complex adjustments include exploration of an even more complex yet more precise hierarchical structure (perhaps with a Bayesian approach) that allows variation in student behavior at the the division level, the department level, and at the individual level.
 
 Most distal extensions to this thesis may consist of the use of different methods to address class imbalance and imputation. For class imbalance, techniques may include: weights, alternative variations of SMOTE, models resistant to imbalance (e.g. Support Vector Machine) [@prati_2014], propensity score matching [@austin_2011], and other approaches—and their hybrids. Progress on methods for class imbalance likely also have extensions in a variety of other fields as well. For major imputation (or prediction), the problem has been explored in more depth by others such as [@lang_2022]. It could be of interest to identify patterns in major selection at Duke University and compare them with wider shifts across the nation. A related problem is the inconsistent and somewhat arbitrary categorization of majors into divisions. It is impossible to categorize all of human knowledge into distinct, disjoint departments. One method for doing so could be to use natural language processing techniques on course descriptions and syllabi. By using vector embeddings and computing cosine similarities, one could approximate the relationships between departments and institutes [@cosine_similarity].
 
